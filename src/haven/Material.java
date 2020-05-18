@@ -32,6 +32,8 @@ import java.lang.annotation.*;
 import java.lang.reflect.*;
 import haven.render.*;
 
+import static haven.Utils.c2fa;
+
 public class Material implements Pipe.Op {
     public final Pipe.Op states, dynstates;
 

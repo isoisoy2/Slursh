@@ -37,13 +37,14 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
     private final ThreadGroup g;
     public final Thread mt;
     DisplayMode fsmode = null, prefs = null;
-	
+    private static final String TITLE = "Haven and Hearth (Slursh v"+Config.version + ")";
+
     static {
 	try {
 	    javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 	} catch(Exception e) {}
     }
-	
+
     DisplayMode findmode(int w, int h) {
 	GraphicsDevice dev = getGraphicsConfiguration().getDevice();
 	if(!dev.isFullScreenSupported())
@@ -58,7 +59,7 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 	}
 	return(b);
     }
-	
+
     public void setfs() {
 	GraphicsDevice dev = getGraphicsConfiguration().getDevice();
 	if(prefs != null)
@@ -76,7 +77,7 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 	    throw(new RuntimeException(e));
 	}
     }
-	
+
     public void setwnd() {
 	GraphicsDevice dev = getGraphicsConfiguration().getDevice();
 	if(prefs == null)
@@ -215,7 +216,7 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 	if((isz == null) && Utils.getprefb("wndmax", false))
 	    setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
     }
-	
+
     private void savewndstate() {
 	if(prefs == null) {
 	    if(getExtendedState() == NORMAL)
@@ -249,10 +250,10 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 			    Config.authck = null;
 			}
 			fun = bill;
-			setTitle("Haven and Hearth");
+			setTitle(TITLE);
 		    } else {
 			fun = new RemoteUI(sess);
-			setTitle("Haven and Hearth \u2013 " + sess.username);
+			setTitle(TITLE + "\u2013 " + sess.username);
 		    }
 		    sess = fun.run(p.newui(sess));
 		}
@@ -263,7 +264,7 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 	    dispose();
 	}
     }
-    
+
     public static void setupres() {
 	if(ResCache.global != null)
 	    Resource.setcache(ResCache.global);
@@ -288,7 +289,7 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 	    }
 	}
     }
-    
+
     static {
 	if((WebBrowser.self = JnlpBrowser.create()) == null)
 	    WebBrowser.self = DesktopBrowser.create();
@@ -402,7 +403,7 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 	}
 	System.exit(0);
     }
-    
+
     public static void main(final String[] args) {
 	/* Set up the error handler as early as humanly possible. */
 	ThreadGroup g = new ThreadGroup("Haven main group");
@@ -426,7 +427,7 @@ public class MainFrame extends java.awt.Frame implements Runnable, Console.Direc
 	    }, "Haven main thread");
 	main.start();
     }
-	
+
     private static void dumplist(Collection<Resource> list, String fn) {
 	try {
 	    if(fn != null) {

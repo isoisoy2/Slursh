@@ -50,7 +50,9 @@ public class JOGLPanel extends GLCanvas implements Runnable, UIPanel, Console.Di
     private final Dispatcher ed;
     private GLEnvironment env = null;
     private UI ui;
+    public static UI lui;
     private Area shape;
+    public static Area lshape;
     private Pipe base, wnd;
 
     private static GLCapabilities mkcaps() {
@@ -83,6 +85,7 @@ public class JOGLPanel extends GLCanvas implements Runnable, UIPanel, Console.Di
 		public void reshape(GLAutoDrawable wdg, int x, int y, int w, int h) {
 		    Area area = Area.sized(new Coord(x, y), new Coord(w, h));
 		    shape = area;
+            lshape = area;
 		    wnd = base.copy();
 		    wnd.prep(new States.Viewport(area)).prep(new Ortho2D(area));
 		}
@@ -435,20 +438,21 @@ public class JOGLPanel extends GLCanvas implements Runnable, UIPanel, Console.Di
     }
 
     public UI newui(Session sess) {
-	if(ui != null) {
-	    synchronized(ui) {
-		ui.destroy();
-	    }
-	}
-	ui = new UI(this, new Coord(getSize()), sess);
-	ui.env = this.env;
-	ui.root.guprof = uprof;
-	ui.root.grprof = rprof;
-	ui.root.ggprof = gprof;
-	if(getParent() instanceof Console.Directory)
-	    ui.cons.add((Console.Directory)getParent());
-	ui.cons.add(this);
-	return(ui);
+    	if(ui != null) {
+    	    synchronized(ui) {
+    		ui.destroy();
+    	    }
+    	}
+    	ui = new UI(this, new Coord(getSize()), sess);
+    	ui.env = this.env;
+    	ui.root.guprof = uprof;
+    	ui.root.grprof = rprof;
+    	ui.root.ggprof = gprof;
+    	if(getParent() instanceof Console.Directory)
+    	    ui.cons.add((Console.Directory)getParent());
+    	ui.cons.add(this);
+        lui = ui;
+    	return(ui);
     }
 
     public void background(boolean bg) {

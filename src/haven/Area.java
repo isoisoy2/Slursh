@@ -52,7 +52,7 @@ public class Area implements Iterable<Coord>, java.io.Serializable {
     }
 
     public Coord sz() {
-	return(br.sub(ul));
+	    return(br.sub(ul));
     }
 
     public boolean contains(Coord c) {

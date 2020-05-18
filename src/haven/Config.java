@@ -28,6 +28,15 @@ package haven;
 
 import java.net.URL;
 import java.io.PrintStream;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.*;
+import java.util.*;
+import java.awt.event.KeyEvent;
+
+import haven.error.ErrorHandler;
 import static haven.Utils.getprop;
 
 public class Config {
@@ -54,30 +63,102 @@ public class Config {
     public static boolean softres = getprop("haven.softres", "on").equals("on");
     public static byte[] authck = null;
     public static String prefspec = "hafen";
-    public static final String confid = "";
-    
+    public static final String confid = "slursh";
+
+
+    public static List<LoginData> logins = new ArrayList<LoginData>();
+    public static String version;
+    public static String gitrev;
+
+    public static int fontsizechat = Utils.getprefi("fontsizechat", 14);
+    public static boolean fontaa = Utils.getprefb("fontaa", false);
+    public static boolean usefont = Utils.getprefb("usefont", false);
+    public static String font = Utils.getpref("font", "SansSerif");
+    public static int fontadd = Utils.getprefi("fontadd", 0);
+
+
     static {
-	String p;
-	if((p = getprop("haven.authck", null)) != null)
-	    authck = Utils.hex2byte(p);
+    	String p;
+    	if((p = getprop("haven.authck", null)) != null)
+    	    authck = Utils.hex2byte(p);
+
+        try {
+            InputStream in = ErrorHandler.class.getResourceAsStream("/buildinfo");
+            try {
+                if (in != null) {
+                    java.util.Scanner s = new java.util.Scanner(in);
+                    String[] binfo = s.next().split(",");
+                    version = binfo[0];
+                    gitrev = binfo[1];
+                }
+            } finally {
+                in.close();
+            }
+        } catch (Exception e) {}
+
+        loadLogins();
     }
-    
+
+    private static void loadLogins() {
+        try {
+            String loginsjson = Utils.getpref("logins", null);
+            if (loginsjson == null)
+                return;
+            JSONArray larr = new JSONArray(loginsjson);
+            for (int i = 0; i < larr.length(); i++) {
+                JSONObject l = larr.getJSONObject(i);
+                logins.add(new LoginData(l.get("name").toString(), l.get("pass").toString()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveLogins() {
+        try {
+            List<String> larr = new ArrayList<String>();
+            for (LoginData ld : logins) {
+                String ldjson = new JSONObject(ld, new String[] {"name", "pass"}).toString();
+                larr.add(ldjson);
+            }
+            String jsonobjs = "";
+            for (String s : larr)
+                jsonobjs += s + ",";
+            if (jsonobjs.length() > 0)
+                jsonobjs = jsonobjs.substring(0, jsonobjs.length()-1);
+            Utils.setpref("logins", "[" + jsonobjs + "]");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     private static int getint(String name, int def) {
-	String val = getprop(name, null);
-	if(val == null)
-	    return(def);
-	return(Integer.parseInt(val));
+    	String val = getprop(name, null);
+    	if(val == null)
+    	    return(def);
+    	return(Integer.parseInt(val));
+    }
+
+    private static URL geturl(String url) {
+        if (url.equals(""))
+            return null;
+        try {
+            return new URL(url);
+        } catch(java.net.MalformedURLException e) {
+            throw(new RuntimeException(e));
+        }
     }
 
     private static URL geturl(String name, String def) {
-	String val = getprop(name, def);
-	if(val.equals(""))
-	    return(null);
-	try {
-	    return(new URL(val));
-	} catch(java.net.MalformedURLException e) {
-	    throw(new RuntimeException(e));
-	}
+    	String val = getprop(name, def);
+    	if(val.equals(""))
+    	    return(null);
+    	try {
+    	    return(new URL(val));
+    	} catch(java.net.MalformedURLException e) {
+    	    throw(new RuntimeException(e));
+    	}
     }
 
     private static void usage(PrintStream out) {

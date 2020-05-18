@@ -27,27 +27,44 @@
 package haven;
 
 import java.awt.event.KeyEvent;
+import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Scanner;
 
 public class LoginScreen extends Widget {
     Login cur;
     Text error;
     IButton btn;
+    Button statusBtn;
     Button optbtn;
     OptWnd opts;
-    static Text.Foundry textf, textfs;
+    static Text.Foundry textf, textfs, special;
     static Tex bg = Resource.loadtex("gfx/loginscr");
     Text progress = null;
+    Thread statusUpdaterThread;
 
     static {
-	textf = new Text.Foundry(Text.sans, 16).aa(true);
-	textfs = new Text.Foundry(Text.sans, 14).aa(true);
+    	textf = new Text.Foundry(Text.sans, 16).aa(true);
+    	textfs = new Text.Foundry(Text.sans, 14).aa(true);
+        special = new Text.Foundry(Text.latin, 14).aa(true);
     }
 
     public LoginScreen() {
-	super(bg.sz());
-	setfocustab(true);
-	add(new Img(bg), Coord.z);
-	optbtn = adda(new Button(100, "Options"), 10, sz.y - 10, 0, 1);
+    	super(bg.sz());
+    	setfocustab(true);
+    	add(new Img(bg), Coord.z);
+    	optbtn = adda(new Button(100, "Options"), sz.x-110, 40, 0, 1);
+        new UpdateChecker().start();
+        add(new LoginList(200, 29), new Coord(10,10));
+        statusBtn = adda(new Button(200, "Initializing..."), sz.x-210, 80,0,1);
+        StartUpdaterThread();
     }
 
     private static abstract class Login extends Widget {
@@ -56,93 +73,183 @@ public class LoginScreen extends Widget {
     }
 
     private class Pwbox extends Login {
-	TextEntry user, pass;
-	CheckBox savepass;
+    	TextEntry user, pass;
+    	CheckBox savepass;
 
-	private Pwbox(String username, boolean save) {
-	    setfocustab(true);
-	    add(new Label("User name", textf), Coord.z);
-	    add(user = new TextEntry(150, username), new Coord(0, 20));
-	    add(new Label("Password", textf), new Coord(0, 50));
-	    add(pass = new TextEntry(150, ""), new Coord(0, 70));
-	    pass.pw = true;
-	    add(savepass = new CheckBox("Remember me", true), new Coord(0, 100));
-	    savepass.a = save;
-	    if(user.text.equals(""))
-		setfocus(user);
-	    else
-		setfocus(pass);
-	    resize(new Coord(150, 150));
-	    LoginScreen.this.add(this, new Coord(345, 310));
-	}
+    	private Pwbox(String username, boolean save) {
+    	    setfocustab(true);
+    	    add(new Label("User name", textf), Coord.z);
+    	    add(user = new TextEntry(150, username), new Coord(0, 20));
+    	    add(new Label("Password", textf), new Coord(0, 50));
+    	    add(pass = new TextEntry(150, ""), new Coord(0, 70));
+    	    pass.pw = true;
+    	    // add(savepass = new CheckBox("Remember me", true), new Coord(0, 100));
+    	    // savepass.a = save;
+    	    if(user.text.equals(""))
+    		    setfocus(user);
+    	    else
+    		    setfocus(pass);
+    	    resize(new Coord(150, 150));
+    	    LoginScreen.this.add(this, new Coord(345, 310));
+    	}
 
-	public void wdgmsg(Widget sender, String name, Object... args) {
-	}
+    	public void wdgmsg(Widget sender, String name, Object... args) {
+    	}
 
-	Object[] data() {
-	    return(new Object[] {new AuthClient.NativeCred(user.text, pass.text), savepass.a});
-	}
+    	Object[] data() {
+        return(new Object[] {new AuthClient.NativeCred(user.text, pass.text), false/*savepass.a*/});
+    	}
 
-	boolean enter() {
-	    if(user.text.equals("")) {
-		setfocus(user);
-		return(false);
-	    } else if(pass.text.equals("")) {
-		setfocus(pass);
-		return(false);
-	    } else {
-		return(true);
-	    }
-	}
+    	boolean enter() {
+    	    if(user.text.equals("")) {
+        		setfocus(user);
+        		return(false);
+    	    } else if(pass.text.equals("")) {
+        		setfocus(pass);
+        		return(false);
+    	    } else {
+        		return(true);
+    	    }
+    	}
 
-	public boolean globtype(char k, KeyEvent ev) {
-	    if((k == 'r') && ((ev.getModifiersEx() & (KeyEvent.META_DOWN_MASK | KeyEvent.ALT_DOWN_MASK)) != 0)) {
-		savepass.set(!savepass.a);
-		return(true);
-	    }
-	    return(false);
-	}
+    	public boolean globtype(char k, KeyEvent ev) {
+    	    if((k == 'r') && ((ev.getModifiersEx() & (KeyEvent.META_DOWN_MASK | KeyEvent.ALT_DOWN_MASK)) != 0)) {
+        		//savepass.set(!savepass.a);
+        		return(true);
+    	    }
+    	    return(false);
+    	}
     }
 
     private class Tokenbox extends Login {
-	Text label;
-	Button btn;
-		
-	private Tokenbox(String username) {
-	    label = textfs.render("Identity is saved for " + username, java.awt.Color.WHITE);
-	    add(btn = new Button(100, "Forget me"), new Coord(75, 30));
-	    resize(new Coord(250, 100));
-	    LoginScreen.this.add(this, new Coord(295, 330));
-	}
-		
-	Object[] data() {
-	    return(new Object[0]);
-	}
-		
-	boolean enter() {
-	    return(true);
-	}
-		
-	public void wdgmsg(Widget sender, String name, Object... args) {
-	    if(sender == btn) {
-		LoginScreen.this.wdgmsg("forget");
-		return;
-	    }
-	    super.wdgmsg(sender, name, args);
-	}
-		
-	public void draw(GOut g) {
-	    g.image(label.tex(), new Coord((sz.x / 2) - (label.sz().x / 2), 0));
-	    super.draw(g);
-	}
-	
-	public boolean globtype(char k, KeyEvent ev) {
-	    if((k == 'f') && ((ev.getModifiersEx() & (KeyEvent.META_DOWN_MASK | KeyEvent.ALT_DOWN_MASK)) != 0)) {
-		LoginScreen.this.wdgmsg("forget");
-		return(true);
-	    }
-	    return(false);
-	}
+    	Text label;
+    	Button btn;
+
+    	private Tokenbox(String username) {
+    	    label = textfs.render("Identity is saved for " + username, java.awt.Color.WHITE);
+    	    add(btn = new Button(100, "Forget me"), new Coord(75, 30));
+    	    resize(new Coord(250, 100));
+    	    LoginScreen.this.add(this, new Coord(295, 330));
+    	}
+
+    	Object[] data() {
+    	    return(new Object[0]);
+    	}
+
+    	boolean enter() {
+    	    return(true);
+    	}
+
+    	public void wdgmsg(Widget sender, String name, Object... args) {
+    	    if(sender == btn) {
+    		LoginScreen.this.wdgmsg("forget");
+    		return;
+    	    }
+    	    super.wdgmsg(sender, name, args);
+    	}
+
+    	public void draw(GOut g) {
+    	    g.image(label.tex(), new Coord((sz.x / 2) - (label.sz().x / 2), 0));
+    	    super.draw(g);
+    	}
+
+    	public boolean globtype(char k, KeyEvent ev) {
+    	    if((k == 'f') && ((ev.getModifiersEx() & (KeyEvent.META_DOWN_MASK | KeyEvent.ALT_DOWN_MASK)) != 0)) {
+        		LoginScreen.this.wdgmsg("forget");
+        		return(true);
+    	    }
+    	    return(false);
+    	}
+    }
+
+    public class LoginList extends Listbox<LoginData> {
+        private final Tex xicon = Text.render("\u2716", Color.RED, special).tex();
+        private int hover = -1;
+        private final static int ITEM_HEIGHT = 20;
+        private Coord lastMouseDown = Coord.z;
+
+        public LoginList(int w, int h){
+            super(w, h, ITEM_HEIGHT);
+        }
+
+        @Override
+        protected void drawbg(GOut g) {
+            g.chcolor(0, 0, 0, 120);
+            g.rect(Coord.z, sz);
+            g.chcolor();
+        }
+
+        @Override
+        protected void drawsel(GOut g) {
+        }
+
+        @Override
+        protected LoginData listitem(int i) {
+            synchronized(Config.logins) {
+                return Config.logins.get(i);
+            }
+        }
+
+        @Override
+        protected int listitems() {
+            synchronized (Config.logins) {
+                return Config.logins.size();
+            }
+        }
+
+        @Override
+        public void mousemove(Coord c) {
+            setHoverItem(c);
+            super.mousemove(c);
+        }
+
+        @Override
+        public boolean mousewheel(Coord c, int amount) {
+            setHoverItem(c);
+            return super.mousewheel(c, amount);
+        }
+
+        private void setHoverItem(Coord c) {
+            if (c.x > 0 && c.x < sz.x && c.y > 0 && c.y < listitems() * ITEM_HEIGHT)
+                hover = c.y / ITEM_HEIGHT + sb.val;
+            else
+                hover = -1;
+        }
+
+        @Override
+        protected void drawitem(GOut g, LoginData item, int i) {
+            if (hover == i) {
+                g.chcolor(96, 96, 96, 255);
+                g.frect(Coord.z, g.br); //sz -> br
+                g.chcolor();
+            }
+            Tex tex = Text.render(item.name, Color.WHITE, textfs).tex();
+            int y = ITEM_HEIGHT / 2 - tex.sz().y / 2;
+            g.image(tex, new Coord(5, y));
+            g.image(xicon, new Coord(sz.x - 25, y));
+        }
+
+        @Override
+        public boolean mousedown(Coord c, int button) {
+            lastMouseDown = c;
+            return super.mousedown(c, button);
+        }
+
+        @Override
+        protected void itemclick(LoginData itm, int button) {
+            if (button == 1) {
+                if (lastMouseDown.x >= sz.x - 25 && lastMouseDown.x <= sz.x - 25 + 20) {
+                    synchronized (Config.logins) {
+                        Config.logins.remove(itm);
+                        Config.saveLogins();
+                    }
+                } else if (c.x < sz.x - 35) {
+                    parent.wdgmsg("forget");
+                    parent.wdgmsg("login", new Object[]{new AuthClient.NativeCred(itm.name, itm.pass), false});
+                }
+                super.itemclick(itm, button);
+            }
+        }
     }
 
     private void mklogin() {
@@ -158,9 +265,9 @@ public class LoginScreen extends Widget {
     private void error(String error) {
 	synchronized(ui) {
 	    if(this.error != null)
-		this.error = null;
+		    this.error = null;
 	    if(error != null)
-		this.error = textf.render(error, java.awt.Color.RED);
+		    this.error = textf.render(error, java.awt.Color.RED);
 	}
     }
 
@@ -184,28 +291,37 @@ public class LoginScreen extends Widget {
     }
 
     public void wdgmsg(Widget sender, String msg, Object... args) {
-	if(sender == btn) {
-	    if(cur.enter())
-		super.wdgmsg("login", cur.data());
-	    return;
-	} else if(sender == optbtn) {
-	    if(opts == null) {
-		opts = adda(new OptWnd(false) {
-			public void hide() {
-			    /* XXX */
-			    reqdestroy();
-			}
-		    }, sz.div(2), 0.5, 0.5);
-	    } else {
-		opts.reqdestroy();
-		opts = null;
-	    }
-	    return;
-	} else if(sender == opts) {
-	    opts.reqdestroy();
-	    opts = null;
-	}
-	super.wdgmsg(sender, msg, args);
+    	if(sender == btn) {
+    	    if(cur.enter())
+    		super.wdgmsg("login", cur.data());
+    	    return;
+    	} else if(sender == optbtn) {
+    	    if(opts == null) {
+    		opts = adda(new OptWnd(false) {
+    			public void hide() {
+    			    /* XXX */
+    			    reqdestroy();
+    			}
+    		    }, sz.div(2), 0.5, 0.5);
+    	    } else {
+    		opts.reqdestroy();
+    		opts = null;
+    	    }
+    	    return;
+    	} else if(sender == opts) {
+    	    opts.reqdestroy();
+    	    opts = null;
+    	} else if (sender == statusBtn) {
+            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+            if(desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                try {
+                  desktop.browse(new URI("http://www.havenandhearth.com/portal/"));
+                } catch (IOException | URISyntaxException e) {
+                  e.printStackTrace();
+                }
+              }
+        } else
+    	   super.wdgmsg(sender, msg, args);
     }
 
     public void cdestroy(Widget ch) {
@@ -235,28 +351,53 @@ public class LoginScreen extends Widget {
     }
 
     public void presize() {
-	c = parent.sz.div(2).sub(sz.div(2));
+	    c = parent.sz.div(2).sub(sz.div(2));
     }
 
     protected void added() {
-	presize();
-	parent.setfocus(this);
+    	presize();
+    	parent.setfocus(this);
     }
 
     public void draw(GOut g) {
-	super.draw(g);
-	if(error != null)
-	    g.image(error.tex(), new Coord(420 - (error.sz().x / 2), 450));
-	if(progress != null)
-	    g.image(progress.tex(), new Coord(420 - (progress.sz().x / 2), 350));
+    	super.draw(g);
+    	if(error != null)
+    	    g.image(error.tex(), new Coord(420 - (error.sz().x / 2), 450));
+    	if(progress != null)
+    	    g.image(progress.tex(), new Coord(420 - (progress.sz().x / 2), 350));
     }
 
     public boolean keydown(KeyEvent ev) {
-	if(ev.getKeyChar() == 10) {
-	    if((cur != null) && cur.enter())
-		wdgmsg("login", cur.data());
-	    return(true);
-	}
-	return(super.keydown(ev));
+    	if(ev.getKeyChar() == 10) {
+    	    if((cur != null) && cur.enter())
+    		wdgmsg("login", cur.data());
+    	    return(true);
+    	}
+    	return(super.keydown(ev));
+    }
+
+    private void StartUpdaterThread() {
+        statusUpdaterThread = new Thread(new Runnable() {
+            public void run() {
+				try {
+					URL url = new URL("http://www.havenandhearth.com/portal/index/status");
+					while(true) {
+						Scanner scan = new Scanner(url.openStream());
+						while(scan.hasNextLine()) {
+							String line = scan.nextLine();
+							if(line.contains("h2")) {
+								statusBtn.change(line.substring(line.indexOf("<h2>")+4, line.indexOf("</h2>")), Color.WHITE);
+							}
+						}
+						Thread.sleep(5000);
+					}
+				} catch(IOException e) {
+					e.printStackTrace();
+				} catch(InterruptedException e) {
+					// Ignore
+                }
+            }
+        });
+        statusUpdaterThread.start();
     }
 }

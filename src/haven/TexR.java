@@ -98,65 +98,65 @@ public class TexR extends Resource.Layer implements Resource.IDLayer<Integer> {
     }
 
     private class Real extends TexL {
-	private Real() {
-	    super(sz);
-	}
+    	private Real() {
+    	    super(sz);
+    	}
 
-	private BufferedImage rd(final byte[] data) {
-	    return(AccessController.doPrivileged(new PrivilegedAction<BufferedImage>() {
-		    /* This can crash if not privileged due to ImageIO
-		     * creating tempfiles without doing that
-		     * privileged itself. It can very much be argued
-		     * that this is a bug in ImageIO. */
-		    public BufferedImage run() {
-			try {
-			    return(ImageIO.read(new ByteArrayInputStream(data)));
-			} catch(IOException e) {
-			    throw(new RuntimeException("Invalid image data in " + getres().name, e));
-			}
-		    }
-		}));
-	}
+    	private BufferedImage rd(final byte[] data) {
+    	    return(AccessController.doPrivileged(new PrivilegedAction<BufferedImage>() {
+    		    /* This can crash if not privileged due to ImageIO
+    		     * creating tempfiles without doing that
+    		     * privileged itself. It can very much be argued
+    		     * that this is a bug in ImageIO. */
+    		    public BufferedImage run() {
+    			try {
+    			    return(ImageIO.read(new ByteArrayInputStream(data)));
+    			} catch(IOException e) {
+    			    throw(new RuntimeException("Invalid image data in " + getres().name, e));
+    			}
+    		    }
+    		}));
+    	}
 
-	public BufferedImage fill() {
-	    if(mask == null) {
-		return(rd(TexR.this.img));
-	    } else {
-		BufferedImage col = rd(TexR.this.img);
-		BufferedImage mask = rd(TexR.this.mask);
-		Coord sz = Utils.imgsz(mask);
-		BufferedImage ret = TexI.mkbuf(sz);
-		Graphics g = ret.createGraphics();
-		g.drawImage(col, 0, 0, sz.x, sz.y, null);
-		Raster mr = mask.getRaster();
-		if(mr.getNumBands() != 1)
-		    throw(new RuntimeException("Invalid separated alpha data in " + getres().name));
-		WritableRaster rr = ret.getRaster();
-		for(int y = 0; y < sz.y; y++) {
-		    for(int x = 0; x < sz.x; x++) {
-			rr.setSample(x, y, 3, mr.getSample(x, y, 0));
-		    }
-		}
-		g.dispose();
-		return(ret);
-	    }
-	}
+    	public BufferedImage fill() {
+    	    if(mask == null) {
+    		return(rd(TexR.this.img));
+    	    } else {
+    		BufferedImage col = rd(TexR.this.img);
+    		BufferedImage mask = rd(TexR.this.mask);
+    		Coord sz = Utils.imgsz(mask);
+    		BufferedImage ret = TexI.mkbuf(sz);
+    		Graphics g = ret.createGraphics();
+    		g.drawImage(col, 0, 0, sz.x, sz.y, null);
+    		Raster mr = mask.getRaster();
+    		if(mr.getNumBands() != 1)
+    		    throw(new RuntimeException("Invalid separated alpha data in " + getres().name));
+    		WritableRaster rr = ret.getRaster();
+    		for(int y = 0; y < sz.y; y++) {
+    		    for(int x = 0; x < sz.x; x++) {
+    			rr.setSample(x, y, 3, mr.getSample(x, y, 0));
+    		    }
+    		}
+    		g.dispose();
+    		return(ret);
+    	    }
+    	}
 
-	public String toString() {
-	    return("#<texr " + getres().name + "(" + id + ")>");
-	}
+    	public String toString() {
+    	    return("#<texr " + getres().name + "(" + id + ")>");
+    	}
 
-	public String loadname() {
-	    return("texture in " + getres().name);
-	}
+    	public String loadname() {
+    	    return("texture in " + getres().name);
+    	}
     }
 
     public TexL tex() {
-	return(tex);
+	       return(tex);
     }
 
     public Integer layerid() {
-	return(id);
+	    return(id);
     }
 
     public void init() {}

@@ -29,6 +29,8 @@ package haven;
 import java.util.*;
 import java.util.function.*;
 import haven.render.*;
+// import integrations.mapv4.MappingClient;
+// import integrations.map.Navigation;
 
 public class Gob implements RenderTree.Node, Sprite.Owner, Skeleton.ModOwner {
     public Coord2d rc;
@@ -44,78 +46,116 @@ public class Gob implements RenderTree.Node, Sprite.Owner, Skeleton.ModOwner {
     private final Collection<ResAttr.Cell<?>> rdata = new LinkedList<ResAttr.Cell<?>>();
     private final Collection<ResAttr.Load> lrdata = new LinkedList<ResAttr.Load>();
 
+    public int cropstgmaxval = 0;
+    //private Overlay gobpath = null;
+    //private Overlay bowvector = null;
+    // private static final Material.Colors dframeEmpty = new Material.Colors(new Color(87, 204, 73, 255));
+    // private static final Material.Colors dframeDone = new Material.Colors(new Color(209, 42, 42, 255));
+    // private static final Material.Colors potDOne = new Material.Colors(new Color(0, 0, 0, 255));
+    // //slush additions
+    // private static final Material.Colors tannBark = new Material.Colors(new Color(0, 0, 255, 175));
+    // private static final Material.Colors cupboardfull = new Material.Colors(new Color(255, 0, 0, 175));
+    // private static final Material.Colors cupboardempty = new Material.Colors(new Color(0, 255, 0, 175));
+    //private static final Map<Gob, Gob.Overlay> playerhighlight = new HashMap<Gob, Gob.Overlay>();
+    //here
+    //private static final Gob.Overlay animalradius = new Gob.Overlay(new BPRadSprite(100.0F, -10.0F, BPRadSprite.smatDanger));
+    public Boolean knocked = null;  // knocked will be null if pose update request hasn't been received yet
+    public Type type = null;
+
+    public enum Type {
+        OTHER(0), DFRAME(1), TREE(2), BUSH(3), BOULDER(4), PLAYER(5), SIEGE_MACHINE(6),
+        MAMMOTH(7), BAT(8), OLDTRUNK(9), GARDENPOT(10), MUSSEL(11), LOC_RESOURCE(12), FU_YE_CURIO(13),
+        SEAL(14), EAGLE(15),
+        PLANT(16), MULTISTAGE_PLANT(17), TURNIP(18),
+        MOB(32), BEAR(34), LYNX(35), TROLL(38), WALRUS(39), WOLF(40), WATERCREAT(41),
+        WOODEN_SUPPORT(64), STONE_SUPPORT(65), METAL_SUPPORT(66), TROUGH(67), BEEHIVE(68),MINEHOLE (69), TOWER (70),
+        TAMED_HORSE(128), HUNT(129), TANNING(130), CUPBOARD(131), BORDERCAIRN(132), WELLSPRING(133), STOAT(134), WALL(602);
+
+        public final int value;
+
+        Type(int value) {
+            this.value = value;
+        }
+
+        boolean has(Type g) {
+            if (g == null)
+                return false;
+            return (value & g.value) != 0;
+        }
+    }
+
     public static class Overlay implements RenderTree.Node {
-	public final int id;
-	public final Gob gob;
-	public final Indir<Resource> res;
-	public MessageBuf sdt;
-	public Sprite spr;
-	public boolean delign = false;
-	private Collection<RenderTree.Slot> slots = null;
-	private boolean added = false;
+    	public final int id;
+    	public final Gob gob;
+    	public final Indir<Resource> res;
+    	public MessageBuf sdt;
+    	public Sprite spr;
+    	public boolean delign = false;
+    	private Collection<RenderTree.Slot> slots = null;
+    	private boolean added = false;
 
-	public Overlay(Gob gob, int id, Indir<Resource> res, Message sdt) {
-	    this.gob = gob;
-	    this.id = id;
-	    this.res = res;
-	    this.sdt = new MessageBuf(sdt);
-	    this.spr = null;
-	}
+    	public Overlay(Gob gob, int id, Indir<Resource> res, Message sdt) {
+    	    this.gob = gob;
+    	    this.id = id;
+    	    this.res = res;
+    	    this.sdt = new MessageBuf(sdt);
+    	    this.spr = null;
+    	}
 
-	public Overlay(Gob gob, Sprite spr) {
-	    this.gob = gob;
-	    this.id = -1;
-	    this.res = null;
-	    this.sdt = null;
-	    this.spr = spr;
-	}
+    	public Overlay(Gob gob, Sprite spr) {
+    	    this.gob = gob;
+    	    this.id = -1;
+    	    this.res = null;
+    	    this.sdt = null;
+    	    this.spr = spr;
+    	}
 
-	private void init() {
-	    if(spr == null) {
-		spr = Sprite.create(gob, res.get(), sdt);
-		if(added && (spr instanceof SetupMod))
-		    gob.setupmods.add((SetupMod)spr);
-	    }
-	    if(slots == null)
-		RUtils.multiadd(gob.slots, this);
-	}
+    	private void init() {
+    	    if(spr == null) {
+    		spr = Sprite.create(gob, res.get(), sdt);
+    		if(added && (spr instanceof SetupMod))
+    		    gob.setupmods.add((SetupMod)spr);
+    	    }
+    	    if(slots == null)
+    		RUtils.multiadd(gob.slots, this);
+    	}
 
-	private void add0() {
-	    if(added)
-		throw(new IllegalStateException());
-	    if(spr instanceof SetupMod)
-		gob.setupmods.add((SetupMod)spr);
-	    added = true;
-	}
+    	private void add0() {
+    	    if(added)
+    		throw(new IllegalStateException());
+    	    if(spr instanceof SetupMod)
+    		gob.setupmods.add((SetupMod)spr);
+    	    added = true;
+    	}
 
-	private void remove0() {
-	    if(!added)
-		throw(new IllegalStateException());
-	    if(slots != null) {
-		RUtils.multirem(new ArrayList<>(slots));
-		slots = null;
-	    }
-	    if(spr instanceof SetupMod)
-		gob.setupmods.remove(spr);
-	    added = false;
-	}
+    	private void remove0() {
+    	    if(!added)
+    		throw(new IllegalStateException());
+    	    if(slots != null) {
+    		RUtils.multirem(new ArrayList<>(slots));
+    		slots = null;
+    	    }
+    	    if(spr instanceof SetupMod)
+    		gob.setupmods.remove(spr);
+    	    added = false;
+    	}
 
-	public void remove() {
-	    remove0();
-	    gob.ols.remove(this);
-	}
+    	public void remove() {
+    	    remove0();
+    	    gob.ols.remove(this);
+    	}
 
-	public void added(RenderTree.Slot slot) {
-	    slot.add(spr);
-	    if(slots == null)
-		slots = new ArrayList<>(1);
-	    slots.add(slot);
-	}
+    	public void added(RenderTree.Slot slot) {
+    	    slot.add(spr);
+    	    if(slots == null)
+    		slots = new ArrayList<>(1);
+    	    slots.add(slot);
+    	}
 
-	public void removed(RenderTree.Slot slot) {
-	    if(slots != null)
-		slots.remove(slot);
-	}
+    	public void removed(RenderTree.Slot slot) {
+    	    if(slots != null)
+    		slots.remove(slot);
+    	}
     }
 
     public static interface SetupMod {
