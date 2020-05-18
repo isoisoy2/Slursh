@@ -76,6 +76,10 @@ public class Config {
     public static String font = Utils.getpref("font", "SansSerif");
     public static int fontadd = Utils.getprefi("fontadd", 0);
 
+    public static boolean enableorthofullzoom = Utils.getprefb("enableorthofullzoom", false);
+
+    public static boolean resinfo = Utils.getprefb("resinfo", false);
+
 
     static {
     	String p;

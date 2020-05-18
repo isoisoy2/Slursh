@@ -61,138 +61,138 @@ public class OCache implements Iterable<Gob> {
     private final Collection<ChangeCallback> cbs = new WeakList<ChangeCallback>();
 
     public interface ChangeCallback {
-	public void added(Gob ob);
-	public void removed(Gob ob);
+    	public void added(Gob ob);
+    	public void removed(Gob ob);
     }
 
     public OCache(Glob glob) {
-	this.glob = glob;
+	       this.glob = glob;
     }
 
     public synchronized void callback(ChangeCallback cb) {
-	cbs.add(cb);
+	       cbs.add(cb);
     }
 
     public synchronized void uncallback(ChangeCallback cb) {
-	cbs.remove(cb);
+	       cbs.remove(cb);
     }
 
     public void add(Gob ob) {
-	synchronized(ob) {
-	    Collection<ChangeCallback> cbs;
-	    synchronized(this) {
-		cbs = new ArrayList<>(this.cbs);
-		objs.put(ob.id, ob);
-	    }
-	    for(ChangeCallback cb : cbs)
-		cb.added(ob);
-	}
+    	synchronized(ob) {
+    	    Collection<ChangeCallback> cbs;
+    	    synchronized(this) {
+    		cbs = new ArrayList<>(this.cbs);
+    		objs.put(ob.id, ob);
+    	    }
+    	    for(ChangeCallback cb : cbs)
+    		cb.added(ob);
+    	}
     }
 
     public void remove(long id) {
-	Gob old;
-	Collection<ChangeCallback> cbs;
-	synchronized(this) {
-	    old = objs.remove(id);
-	    cbs = new ArrayList<>(this.cbs);
-	}
-	if(old != null) {
-	    synchronized(old) {
-		for(ChangeCallback cb : cbs)
-		    cb.removed(old);
-	    }
-	}
+    	Gob old;
+    	Collection<ChangeCallback> cbs;
+    	synchronized(this) {
+    	    old = objs.remove(id);
+    	    cbs = new ArrayList<>(this.cbs);
+    	}
+    	if(old != null) {
+    	    synchronized(old) {
+    		for(ChangeCallback cb : cbs)
+    		    cb.removed(old);
+    	    }
+    	}
     }
 
     public void ctick(double dt) {
-	ArrayList<Gob> copy = new ArrayList<Gob>();
-	synchronized(this) {
-	    for(Gob g : this)
-		copy.add(g);
-	}
-	Consumer<Gob> task = g -> {
-	    synchronized(g) {
-		g.ctick(dt);
-	    }
-	};
-	if(!Config.par)
-	    copy.forEach(task);
-	else
-	    copy.parallelStream().forEach(task);
+    	ArrayList<Gob> copy = new ArrayList<Gob>();
+    	synchronized(this) {
+    	    for(Gob g : this)
+    		copy.add(g);
+    	}
+    	Consumer<Gob> task = g -> {
+    	    synchronized(g) {
+    		g.ctick(dt);
+    	    }
+    	};
+    	if(!Config.par)
+    	    copy.forEach(task);
+    	else
+    	    copy.parallelStream().forEach(task);
     }
 
     public void gtick(Render g) {
-	ArrayList<Gob> copy = new ArrayList<Gob>();
-	synchronized(this) {
-	    for(Gob ob : this)
-		copy.add(ob);
-	}
-	if(!Config.par) {
-	    copy.forEach(ob -> {
-		    synchronized(ob) {
-			ob.gtick(g);
-		    }
-		});
-	} else {
-	    Collection<Render> subs = new ArrayList<>();
-	    ThreadLocal<Render> subv = new ThreadLocal<>();
-	    copy.parallelStream().forEach(ob -> {
-		    Render sub = subv.get();
-		    if(sub == null) {
-			sub = g.env().render();
-			synchronized(subs) {
-			    subs.add(sub);
-			}
-			subv.set(sub);
-		    }
-		    synchronized(ob) {
-			ob.gtick(sub);
-		    }
-		});
-	    for(Render sub : subs)
-		g.submit(sub);
-	}
+    	ArrayList<Gob> copy = new ArrayList<Gob>();
+    	synchronized(this) {
+    	    for(Gob ob : this)
+    		copy.add(ob);
+    	}
+    	if(!Config.par) {
+    	    copy.forEach(ob -> {
+    		    synchronized(ob) {
+    			ob.gtick(g);
+    		    }
+    		});
+    	} else {
+    	    Collection<Render> subs = new ArrayList<>();
+    	    ThreadLocal<Render> subv = new ThreadLocal<>();
+    	    copy.parallelStream().forEach(ob -> {
+    		    Render sub = subv.get();
+    		    if(sub == null) {
+    			sub = g.env().render();
+    			synchronized(subs) {
+    			    subs.add(sub);
+    			}
+    			subv.set(sub);
+    		    }
+    		    synchronized(ob) {
+    			ob.gtick(sub);
+    		    }
+    		});
+    	    for(Render sub : subs)
+    		g.submit(sub);
+    	}
     }
 
     @SuppressWarnings("unchecked")
     public Iterator<Gob> iterator() {
-	Collection<Iterator<Gob>> is = new LinkedList<Iterator<Gob>>();
-	for(Collection<Gob> gc : local)
-	    is.add(gc.iterator());
-	return(new I2<Gob>(objs.values().iterator(), new I2<Gob>(is)));
+    	Collection<Iterator<Gob>> is = new LinkedList<Iterator<Gob>>();
+    	for(Collection<Gob> gc : local)
+    	    is.add(gc.iterator());
+    	return(new I2<Gob>(objs.values().iterator(), new I2<Gob>(is)));
     }
 
     public synchronized void ladd(Collection<Gob> gob) {
-	local.add(gob);
-	/* XXXRENDER
-	for(Gob g : gob) {
-	    for(ChangeCallback cb : cbs)
-		cb.changed(g);
-	}
-	*/
+    	local.add(gob);
+    	/* XXXRENDER
+    	for(Gob g : gob) {
+    	    for(ChangeCallback cb : cbs)
+    		cb.changed(g);
+    	}
+    	*/
     }
 
     public synchronized void lrem(Collection<Gob> gob) {
-	local.remove(gob);
-	/* XXXRENDER
-	for(Gob g : gob) {
-	    for(ChangeCallback cb : cbs)
-		cb.removed(g);
-	}
-	*/
+    	local.remove(gob);
+    	/* XXXRENDER
+    	for(Gob g : gob) {
+    	    for(ChangeCallback cb : cbs)
+    		cb.removed(g);
+    	}
+    	*/
     }
 
     public synchronized Gob getgob(long id) {
-	return(objs.get(id));
+	    return(objs.get(id));
     }
 
     private java.util.concurrent.atomic.AtomicLong nextvirt = new java.util.concurrent.atomic.AtomicLong(-1);
     public class Virtual extends Gob {
-	public Virtual(Coord2d c, double a) {
-	    super(OCache.this.glob, c, nextvirt.getAndDecrement());
-	    this.a = a;
-	    virtual = true;
-	}
+    	public Virtual(Coord2d c, double a) {
+    	    super(OCache.this.glob, c, nextvirt.getAndDecrement());
+    	    this.a = a;
+    	    virtual = true;
+    	}
     }
 
     private Indir<Resource> getres(int id) {
@@ -204,190 +204,195 @@ public class OCache implements Iterable<Gob> {
     }
 
     public static void move(Gob g, Coord2d c, double a) {
-	g.move(c, a);
+	       g.move(c, a);
     }
     public Delta move(Message msg) {
-	Coord2d c = msg.coord().mul(posres);
-	int ia = msg.uint16();
-	return(gob -> move(gob, c, (ia / 65536.0) * Math.PI * 2));
+    	Coord2d c = msg.coord().mul(posres);
+    	int ia = msg.uint16();
+    	return(gob -> move(gob, c, (ia / 65536.0) * Math.PI * 2));
     }
 
     public static void cres(Gob g, Indir<Resource> res, Message dat) {
-	MessageBuf sdt = new MessageBuf(dat);
-	Drawable dr = g.getattr(Drawable.class);
-	ResDrawable d = (dr instanceof ResDrawable)?(ResDrawable)dr:null;
-	if((d != null) && (d.res == res) && !d.sdt.equals(sdt) && (d.spr != null) && (d.spr instanceof Sprite.CUpd)) {
-	    ((Sprite.CUpd)d.spr).update(sdt);
-	    d.sdt = sdt;
-	} else if((d == null) || (d.res != res) || !d.sdt.equals(sdt)) {
-	    g.setattr(new ResDrawable(g, res, sdt));
-	}
+    	MessageBuf sdt = new MessageBuf(dat);
+    	Drawable dr = g.getattr(Drawable.class);
+    	ResDrawable d = (dr instanceof ResDrawable)?(ResDrawable)dr:null;
+    	if((d != null) && (d.res == res) && !d.sdt.equals(sdt) && (d.spr != null) && (d.spr instanceof Sprite.CUpd)) {
+    	    ((Sprite.CUpd)d.spr).update(sdt);
+    	    d.sdt = sdt;
+    	} else if((d == null) || (d.res != res) || !d.sdt.equals(sdt)) {
+    	    g.setattr(new ResDrawable(g, res, sdt));
+    	}
     }
+
     public Delta cres(Message msg) {
-	int resid = msg.uint16();
-	Message sdt = Message.nil;
-	if((resid & 0x8000) != 0) {
-	    resid &= ~0x8000;
-	    sdt = new MessageBuf(msg.bytes(msg.uint8()));
-	}
-	Indir<Resource> cres = getres(resid);
-	Message csdt = sdt;
-	return(gob -> cres(gob, cres, csdt));
+    	int resid = msg.uint16();
+    	Message sdt = Message.nil;
+    	if((resid & 0x8000) != 0) {
+    	    resid &= ~0x8000;
+    	    sdt = new MessageBuf(msg.bytes(msg.uint8()));
+    	}
+    	Indir<Resource> cres = getres(resid);
+    	Message csdt = sdt;
+    	return(gob -> cres(gob, cres, csdt));
     }
 
     public static void linbeg(Gob g, Coord2d s, Coord2d v) {
-	LinMove lm = g.getattr(LinMove.class);
-	if((lm == null) || !lm.s.equals(s) || !lm.v.equals(v)) {
-	    g.setattr(new LinMove(g, s, v));
-	}
+    	LinMove lm = g.getattr(LinMove.class);
+    	if((lm == null) || !lm.s.equals(s) || !lm.v.equals(v)) {
+    	    g.setattr(new LinMove(g, s, v));
+    	}
     }
+
     public Delta linbeg(Message msg) {
-	Coord2d s = msg.coord().mul(posres);
-	Coord2d v = msg.coord().mul(posres);
-	return(gob -> linbeg(gob, s, v));
+    	Coord2d s = msg.coord().mul(posres);
+    	Coord2d v = msg.coord().mul(posres);
+    	return(gob -> linbeg(gob, s, v));
     }
 
     public static void linstep(Gob g, double t, double e) {
-	Moving m = g.getattr(Moving.class);
-	if((m == null) || !(m instanceof LinMove))
-	    return;
-	LinMove lm = (LinMove)m;
-	if(t < 0)
-	    g.delattr(Moving.class);
-	else
-	    lm.sett(t);
-	if(e >= 0)
-	    lm.e = e;
-	else
-	    lm.e = Double.NaN;
+    	Moving m = g.getattr(Moving.class);
+    	if((m == null) || !(m instanceof LinMove))
+    	    return;
+    	LinMove lm = (LinMove)m;
+    	if(t < 0)
+    	    g.delattr(Moving.class);
+    	else
+    	    lm.sett(t);
+    	if(e >= 0)
+    	    lm.e = e;
+    	else
+    	    lm.e = Double.NaN;
     }
+
     public Delta linstep(Message msg) {
-	double t, e;
-	int w = msg.int32();
-	if(w == -1) {
-	    t = e = -1;
-	} else if((w & 0x80000000) == 0) {
-	    t = w * 0x1p-10;
-	    e = -1;
-	} else {
-	    t = (w & ~0x80000000) * 0x1p-10;
-	    w = msg.int32();
-	    e = (w < 0)?-1:(w * 0x1p-10);
-	}
-	return(gob -> linstep(gob, t, e));
+    	double t, e;
+    	int w = msg.int32();
+    	if(w == -1) {
+    	    t = e = -1;
+    	} else if((w & 0x80000000) == 0) {
+    	    t = w * 0x1p-10;
+    	    e = -1;
+    	} else {
+    	    t = (w & ~0x80000000) * 0x1p-10;
+    	    w = msg.int32();
+    	    e = (w < 0)?-1:(w * 0x1p-10);
+    	}
+    	return(gob -> linstep(gob, t, e));
     }
 
     public static void speak(Gob g, float zo, String text) {
-	if(text.length() < 1) {
-	    g.delattr(Speaking.class);
-	} else {
-	    Speaking m = g.getattr(Speaking.class);
-	    if(m == null) {
-		g.setattr(new Speaking(g, zo, text));
-	    } else {
-		m.zo = zo;
-		m.update(text);
-	    }
-	}
+    	if(text.length() < 1) {
+    	    g.delattr(Speaking.class);
+    	} else {
+    	    Speaking m = g.getattr(Speaking.class);
+    	    if(m == null) {
+    		g.setattr(new Speaking(g, zo, text));
+    	    } else {
+    		m.zo = zo;
+    		m.update(text);
+    	    }
+    	}
     }
+
     public Delta speak(Message msg) {
-	float zo = msg.int16() / 100.0f;
-	String text = msg.string();
-	return(gob -> speak(gob, zo, text));
+    	float zo = msg.int16() / 100.0f;
+    	String text = msg.string();
+    	return(gob -> speak(gob, zo, text));
     }
 
     public static void composite(Gob g, Indir<Resource> base) {
-	Drawable dr = g.getattr(Drawable.class);
-	Composite cmp = (dr instanceof Composite)?(Composite)dr:null;
-	if((cmp == null) || !cmp.base.equals(base)) {
-	    cmp = new Composite(g, base);
-	    g.setattr(cmp);
-	}
+    	Drawable dr = g.getattr(Drawable.class);
+    	Composite cmp = (dr instanceof Composite)?(Composite)dr:null;
+    	if((cmp == null) || !cmp.base.equals(base)) {
+    	    cmp = new Composite(g, base);
+    	    g.setattr(cmp);
+    	}
     }
+
     public Delta composite(Message msg) {
-	Indir<Resource> base = getres(msg.uint16());
-	return(gob -> composite(gob, base));
+    	Indir<Resource> base = getres(msg.uint16());
+    	return(gob -> composite(gob, base));
     }
 
     public static void cmppose(Gob g, int pseq, List<ResData> poses, List<ResData> tposes, boolean interp, float ttime) {
-	Composite cmp = (Composite)g.getattr(Drawable.class);
-	if(cmp.pseq != pseq) {
-	    cmp.pseq = pseq;
-	    if(poses != null)
-		cmp.chposes(poses, interp);
-	    if(tposes != null)
-		cmp.tposes(tposes, WrapMode.ONCE, ttime);
-	}
+    	Composite cmp = (Composite)g.getattr(Drawable.class);
+    	if(cmp.pseq != pseq) {
+    	    cmp.pseq = pseq;
+    	    if(poses != null)
+    		cmp.chposes(poses, interp);
+    	    if(tposes != null)
+    		cmp.tposes(tposes, WrapMode.ONCE, ttime);
+    	}
     }
     public Delta cmppose(Message msg) {
-	List<ResData> poses = null, tposes = null;
-	int pfl = msg.uint8();
-	int seq = msg.uint8();
-	boolean interp = (pfl & 1) != 0;
-	if((pfl & 2) != 0) {
-	    poses = new LinkedList<ResData>();
-	    while(true) {
-		int resid = msg.uint16();
-		if(resid == 65535)
-		    break;
-		Message sdt = Message.nil;
-		if((resid & 0x8000) != 0) {
-		    resid &= ~0x8000;
-		    sdt = new MessageBuf(msg.bytes(msg.uint8()));
-		}
-		poses.add(new ResData(getres(resid), sdt));
-	    }
-	}
-	float ttime = 0;
-	if((pfl & 4) != 0) {
-	    tposes = new LinkedList<ResData>();
-	    while(true) {
-		int resid = msg.uint16();
-		if(resid == 65535)
-		    break;
-		Message sdt = Message.nil;
-		if((resid & 0x8000) != 0) {
-		    resid &= ~0x8000;
-		    sdt = new MessageBuf(msg.bytes(msg.uint8()));
-		}
-		tposes.add(new ResData(getres(resid), sdt));
-	    }
-	    ttime = (msg.uint8() / 10.0f);
-	}
-	List<ResData> cposes = poses, ctposes = tposes;
-	float cttime = ttime;
-	return(gob -> cmppose(gob, seq, cposes, ctposes, interp, cttime));
+    	List<ResData> poses = null, tposes = null;
+    	int pfl = msg.uint8();
+    	int seq = msg.uint8();
+    	boolean interp = (pfl & 1) != 0;
+    	if((pfl & 2) != 0) {
+    	    poses = new LinkedList<ResData>();
+    	    while(true) {
+    		int resid = msg.uint16();
+    		if(resid == 65535)
+    		    break;
+    		Message sdt = Message.nil;
+    		if((resid & 0x8000) != 0) {
+    		    resid &= ~0x8000;
+    		    sdt = new MessageBuf(msg.bytes(msg.uint8()));
+    		}
+    		poses.add(new ResData(getres(resid), sdt));
+    	    }
+    	}
+    	float ttime = 0;
+    	if((pfl & 4) != 0) {
+    	    tposes = new LinkedList<ResData>();
+    	    while(true) {
+    		int resid = msg.uint16();
+    		if(resid == 65535)
+    		    break;
+    		Message sdt = Message.nil;
+    		if((resid & 0x8000) != 0) {
+    		    resid &= ~0x8000;
+    		    sdt = new MessageBuf(msg.bytes(msg.uint8()));
+    		}
+    		tposes.add(new ResData(getres(resid), sdt));
+    	    }
+    	    ttime = (msg.uint8() / 10.0f);
+    	}
+    	List<ResData> cposes = poses, ctposes = tposes;
+    	float cttime = ttime;
+    	return(gob -> cmppose(gob, seq, cposes, ctposes, interp, cttime));
     }
 
     public static void cmpmod(Gob g, List<Composited.MD> mod) {
-	Composite cmp = (Composite)g.getattr(Drawable.class);
-	cmp.chmod(mod);
+    	Composite cmp = (Composite)g.getattr(Drawable.class);
+    	cmp.chmod(mod);
     }
     public Delta cmpmod(Message msg) {
-	List<Composited.MD> mod = new LinkedList<Composited.MD>();
-	int mseq = 0;
-	while(true) {
-	    int modid = msg.uint16();
-	    if(modid == 65535)
-		break;
-	    Indir<Resource> modr = getres(modid);
-	    List<ResData> tex = new LinkedList<ResData>();
-	    while(true) {
-		int resid = msg.uint16();
-		if(resid == 65535)
-		    break;
-		Message sdt = Message.nil;
-		if((resid & 0x8000) != 0) {
-		    resid &= ~0x8000;
-		    sdt = new MessageBuf(msg.bytes(msg.uint8()));
-		}
-		tex.add(new ResData(getres(resid), sdt));
-	    }
-	    Composited.MD md = new Composited.MD(modr, tex);
-	    md.id = mseq++;
-	    mod.add(md);
-	}
-	return(gob -> cmpmod(gob, mod));
+    	List<Composited.MD> mod = new LinkedList<Composited.MD>();
+    	int mseq = 0;
+    	while(true) {
+    	    int modid = msg.uint16();
+    	    if(modid == 65535)
+    		break;
+    	    Indir<Resource> modr = getres(modid);
+    	    List<ResData> tex = new LinkedList<ResData>();
+    	    while(true) {
+    		int resid = msg.uint16();
+    		if(resid == 65535)
+    		    break;
+    		Message sdt = Message.nil;
+    		if((resid & 0x8000) != 0) {
+    		    resid &= ~0x8000;
+    		    sdt = new MessageBuf(msg.bytes(msg.uint8()));
+    		}
+    		tex.add(new ResData(getres(resid), sdt));
+    	    }
+    	    Composited.MD md = new Composited.MD(modr, tex);
+    	    md.id = mseq++;
+    	    mod.add(md);
+    	}
+    	return(gob -> cmpmod(gob, mod));
     }
 
     public static void cmpequ(Gob g, List<Composited.ED> equ) {
