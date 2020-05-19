@@ -1157,71 +1157,135 @@ public class CharWnd extends Window {
 	    private Tex rtitle = null;
 	    private Tex glow, glowon;
 	    private double glowt = -1;
+        private UI.Grab dm = null;
+		private Coord doff;
+		private boolean moved = false;
+		private long pressed = 0;
+
 
 	    public interface QVInfo {
-		public String title();
-		public Condition[] conds();
-		public int done();
+    		public String title();
+    		public Condition[] conds();
+    		public int done();
 	    }
 
+        private void moveInScreen() {
+			if(this.parent == null)
+				return;
+			if(this.c.x < 0) {
+				this.c.x = 0;
+			} else if(this.c.x + this.sz.x > this.parent.sz.x) {
+				this.c.x = (int) (this.parent.sz.x - this.sz.x);
+			}
+			if(this.c.y < 0) {
+				this.c.y = 0;
+			} else if(this.c.y + this.sz.y > this.parent.sz.y) {
+				this.c.y = (int) (this.parent.sz.y - this.sz.y);
+			}
+		}
+
 	    public QView(QVInfo info) {
-		this.info = info;
+		    this.info = info;
+            this.c = Utils.getprefc("questview" + "_c", c);
+			moveInScreen();
+		}
+		public void move(Coord c) {
+			this.c = c;
+
 	    }
 
 	    private void resize() {
-		Coord sz = new Coord(0, 0);
-		if(rtitle != null) {
-		    sz.y += rtitle.sz().y + 5;
-		    sz.x = Math.max(sz.x, rtitle.sz().x);
-		}
-		for(Tex c : rcond) {
-		    sz.y += c.sz().y;
-		    sz.x = Math.max(sz.x, c.sz().x);
-		}
-		sz.x += 3;
-		resize(sz);
+    		Coord sz = new Coord(0, 0);
+    		if(rtitle != null) {
+    		    sz.y += rtitle.sz().y + 5;
+    		    sz.x = Math.max(sz.x, rtitle.sz().x);
+    		}
+    		for(Tex c : rcond) {
+    		    sz.y += c.sz().y;
+    		    sz.x = Math.max(sz.x, c.sz().x);
+    		}
+    		sz.x += 3;
+    		resize(sz);
 	    }
 
 	    public void draw(GOut g) {
-		int y = 0;
-		if(rtitle != null) {
-		    if(rootxlate(ui.mc).isect(Coord.z, rtitle.sz()))
-			g.chcolor(192, 192, 255, 255);
-		    else if(info.done() == QST_DISABLED)
-			g.chcolor(255, 128, 0, 255);
-		    g.image(rtitle, new Coord(3, y));
-		    g.chcolor();
-		    y += rtitle.sz().y + 5;
-		}
-		for(Tex c : rcond) {
-		    g.image(c, new Coord(3, y));
-		    if(c == glowon) {
-			double a = (1.0 - Math.pow(Math.cos(glowt * 2 * Math.PI), 2));
-			g.chcolor(255, 255, 255, (int)(128 * a));
-			g.image(glow, new Coord(0, y - 3));
-			g.chcolor();
-		    }
-		    y += c.sz().y;
-		}
+    		int y = 0;
+    		if(rtitle != null) {
+    		    if(rootxlate(ui.mc).isect(Coord.z, rtitle.sz()))
+    			g.chcolor(192, 192, 255, 255);
+    		    else if(info.done() == QST_DISABLED)
+    			g.chcolor(255, 128, 0, 255);
+    		    g.image(rtitle, new Coord(3, y));
+    		    g.chcolor();
+    		    y += rtitle.sz().y + 5;
+    		}
+    		for(Tex c : rcond) {
+    		    g.image(c, new Coord(3, y));
+    		    if(c == glowon) {
+    			double a = (1.0 - Math.pow(Math.cos(glowt * 2 * Math.PI), 2));
+    			g.chcolor(255, 255, 255, (int)(128 * a));
+    			g.image(glow, new Coord(0, y - 3));
+    			g.chcolor();
+    		    }
+    		    y += c.sz().y;
+    		}
 	    }
 
+        public void mousemove(Coord c) {
+            if(dm != null && System.currentTimeMillis() - pressed > 100) {
+                this.c = this.c.add(c.add(doff.inv()));
+                moveInScreen();
+                this.moved = true;
+            } else {
+                super.mousemove(c);
+            }
+        }
+
 	    public boolean mousedown(Coord c, int btn) {
-		if((rtitle != null) && c.isect(Coord.z, rtitle.sz())) {
-		    CharWnd cw = getparent(GameUI.class).chrwdg;
-		    cw.show();
-		    cw.raise();
-		    cw.parent.setfocus(cw);
-		    cw.questtab.showtab();
-		    return(true);
-		}
-		return(super.mousedown(c, btn));
+            this.moved = false;
+    		if((rtitle != null) && c.isect(Coord.z, rtitle.sz())) {
+    		    // CharWnd cw = getparent(GameUI.class).chrwdg;
+    		    // cw.show();
+    		    // cw.raise();
+    		    // cw.parent.setfocus(cw);
+    		    // cw.questtab.showtab();
+    		    // return(true);
+                if(btn == 1) {
+						dm = ui.grabmouse(this);
+						doff = c;
+						pressed = System.currentTimeMillis();
+				}
+				return (true);
+
+    		}
+    		return(super.mousedown(c, btn));
 	    }
+        public boolean mouseup(Coord c, int btn) {
+				if(!moved && (rtitle != null) && c.isect(Coord.z, rtitle.sz())) {
+					CharWnd cw = getparent(GameUI.class).chrwdg;
+					cw.show();
+					cw.raise();
+					cw.parent.setfocus(cw);
+					cw.questtab.showtab();
+				}
+				this.moved = false;
+				if(dm != null) {
+					dm.remove();
+					dm = null;
+					moveInScreen();
+					Utils.setprefc("questview" + "_c", this.c);
+				} else {
+					super.mouseup(c, btn);
+				}
+				return(true);
+		}
+
 
 	    public void tick(double dt) {
 		if(rtitle == null) {
 		    try {
-			rtitle = qtfnd.render(info.title()).tex();
-			resize();
+    			rtitle = qtfnd.render(info.title()).tex();
+    			resize();
 		    } catch(Loading l) {
 		    }
 		}
@@ -1839,7 +1903,7 @@ public class CharWnd extends Window {
 
 	final Tabs tabs = new Tabs(new Coord(15, 10), Coord.z, this);
 	Tabs.Tab battr;
-	{ 
+	{
 	    int x = 5, y = 0;
 
 	    battr = tabs.add();

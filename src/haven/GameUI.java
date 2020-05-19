@@ -841,20 +841,22 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     	    buffs.addchild(child);
     	} else if(place == "qq") {
     	    if(qqview != null)
-    		qqview.reqdestroy();
-    	    final Widget cref = qqview = child;
-    	    add(new AlignPanel() {
-    		    {add(cref);}
-
-    		    protected Coord getc() {
-    			return(new Coord(10, GameUI.this.sz.y - chat.sz.y - this.sz.y - 10));
-    		    }
-
-    		    public void cdestroy(Widget ch) {
-    			qqview = null;
-    			destroy();
-    		    }
-    		});
+    		    qqview.reqdestroy();
+            qqview = child;
+            add(child);
+    	    // final Widget cref = qqview = child;
+    	    // add(new AlignPanel() {
+    		//     {add(cref);}
+            //
+    		//     protected Coord getc() {
+    		// 	return(new Coord(10, GameUI.this.sz.y - chat.sz.y - this.sz.y - 10));
+    		//     }
+            //
+    		//     public void cdestroy(Widget ch) {
+    		// 	qqview = null;
+    		// 	destroy();
+    		//     }
+    		// });
     	} else if(place == "misc") {
     	    Coord c;
     	    int a = 1;
@@ -1465,7 +1467,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     		    GameUI.this.wdgmsg("setbelt", slot, 1);
     		return(true);
     	    }
-    	    return(false);
+    	    return(super.mousedown(c, button));
     	}
 
     	public boolean globtype(char key, KeyEvent ev) {
