@@ -471,24 +471,30 @@ public class MapView extends PView implements DTarget, Console.Directory {
     }
 
     public boolean visol(int ol) {
-	return(ols[ol] != null);
+	    return(ols[ol] != null);
     }
 
-    public void enol(int ol) {
-	synchronized(ols) {
-	    if(ols[ol] == null)
-		basic.add(ols[ol] = new Overlay(ol));
-	    ols[ol].rc++;
-	}
+    public void enol(int... overlays) {
+    	synchronized(ols) {
+            for (int ol : overlays){
+                if(ols[ol] == null)
+        		basic.add(ols[ol] = new Overlay(ol));
+        	    ols[ol].rc++;
+            }
+
+    	}
     }
 
-    public void disol(int ol) {
-	synchronized(ols) {
-	    if((ols[ol] != null) && (--ols[ol].rc <= 0)) {
-		ols[ol].remove();
-		ols[ol] = null;
-	    }
-	}
+    public void disol(int... overlays) {
+    	synchronized(ols) {
+            for (int ol : overlays) {
+                if((ols[ol] != null) && (--ols[ol].rc <= 0)) {
+        		ols[ol].remove();
+        		ols[ol] = null;
+        	    }
+            }
+
+    	}
     }
 
     private final Gobs gobs;
@@ -1873,7 +1879,7 @@ public class MapView extends PView implements DTarget, Console.Directory {
     	    }
     	} else if (ui.modshift && !ui.modctrl && Config.resinfo) {
             long now = System.currentTimeMillis();
-            if ((now - lastmmhittest > 500 || lasthittestc.dist(c) > tilesz.x) /*&& gameui().hand.isEmpty()*/) {
+            if ((now - lastmmhittest > 500 || lasthittestc.dist(c) > tilesz.x) && gameui().hand.isEmpty()) {
                 lastmmhittest = now;
                 lasthittestc = c;
 

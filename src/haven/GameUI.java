@@ -41,6 +41,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     public Avaview portrait;
     public MenuGrid menu;
     public MapView map;
+    public MinimapWnd minimapWnd;
     public LocalMiniMap mmap;
     public Fightview fv;
     private List<Widget> meters = new LinkedList<Widget>();
@@ -112,7 +113,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 				    args = Utils.extend(args, inf.clickargs());
 				GameUI.this.wdgmsg("belt", args);
 			    }
-			    
+
 			    protected void nohit(Coord pc) {
 				GameUI.this.wdgmsg("belt", slot, 1, ui.modflags());
 			    }
@@ -121,7 +122,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    }
 	}
     }
-    
+
     @RName("gameui")
     public static class $_ implements Factory {
 	public Widget create(UI ui, Object[] args) {
@@ -133,7 +134,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    return(new GameUI(chrid, plid, genus));
 	}
     }
-    
+
     private final Coord minimapc;
     private final Coord menugridc;
     public GameUI(String chrid, long plid, String genus) {
@@ -343,7 +344,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	resize(parent.sz);
 	ui.cons.out = new java.io.PrintWriter(new java.io.Writer() {
 		StringBuilder buf = new StringBuilder();
-		
+
 		public void write(char[] src, int off, int len) {
 		    List<String> lines = new ArrayList<String>();
 		    synchronized(this) {
@@ -357,7 +358,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 		    for(String ln : lines)
 			syslog.append(ln, Color.WHITE);
 		}
-		
+
 		public void close() {}
 		public void flush() {}
 	    });
@@ -370,7 +371,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	ui.cons.clearout();
 	super.dispose();
     }
-    
+
     public class Hidepanel extends Widget {
 	public final String id;
 	public final Coord g;
@@ -669,27 +670,29 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    child.resize(sz);
 	    map = add((MapView)child, Coord.z);
 	    map.lower();
-	    if(mmap != null)
-		ui.destroy(mmap);
+	    if(minimapWnd != null)
+		      ui.destroy(minimapWnd);
 	    if(mapfile != null) {
-		ui.destroy(mapfile);
-		mapfile = null;
+    		ui.destroy(mapfile);
+    		mapfile = null;
 	    }
-	    mmap = blpanel.add(new LocalMiniMap(new Coord(133, 133), map), minimapc);
-	    mmap.lower();
+        minimapWnd = minimap();
+	    mmap = minimapWnd.mmap;//blpanel.add(new LocalMiniMap(new Coord(133, 133), map), minimapc);
+	    //mmap.lower();
 	    ResCache mapstore = ResCache.global;
 	    if(Config.mapbase != null) {
-		try {
-		    mapstore = HashDirCache.get(Config.mapbase.toURI());
-		} catch(java.net.URISyntaxException e) {
-		}
+    		try {
+    		    mapstore = HashDirCache.get(Config.mapbase.toURI());
+    		} catch(java.net.URISyntaxException e) {
+    		}
 	    }
 	    if(mapstore != null) {
-		MapFile file = MapFile.load(mapstore, mapfilename());
-		mmap.save(file);
-		mapfile = new MapWnd(mmap.save, map, Utils.getprefc("wndsz-map", new Coord(700, 500)), "Map");
-		mapfile.hide();
-		add(mapfile, Utils.getprefc("wndc-map", new Coord(50, 50)));
+    		MapFile file = MapFile.load(mapstore, mapfilename());
+    		mmap.save(file);
+    		mapfile = new MapWnd(mmap.save, map, Utils.getprefc("wndsz-map", new Coord(700, 500)), "Map");
+    		mapfile.hide();
+    		add(mapfile, Utils.getprefc("wndc-map", new Coord(50, 50)));
+            minimapWnd.mapfile = mapfile;
 	    }
 	} else if(place == "menu") {
 	    menu = (MenuGrid)brpanel.add(child, menugridc);
@@ -819,6 +822,14 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	}
     }
 
+    private MinimapWnd minimap() {
+        Coord mwsz = Utils.getprefc("mmapwndsz", new Coord(290, 310));
+        minimapWnd = new MinimapWnd(mwsz, map);
+        add(minimapWnd, Utils.getprefc("mmapc", new Coord(10, 100)));
+        mmap = (LocalMiniMap)minimapWnd.mmap;
+        return minimapWnd;
+    }
+
     public void cdestroy(Widget w) {
 	if(w instanceof Window) {
 	    String wndid = wndids.reverse().get((Window)w);
@@ -843,7 +854,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	}
 	meters.remove(w);
     }
-    
+
     private static final Resource.Anim progt = Resource.local().loadwait("gfx/hud/prog").layer(Resource.animc);
     private Tex curprog = null;
     private int curprogf, curprogb;
@@ -887,7 +898,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    chat.drawsmall(g, new Coord(blpw + 10, by), 50);
 	}
     }
-    
+
     private double lastwndsave = 0;
     public void tick(double dt) {
 	super.tick(dt);
@@ -904,7 +915,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    afk = false;
 	}
     }
-    
+
     public void uimsg(String msg, Object... args) {
 	if(msg == "err") {
 	    String err = (String)args[0];
@@ -981,20 +992,20 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     }
 
     private Coord fitwdg(Widget wdg, Coord c) {
-	Coord ret = new Coord(c);
-	if(ret.x < 0)
-	    ret.x = 0;
-	if(ret.y < 0)
-	    ret.y = 0;
-	if(ret.x + wdg.sz.x > sz.x)
-	    ret.x = sz.x - wdg.sz.x;
-	if(ret.y + wdg.sz.y > sz.y)
-	    ret.y = sz.y - wdg.sz.y;
-	return(ret);
+    	Coord ret = new Coord(c);
+    	if(ret.x < 0)
+    	    ret.x = 0;
+    	if(ret.y < 0)
+    	    ret.y = 0;
+    	if(ret.x + wdg.sz.x > sz.x)
+    	    ret.x = sz.x - wdg.sz.x;
+    	if(ret.y + wdg.sz.y > sz.y)
+    	    ret.y = sz.y - wdg.sz.y;
+    	return(ret);
     }
 
-    private void fitwdg(Widget wdg) {
-	wdg.c = fitwdg(wdg, wdg.c);
+    public void fitwdg(Widget wdg) {
+    	wdg.c = fitwdg(wdg, wdg.c);
     }
 
     public static class MenuButton extends IButton {
@@ -1123,7 +1134,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	}
 	return(super.globtype(key, ev));
     }
-    
+
     public boolean mousedown(Coord c, int button) {
 	return(super.mousedown(c, button));
     }
@@ -1167,11 +1178,11 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	beltwdg.c = new Coord(blpw + 10, sz.y - beltwdg.sz.y - 5);
 	super.resize(sz);
     }
-    
+
     public void presize() {
 	resize(parent.sz);
     }
-    
+
     public void msg(String msg, Color color, Color logcol) {
 	msgtime = Utils.rtime();
 	lastmsg = msgfoundry.render(msg, color);
@@ -1203,7 +1214,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    lastmsgsfx = now;
 	}
     }
-    
+
     public void act(String... args) {
 	wdgmsg("act", (Object[])args);
     }
@@ -1238,7 +1249,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	private Coord beltc(int i) {
 	    return(new Coord(((invsq.sz().x + 2) * i) + (10 * (i / 4)), 0));
 	}
-    
+
 	private int beltslot(Coord c) {
 	    for(int i = 0; i < 12; i++) {
 		if(c.isect(beltc(i), invsq.sz()))
@@ -1246,7 +1257,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    }
 	    return(-1);
 	}
-    
+
 	public void draw(GOut g) {
 	    for(int i = 0; i < 12; i++) {
 		int slot = i + (curbelt * 12);
@@ -1261,7 +1272,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 		g.chcolor();
 	    }
 	}
-	
+
 	public boolean mousedown(Coord c, int button) {
 	    int slot = beltslot(c);
 	    if(slot != -1) {
@@ -1289,7 +1300,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    }
 	    return(false);
 	}
-	
+
 	public boolean drop(Coord c, Coord ul) {
 	    int slot = beltslot(c);
 	    if(slot != -1) {
@@ -1300,7 +1311,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	}
 
 	public boolean iteminteract(Coord c, Coord ul) {return(false);}
-	
+
 	public boolean dropthing(Coord c, Object thing) {
 	    int slot = beltslot(c);
 	    if(slot != -1) {
@@ -1315,7 +1326,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    return(false);
 	}
     }
-    
+
     private static final Tex nkeybg = Resource.loadtex("gfx/hud/hb-main");
     public class NKeyBelt extends Belt implements DTarget, DropTarget {
 	public int curbelt = 0;
@@ -1351,11 +1362,11 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 		    }
 		}, sz, 1, 1);
 	}
-	
+
 	private Coord beltc(int i) {
 	    return(pagoff.add(((invsq.sz().x + 2) * i) + (10 * (i / 5)), 0));
 	}
-    
+
 	private int beltslot(Coord c) {
 	    for(int i = 0; i < 10; i++) {
 		if(c.isect(beltc(i), invsq.sz()))
@@ -1363,7 +1374,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    }
 	    return(-1);
 	}
-    
+
 	public void draw(GOut g) {
 	    g.image(nkeybg, Coord.z);
 	    for(int i = 0; i < 10; i++) {
@@ -1380,7 +1391,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    }
 	    super.draw(g);
 	}
-	
+
 	public boolean mousedown(Coord c, int button) {
 	    int slot = beltslot(c);
 	    if(slot != -1) {
@@ -1406,7 +1417,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    }
 	    return(true);
 	}
-	
+
 	public boolean drop(Coord c, Coord ul) {
 	    int slot = beltslot(c);
 	    if(slot != -1) {
@@ -1417,7 +1428,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	}
 
 	public boolean iteminteract(Coord c, Coord ul) {return(false);}
-	
+
 	public boolean dropthing(Coord c, Object thing) {
 	    int slot = beltslot(c);
 	    if(slot != -1) {
@@ -1432,7 +1443,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    return(false);
 	}
     }
-    
+
     {
 	String val = Utils.getpref("belttype", "n");
 	if(val.equals("n")) {
@@ -1443,7 +1454,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    beltwdg = add(new NKeyBelt());
 	}
     }
-    
+
     private Map<String, Console.Command> cmdmap = new TreeMap<String, Console.Command>();
     {
 	cmdmap.put("afk", new Console.Command() {

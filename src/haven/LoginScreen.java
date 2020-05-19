@@ -68,8 +68,8 @@ public class LoginScreen extends Widget {
     }
 
     private static abstract class Login extends Widget {
-	abstract Object[] data();
-	abstract boolean enter();
+    	abstract Object[] data();
+    	abstract boolean enter();
     }
 
     private class Pwbox extends Login {
@@ -97,7 +97,7 @@ public class LoginScreen extends Widget {
     	}
 
     	Object[] data() {
-        return(new Object[] {new AuthClient.NativeCred(user.text, pass.text), false/*savepass.a*/});
+            return(new Object[] {new AuthClient.NativeCred(user.text, pass.text), false/*savepass.a*/});
     	}
 
     	boolean enter() {
@@ -142,8 +142,8 @@ public class LoginScreen extends Widget {
 
     	public void wdgmsg(Widget sender, String name, Object... args) {
     	    if(sender == btn) {
-    		LoginScreen.this.wdgmsg("forget");
-    		return;
+        		LoginScreen.this.wdgmsg("forget");
+        		return;
     	    }
     	    super.wdgmsg(sender, name, args);
     	}
@@ -253,41 +253,41 @@ public class LoginScreen extends Widget {
     }
 
     private void mklogin() {
-	synchronized(ui) {
-	    adda(btn = new IButton("gfx/hud/buttons/login", "u", "d", "o") {
-		    protected void depress() {Audio.play(Button.lbtdown.stream());}
-		    protected void unpress() {Audio.play(Button.lbtup.stream());}
-		}, 419, 510, 0.5, 0.5);
-	    progress(null);
-	}
+    	synchronized(ui) {
+    	    adda(btn = new IButton("gfx/hud/buttons/login", "u", "d", "o") {
+    		    protected void depress() {Audio.play(Button.lbtdown.stream());}
+    		    protected void unpress() {Audio.play(Button.lbtup.stream());}
+    		}, 419, 510, 0.5, 0.5);
+    	    progress(null);
+    	}
     }
 
     private void error(String error) {
-	synchronized(ui) {
-	    if(this.error != null)
-		    this.error = null;
-	    if(error != null)
-		    this.error = textf.render(error, java.awt.Color.RED);
-	}
+    	synchronized(ui) {
+    	    if(this.error != null)
+    		    this.error = null;
+    	    if(error != null)
+    		    this.error = textf.render(error, java.awt.Color.RED);
+    	}
     }
 
     private void progress(String p) {
-	synchronized(ui) {
-	    if(progress != null)
-		progress = null;
-	    if(p != null)
-		progress = textf.render(p, java.awt.Color.WHITE);
-	}
+    	synchronized(ui) {
+    	    if(progress != null)
+    		progress = null;
+    	    if(p != null)
+    		progress = textf.render(p, java.awt.Color.WHITE);
+    	}
     }
 
     private void clear() {
-	if(cur != null) {
-	    ui.destroy(cur);
-	    cur = null;
-	    ui.destroy(btn);
-	    btn = null;
-	}
-	progress(null);
+    	if(cur != null) {
+    	    ui.destroy(cur);
+    	    cur = null;
+    	    ui.destroy(btn);
+    	    btn = null;
+    	}
+    	progress(null);
     }
 
     public void wdgmsg(Widget sender, String msg, Object... args) {
@@ -297,15 +297,15 @@ public class LoginScreen extends Widget {
     	    return;
     	} else if(sender == optbtn) {
     	    if(opts == null) {
-    		opts = adda(new OptWnd(false) {
-    			public void hide() {
-    			    /* XXX */
-    			    reqdestroy();
-    			}
-    		    }, sz.div(2), 0.5, 0.5);
+        		opts = adda(new OptWnd(false) {
+        			public void hide() {
+        			    /* XXX */
+        			    reqdestroy();
+        			}
+        		}, sz.div(2), 0.5, 0.5);
     	    } else {
-    		opts.reqdestroy();
-    		opts = null;
+        		opts.reqdestroy();
+        		opts = null;
     	    }
     	    return;
     	} else if(sender == opts) {
@@ -319,35 +319,35 @@ public class LoginScreen extends Widget {
                 } catch (IOException | URISyntaxException e) {
                   e.printStackTrace();
                 }
-              }
+            }
         } else
     	   super.wdgmsg(sender, msg, args);
     }
 
     public void cdestroy(Widget ch) {
-	if(ch == opts) {
-	    opts = null;
-	}
+    	if(ch == opts) {
+    	    opts = null;
+    	}
     }
 
     public void uimsg(String msg, Object... args) {
-	synchronized(ui) {
-	    if(msg == "passwd") {
-		clear();
-		cur = new Pwbox((String)args[0], (Boolean)args[1]);
-		mklogin();
-	    } else if(msg == "token") {
-		clear();
-		cur = new Tokenbox((String)args[0]);
-		mklogin();
-	    } else if(msg == "error") {
-		error((String)args[0]);
-	    } else if(msg == "prg") {
-		error(null);
-		clear();
-		progress((String)args[0]);
-	    }
-	}
+    	synchronized(ui) {
+    	    if(msg == "passwd") {
+        		clear();
+        		cur = new Pwbox((String)args[0], (Boolean)args[1]);
+        		mklogin();
+    	    } else if(msg == "token") {
+        		clear();
+        		cur = new Tokenbox((String)args[0]);
+        		mklogin();
+    	    } else if(msg == "error") {
+    		    error((String)args[0]);
+    	    } else if(msg == "prg") {
+        		error(null);
+        		clear();
+        		progress((String)args[0]);
+    	    }
+    	}
     }
 
     public void presize() {

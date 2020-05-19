@@ -162,6 +162,19 @@ public class Coord2d implements Comparable<Coord2d>, java.io.Serializable {
 	return(new Coord2d(Math.cos(a) * r, Math.sin(a) * r));
     }
 
+    public Coord toGridUnit() {
+        return new Coord(((int)x / 1100) * 1100, ((int)y / 1100) * 1100);
+    }
+
+    public Coord toGridCoordinate() {
+        return new Coord(((int)x / 1100), ((int)y / 1100));
+    }
+
+    public Coord2d gridOffset() {
+        Coord gridUnit = toGridUnit();
+        return new Coord2d(x - gridUnit.x, y - gridUnit.y);
+    }
+    
     public String toString() {
 	return("(" + x + ", " + y + ")");
     }

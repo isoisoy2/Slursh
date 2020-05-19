@@ -429,7 +429,7 @@ public class Widget {
 	this.prev = parent.lchild;
 	parent.lchild = this;
     }
-    
+
     public void linkfirst() {
 	if(parent.child != null)
 	    parent.child.prev = this;
@@ -438,7 +438,7 @@ public class Widget {
 	this.next = parent.child;
 	parent.child = this;
     }
-	
+
     public void unlink() {
 	if(next != null)
 	    next.prev = prev;
@@ -451,11 +451,11 @@ public class Widget {
 	next = null;
 	prev = null;
     }
-	
+
     public Coord xlate(Coord c, boolean in) {
 	return(c);
     }
-	
+
     public Coord parentpos(Widget in) {
 	if(in == this)
 	    return(new Coord(0, 0));
@@ -465,11 +465,11 @@ public class Widget {
     public Coord rootpos() {
 	return(parentpos(ui.root));
     }
-    
+
     public Coord rootxlate(Coord c) {
 	return(c.sub(rootpos()));
     }
-	
+
     public boolean hasparent(Widget w2) {
 	for(Widget w = this; w != null; w = w.parent) {
 	    if(w == w2)
@@ -604,20 +604,20 @@ public class Widget {
 	    }
 	}
     }
-	
+
     public void setfocusctl(boolean focusctl) {
 	if(this.focusctl = focusctl) {
 	    findfocus();
 	    setcanfocus(true);
 	}
     }
-	
+
     public void setfocustab(boolean focustab) {
 	if(focustab && !focusctl)
 	    setfocusctl(true);
 	this.focustab = focustab;
     }
-	
+
     public void uimsg(String msg, Object... args) {
 	if(msg == "tabfocus") {
 	    setfocustab(((Integer)args[0] != 0));
@@ -682,21 +682,21 @@ public class Widget {
 	    System.err.println("Unhandled widget message: " + msg);
 	}
     }
-	
+
     public void wdgmsg(String msg, Object... args) {
 	wdgmsg(this, msg, args);
     }
-	
+
     public void wdgmsg(Widget sender, String msg, Object... args) {
 	if(parent == null)
 	    ui.wdgmsg(sender, msg, args);
 	else
 	    parent.wdgmsg(sender, msg, args);
     }
-	
+
     public void tick(double dt) {
 	Widget next;
-	
+
 	for(Widget wdg = child; wdg != null; wdg = next) {
 	    next = wdg.next;
 	    wdg.tick(dt);
@@ -714,7 +714,7 @@ public class Widget {
 
     public void draw(GOut g, boolean strict) {
 	Widget next;
-		
+
 	for(Widget wdg = child; wdg != null; wdg = next) {
 	    next = wdg.next;
 	    if(!wdg.visible)
@@ -728,11 +728,11 @@ public class Widget {
 	    wdg.draw(g2);
 	}
     }
-    
+
     public void draw(GOut g) {
 	draw(g, true);
     }
-	
+
     public boolean mousedown(Coord c, int button) {
 	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
 	    if(!wdg.visible)
@@ -746,7 +746,7 @@ public class Widget {
 	}
 	return(false);
     }
-	
+
     public boolean mouseup(Coord c, int button) {
 	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
 	    if(!wdg.visible)
@@ -760,7 +760,7 @@ public class Widget {
 	}
 	return(false);
     }
-	
+
     public boolean mousewheel(Coord c, int amount) {
 	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
 	    if(!wdg.visible)
@@ -774,7 +774,7 @@ public class Widget {
 	}
 	return(false);
     }
-	
+
     public void mousemove(Coord c) {
 	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
 	    if(!wdg.visible)
@@ -820,7 +820,7 @@ public class Widget {
 	}
 	return(false);
     }
-	
+
     public boolean keydown(KeyEvent ev) {
 	char key = ev.getKeyChar();
 	if(canactivate) {
@@ -874,7 +874,7 @@ public class Widget {
 	}
 	return(false);
     }
-	
+
     public boolean keyup(KeyEvent ev) {
 	if(focusctl) {
 	    if(focused != null) {
@@ -887,14 +887,14 @@ public class Widget {
 	} else {
 	    for(Widget wdg = child; wdg != null; wdg = wdg.next) {
 		if(wdg.visible) {
-		    if(wdg.keyup(ev))	
+		    if(wdg.keyup(ev))
 			return(true);
 		}
 	    }
 	}
 	return(false);
     }
-    
+
     public Area area() {
 	return(Area.sized(c, sz));
     }
@@ -924,7 +924,7 @@ public class Widget {
     public void pack() {
 	resize(contentsz());
     }
-    
+
     public void move(Coord c) {
 	this.c = c;
     }
@@ -948,24 +948,24 @@ public class Widget {
 
     public void cresize(Widget ch) {
     }
-    
+
     public void presize() {
     }
-	
+
     public void raise() {
 	synchronized((ui != null)?ui:new Object()) {
 	    unlink();
 	    link();
 	}
     }
-    
+
     public void lower() {
 	synchronized((ui != null)?ui:new Object()) {
 	    unlink();
 	    linkfirst();
 	}
     }
-    
+
     public <T> T getchild(Class<T> cl) {
 	for(Widget wdg = child; wdg != null; wdg = wdg.next) {
 	    if(cl.isInstance(wdg))
@@ -985,7 +985,7 @@ public class Widget {
 	}
 	return(null);
     }
-    
+
     public Widget rprev() {
 	if(prev != null) {
 	    Widget lc = prev.lchild;
@@ -1009,7 +1009,7 @@ public class Widget {
 	}
 	return(null);
     }
-    
+
     public <T extends Widget> Set<T> children(final Class<T> cl) {
 	return(new AbstractSet<T>() {
 		public int size() {
@@ -1018,11 +1018,11 @@ public class Widget {
 			i++;
 		    return(i);
 		}
-		
+
 		public Iterator<T> iterator() {
 		    return(new Iterator<T>() {
 			    T cur = n(Widget.this);
-			    
+
 			    private T n(Widget w) {
 				for(Widget n; true; w = n) {
 				    if(w == null) {
@@ -1043,7 +1043,7 @@ public class Widget {
 					return(cl.cast(n));
 				}
 			    }
-			    
+
 			    public T next() {
 				if(cur == null)
 				    throw(new NoSuchElementException());
@@ -1051,7 +1051,7 @@ public class Widget {
 				cur = n(ret);
 				return(ret);
 			    }
-			    
+
 			    public boolean hasNext() {
 				return(cur != null);
 			    }
@@ -1062,7 +1062,7 @@ public class Widget {
 
     public Resource getcurs(Coord c) {
 	Resource ret;
-		
+
 	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
 	    if(!wdg.visible)
 		continue;
@@ -1083,7 +1083,7 @@ public class Widget {
     public Object tooltip(Coord c, boolean again) {
 	return(null);
     }
-    
+
     public Object tooltip(Coord c, Widget prev) {
 	if(prev != this)
 	    prevtt = null;
@@ -1110,7 +1110,7 @@ public class Widget {
     public void settip(String text) {
 	tooltip = Text.render(text);
     }
-    
+
     public <T extends Widget> T getparent(Class<T> cl) {
 	for(Widget w = this; w != null; w = w.parent) {
 	    if(cl.isInstance(w))
@@ -1180,25 +1180,43 @@ public class Widget {
     }
 
     public abstract class NormAnim extends Anim {
-	private double a = 0.0;
-	private final double s;
-	
-	public NormAnim(double s) {
-	    this.s = 1.0 / s;
-	}
+    	private double a = 0.0;
+    	private final double s;
 
-	public boolean tick(double dt) {
-	    a += dt;
-	    double na = a * s;
-	    if(na >= 1.0) {
-		ntick(1.0);
-		return(true);
-	    } else {
-		ntick(na);
-		return(false);
-	    }
-	}
+    	public NormAnim(double s) {
+    	    this.s = 1.0 / s;
+    	}
 
-	public abstract void ntick(double a);
+    	public boolean tick(double dt) {
+    	    a += dt;
+    	    double na = a * s;
+    	    if(na >= 1.0) {
+    		ntick(1.0);
+    		return(true);
+    	    } else {
+    		ntick(na);
+    		return(false);
+    	    }
+    	}
+
+    	public abstract void ntick(double a);
     }
+
+    public GameUI gameui() {
+        Widget parent = this.parent;
+        while (parent != null) {
+            if (parent instanceof GameUI)
+                return (GameUI) parent;
+            parent = parent.parent;
+        }
+        return null;
+    }
+
+    // public <T extends Widget> T getchild(Class<T> c) {
+    //     for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+    //         if (c.isInstance(wdg))
+    //             return c.cast(wdg);
+    //     }
+    //     return null;
+    // }
 }

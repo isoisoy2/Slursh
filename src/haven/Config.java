@@ -40,26 +40,42 @@ import haven.error.ErrorHandler;
 import static haven.Utils.getprop;
 
 public class Config {
-    public static String authuser = getprop("haven.authuser", null);
-    public static String authserv = getprop("haven.authserv", null);
-    public static String defserv = getprop("haven.defserv", "127.0.0.1");
-    public static URL resurl = geturl("haven.resurl", "");
+    // public static String authuser = getprop("haven.authuser", null);
+    // public static String authserv = getprop("haven.authserv", null);
+    // public static String defserv = getprop("haven.defserv", "127.0.0.1");
+    // public static URL resurl = geturl("haven.resurl", "");
+    // public static boolean dbtext = getprop("haven.dbtext", "off").equals("on");
+    // public static boolean profile = getprop("haven.profile", "off").equals("on");
+    // public static boolean profilegpu = getprop("haven.profilegpu", "off").equals("on");
+    // public static String resdir = getprop("haven.resdir", System.getenv("HAFEN_RESDIR"));
+    // public static boolean nopreload = getprop("haven.nopreload", "no").equals("yes");
+    // public static int mainport = getint("haven.mainport", 1870);
+    // public static int authport = getint("haven.authport", 1871);
+    // public static URL screenurl = geturl("haven.screenurl", "");
+    public static String authuser = null;
+    public static String authserv = null;
+    public static String defserv = null;
+    public static URL resurl = null;
+    public static boolean dbtext = false;
+    public static boolean profile = false;
+    public static boolean profilegpu = false;
+    public static String resdir = getprop("haven.resdir", System.getenv("HAFEN_RESDIR"));
+    public static boolean nopreload = false;
+    public static int mainport = 1870;
+    public static int authport = 1871;
+    public static URL screenurl = geturl("http://game.havenandhearth.com/mt/ss");
+
+
     public static URL mapurl = geturl("haven.mapurl", "");
-    public static URL screenurl = geturl("haven.screenurl", "");
+
     public static URL cachebase = geturl("haven.cachebase", "");
     public static URL mapbase = geturl("haven.mapbase", "");
-    public static boolean dbtext = getprop("haven.dbtext", "off").equals("on");
     public static boolean bounddb = getprop("haven.bounddb", "off").equals("on");
-    public static boolean profile = getprop("haven.profile", "off").equals("on");
-    public static boolean profilegpu = getprop("haven.profilegpu", "off").equals("on");
     public static boolean par = false;
     public static boolean fscache = getprop("haven.fscache", "on").equals("on");
-    public static String resdir = getprop("haven.resdir", System.getenv("HAFEN_RESDIR"));
-    public static boolean nopreload = getprop("haven.nopreload", "no").equals("yes");
     public static String loadwaited = getprop("haven.loadwaited", null);
     public static String allused = getprop("haven.allused", null);
-    public static int mainport = getint("haven.mainport", 1870);
-    public static int authport = getint("haven.authport", 1871);
+
     public static boolean softres = getprop("haven.softres", "on").equals("on");
     public static byte[] authck = null;
     public static String prefspec = "hafen";
@@ -77,6 +93,8 @@ public class Config {
     public static int fontadd = Utils.getprefi("fontadd", 0);
 
     public static boolean enableorthofullzoom = Utils.getprefb("enableorthofullzoom", false);
+    public static boolean mapshowviewdist = Utils.getprefb("mapshowviewdist", false);
+    public static boolean mapshowgrid = Utils.getprefb("mapshowgrid", false);
 
     public static boolean resinfo = Utils.getprefb("resinfo", false);
 

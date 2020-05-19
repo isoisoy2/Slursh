@@ -37,30 +37,36 @@ import java.util.*;
 import haven.resutil.Ridges;
 
 public class LocalMiniMap extends Widget {
+    private static final Tex resize = Resource.loadtex("gfx/hud/wndmap/lg/resize");
+    private static final Tex gridblue = Resource.loadtex("gfx/hud/mmap/gridblue");
+    private static final Tex gridred = Resource.loadtex("gfx/hud/mmap/gridred");
     public final MapView mv;
     public MapFile save;
     private Coord cc = null;
     private MapTile cur = null;
+    private Coord delta = Coord.z;
+
     private final Map<Pair<Grid, Integer>, Defer.Future<MapTile>> cache = new LinkedHashMap<Pair<Grid, Integer>, Defer.Future<MapTile>>(5, 0.75f, true) {
-	protected boolean removeEldestEntry(Map.Entry<Pair<Grid, Integer>, Defer.Future<MapTile>> eldest) {
-	    if(size() > 5) {
-		try {
-		    MapTile t = eldest.getValue().get();
-		    t.img.dispose();
-		} catch(RuntimeException e) {
-		}
-		return(true);
-	    }
-	    return(false);
-	}
+
+        protected boolean removeEldestEntry(Map.Entry<Pair<Grid, Integer>, Defer.Future<MapTile>> eldest) {
+    	    if(size() > 5) {
+    		try {
+    		    MapTile t = eldest.getValue().get();
+    		    t.img.dispose();
+    		} catch(RuntimeException e) {
+    		}
+    		return(true);
+    	    }
+    	    return(false);
+    	}
     };
-    
+
     public static class MapTile {
 	public final Tex img;
 	public final Coord ul;
 	public final Grid grid;
 	public final int seq;
-	
+
 	public MapTile(Tex img, Coord ul, Grid grid, int seq) {
 	    this.img = img;
 	    this.ul = ul;
@@ -83,7 +89,7 @@ public class LocalMiniMap extends Widget {
 	}
 	return(img);
     }
-    
+
     public BufferedImage drawmap(Coord ul, Coord sz) {
 	BufferedImage[] texes = new BufferedImage[256];
 	MCache m = ui.sess.glob.map;
@@ -130,132 +136,136 @@ public class LocalMiniMap extends Widget {
     }
 
     public LocalMiniMap(Coord sz, MapView mv) {
-	super(sz);
-	this.mv = mv;
+    	super(sz);
+    	this.mv = mv;
     }
 
     public void save(MapFile file) {
-	this.save = file;
+	       this.save = file;
     }
 
     public Coord p2c(Coord2d pc) {
-	return(pc.floor(tilesz).sub(cc).add(sz.div(2)));
+	       return(pc.floor(tilesz).sub(cc).add(sz.div(2)));
     }
 
     public Coord2d c2p(Coord c) {
-	return(c.sub(sz.div(2)).add(cc).mul(tilesz).add(tilesz.div(2)));
+	       return(c.sub(sz.div(2)).add(cc).mul(tilesz).add(tilesz.div(2)));
     }
 
     public void drawicons(GOut g) {
-	OCache oc = ui.sess.glob.oc;
-	synchronized(oc) {
-	    for(Gob gob : oc) {
-		try {
-		    GobIcon icon = gob.getattr(GobIcon.class);
-		    if(icon != null) {
-			Coord gc = p2c(gob.rc);
-			Tex tex = icon.tex();
-			g.image(tex, gc.sub(tex.sz().div(2)));
-		    }
-		} catch(Loading l) {}
-	    }
-	}
+    	OCache oc = ui.sess.glob.oc;
+    	synchronized(oc) {
+    	    for(Gob gob : oc) {
+    		try {
+    		    GobIcon icon = gob.getattr(GobIcon.class);
+    		    if(icon != null) {
+    			Coord gc = p2c(gob.rc);
+    			Tex tex = icon.tex();
+    			g.image(tex, gc.sub(tex.sz().div(2)));
+    		    }
+    		} catch(Loading l) {}
+    	    }
+    	}
     }
 
     public Gob findicongob(Coord c) {
-	OCache oc = ui.sess.glob.oc;
-	synchronized(oc) {
-	    for(Gob gob : oc) {
-		try {
-		    GobIcon icon = gob.getattr(GobIcon.class);
-		    if(icon != null) {
-			Coord gc = p2c(gob.rc);
-			Coord sz = icon.tex().sz();
-			if(c.isect(gc.sub(sz.div(2)), sz))
-			    return(gob);
-		    }
-		} catch(Loading l) {}
-	    }
-	}
-	return(null);
+    	OCache oc = ui.sess.glob.oc;
+    	synchronized(oc) {
+    	    for(Gob gob : oc) {
+    		try {
+    		    GobIcon icon = gob.getattr(GobIcon.class);
+    		    if(icon != null) {
+    			Coord gc = p2c(gob.rc);
+    			Coord sz = icon.tex().sz();
+    			if(c.isect(gc.sub(sz.div(2)), sz))
+    			    return(gob);
+    		    }
+    		} catch(Loading l) {}
+    	    }
+    	}
+    	return(null);
     }
 
     public void tick(double dt) {
-	Gob pl = ui.sess.glob.oc.getgob(mv.plgob);
-	if(pl == null)
-	    this.cc = mv.cc.floor(tilesz);
-	else
-	    this.cc = pl.rc.floor(tilesz);
+    	Gob pl = ui.sess.glob.oc.getgob(mv.plgob);
+    	if(pl == null)
+    	    this.cc = mv.cc.floor(tilesz);
+    	else
+    	    this.cc = pl.rc.floor(tilesz);
     }
 
     public void draw(GOut g) {
-	if(cc == null)
-	    return;
-	map: {
-	    final Grid plg;
-	    try {
-		plg = ui.sess.glob.map.getgrid(cc.div(cmaps));
-	    } catch(Loading l) {
-		break map;
-	    }
-	    final int seq = plg.seq;
-	    if((cur == null) || (plg != cur.grid) || (seq != cur.seq)) {
-		Defer.Future<MapTile> f;
-		synchronized(cache) {
-		    f = cache.get(new Pair<Grid, Integer>(plg, seq));
-		    if(f == null) {
-			f = Defer.later(new Defer.Callable<MapTile> () {
-				public MapTile call() {
-				    Coord ul = plg.ul.sub(cmaps).add(1, 1);
-				    return(new MapTile(new TexI(drawmap(ul, cmaps.mul(3).sub(2, 2))), ul, plg, seq));
-				}
-			    });
-			cache.put(new Pair<Grid, Integer>(plg, seq), f);
-		    }
-		}
-		if(f.done()) {
-		    cur = f.get();
-		    MapFile save = this.save;
-		    if(save != null)
-			save.update(ui.sess.glob.map, cur.grid.gc);
-		}
-	    }
-	}
-	if(cur != null) {
-	    g.image(MiniMap.bg, Coord.z);
-	    g.image(cur.img, cur.ul.sub(cc).add(sz.div(2)));
-	    drawicons(g);
-	    try {
-		synchronized(ui.sess.glob.party.memb) {
-		    for(Party.Member m : ui.sess.glob.party.memb.values()) {
-			Coord2d ppc;
-			try {
-			    ppc = m.getc();
-			} catch(MCache.LoadingMap e) {
-			    ppc = null;
-			}
-			if(ppc == null)
-			    continue;
-			Coord ptc = p2c(ppc);
-			g.chcolor(m.col.getRed(), m.col.getGreen(), m.col.getBlue(), 255);
-			g.image(MiniMap.plx.layer(Resource.imgc).tex(), ptc.add(MiniMap.plx.layer(Resource.negc).cc.inv()));
-			g.chcolor();
-		    }
-		}
-	    } catch(Loading l) {}
-	} else {
-	    g.image(MiniMap.nomap, Coord.z);
-	}
+    	if(cc == null)
+    	    return;
+    	map: {
+    	    final Grid plg;
+    	    try {
+    		plg = ui.sess.glob.map.getgrid(cc.div(cmaps));
+    	    } catch(Loading l) {
+    		break map;
+    	    }
+    	    final int seq = plg.seq;
+    	    if((cur == null) || (plg != cur.grid) || (seq != cur.seq)) {
+    		Defer.Future<MapTile> f;
+    		synchronized(cache) {
+    		    f = cache.get(new Pair<Grid, Integer>(plg, seq));
+    		    if(f == null) {
+    			f = Defer.later(new Defer.Callable<MapTile> () {
+    				public MapTile call() {
+    				    Coord ul = plg.ul.sub(cmaps).add(1, 1);
+    				    return(new MapTile(new TexI(drawmap(ul, cmaps.mul(3).sub(2, 2))), ul, plg, seq));
+    				}
+    			    });
+    			cache.put(new Pair<Grid, Integer>(plg, seq), f);
+    		    }
+    		}
+    		if(f.done()) {
+    		    cur = f.get();
+    		    MapFile save = this.save;
+    		    if(save != null)
+    			save.update(ui.sess.glob.map, cur.grid.gc);
+    		}
+    	    }
+    	}
+    	if(cur != null) {
+    	    g.image(MiniMap.bg, Coord.z);
+    	    g.image(cur.img, cur.ul.sub(cc).add(sz.div(2)));
+    	    drawicons(g);
+    	    try {
+    		synchronized(ui.sess.glob.party.memb) {
+    		    for(Party.Member m : ui.sess.glob.party.memb.values()) {
+    			Coord2d ppc;
+    			try {
+    			    ppc = m.getc();
+    			} catch(MCache.LoadingMap e) {
+    			    ppc = null;
+    			}
+    			if(ppc == null)
+    			    continue;
+    			Coord ptc = p2c(ppc);
+    			g.chcolor(m.col.getRed(), m.col.getGreen(), m.col.getBlue(), 255);
+    			g.image(MiniMap.plx.layer(Resource.imgc).tex(), ptc.add(MiniMap.plx.layer(Resource.negc).cc.inv()));
+    			g.chcolor();
+    		    }
+    		}
+    	    } catch(Loading l) {}
+    	} else {
+    	    g.image(MiniMap.nomap, Coord.z);
+    	}
+    }
+
+    public void center() {
+        delta = Coord.z;
     }
 
     public boolean mousedown(Coord c, int button) {
-	if(cc == null)
-	    return(false);
-	Gob gob = findicongob(c);
-	if(gob == null)
-	    mv.wdgmsg("click", rootpos().add(c), c2p(c).floor(posres), button, ui.modflags());
-	else
-	    mv.wdgmsg("click", rootpos().add(c), c2p(c).floor(posres), button, ui.modflags(), 0, (int)gob.id, gob.rc.floor(posres), 0, -1);
-	return(true);
+    	if(cc == null)
+    	    return(false);
+    	Gob gob = findicongob(c);
+    	if(gob == null)
+    	    mv.wdgmsg("click", rootpos().add(c), c2p(c).floor(posres), button, ui.modflags());
+    	else
+    	    mv.wdgmsg("click", rootpos().add(c), c2p(c).floor(posres), button, ui.modflags(), 0, (int)gob.id, gob.rc.floor(posres), 0, -1);
+    	return(true);
     }
 }
