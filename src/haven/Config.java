@@ -99,6 +99,7 @@ public class Config {
     public static boolean resinfo = Utils.getprefb("resinfo", false);
     public static boolean showservertime = Utils.getprefb("showservertime", true);
     public static boolean quickslots = Utils.getprefb("quickslots", true);
+    public static boolean fbelt = Utils.getprefb("fbelt", false);
 
     public static boolean showprogressperc = Utils.getprefb("showprogressperc", false);
 

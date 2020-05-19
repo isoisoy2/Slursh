@@ -46,7 +46,7 @@ public class MenuGrid extends Widget implements KeyBinding.Bindable {
     private UI.Grab grab;
     private int curoff = 0;
     private boolean recons = true;
-	
+
     @RName("scm")
     public static class $_ implements Factory {
 	public Widget create(UI ui, Object[] args) {
@@ -372,53 +372,113 @@ public class MenuGrid extends Widget implements KeyBinding.Bindable {
     private Tex curtt = null;
     private double hoverstart;
     public Object tooltip(Coord c, Widget prev) {
-	PagButton pag = bhit(c);
-	double now = Utils.rtime();
-	if(pag != null) {
-	    if(prev != this)
-		hoverstart = now;
-	    boolean ttl = (now - hoverstart) > 0.5;
-	    if((pag != curttp) || (ttl != curttl)) {
-		try {
-		    BufferedImage ti = pag.rendertt(ttl);
-		    curtt = (ti == null) ? null : new TexI(ti);
-		} catch(Loading l) {
-		    return(null);
-		}
-		curttp = pag;
-		curttl = ttl;
-	    }
-	    return(curtt);
-	} else {
-	    hoverstart = now;
-	    return(null);
-	}
+    	PagButton pag = bhit(c);
+    	double now = Utils.rtime();
+    	if(pag != null) {
+    	    if(prev != this)
+    		hoverstart = now;
+    	    boolean ttl = (now - hoverstart) > 0.5;
+    	    if((pag != curttp) || (ttl != curttl)) {
+    		try {
+    		    BufferedImage ti = pag.rendertt(ttl);
+    		    curtt = (ti == null) ? null : new TexI(ti);
+    		} catch(Loading l) {
+    		    return(null);
+    		}
+    		curttp = pag;
+    		curttl = ttl;
+    	    }
+    	    return(curtt);
+    	} else {
+    	    hoverstart = now;
+    	    return(null);
+    	}
     }
 
     private PagButton bhit(Coord c) {
-	Coord bc = c.div(bgsz);
-	if((bc.x >= 0) && (bc.y >= 0) && (bc.x < gsz.x) && (bc.y < gsz.y))
-	    return(layout[bc.x][bc.y]);
-	else
-	    return(null);
+    	Coord bc = c.div(bgsz);
+    	if((bc.x >= 0) && (bc.y >= 0) && (bc.x < gsz.x) && (bc.y < gsz.y))
+    	    return(layout[bc.x][bc.y]);
+    	else
+    	    return(null);
     }
 
     public boolean mousedown(Coord c, int button) {
-	PagButton h = bhit(c);
-	if((button == 1) && (h != null)) {
-	    pressed = h;
-	    grab = ui.grabmouse(this);
-	}
-	return(true);
+    	PagButton h = bhit(c);
+    	if((button == 1) && (h != null)) {
+    	    pressed = h;
+    	    grab = ui.grabmouse(this);
+    	}
+    	return(true);
     }
 
     public void mousemove(Coord c) {
-	if((dragging == null) && (pressed != null)) {
-	    PagButton h = bhit(c);
-	    if(h != pressed)
-		dragging = pressed.pag;
-	}
+    	if((dragging == null) && (pressed != null)) {
+    	    PagButton h = bhit(c);
+    	    if(h != pressed)
+    		dragging = pressed.pag;
+    	}
     }
+
+    public void use(String[] ad) {
+        GameUI gui = gameui();
+        if (gui == null)
+            return;
+        // if (ad[1].equals("coal")) {
+        //     Thread t = new Thread(new AddCoalToSmelter(gui, Integer.parseInt(ad[2])), "AddCoalToSmelter");
+        //     t.start();
+        // } else if (ad[1].equals("branchoven")) {
+        //     Thread t = new Thread(new AddBranchesToOven(gui, Integer.parseInt(ad[2])), "AddBranchesToOven");
+        //     t.start();
+        // } else if (ad[1].equals("steel")) {
+        //     if (gui.getwnd("Steel Refueler") == null) {
+        //         SteelRefueler sw = new SteelRefueler();
+        //         gui.map.steelrefueler = sw;
+        //         gui.add(sw, new Coord(gui.sz.x / 2 - sw.sz.x / 2, gui.sz.y / 2 - sw.sz.y / 2 - 200));
+        //         synchronized (GobSelectCallback.class) {
+        //             gui.map.registerGobSelect(sw);
+        //         }
+        //     }
+        // } else if (ad[1].equals("torch")) {
+        //     new Thread(new LightWithTorch(gui), "LightWithTorch").start();
+        //     //new Thread(new GetGob(gui), "GetGob").start();
+        //     //new Thread(new GetInv(gui), "GetInv").start();
+        //
+        // } else if (ad[1].equals("timers")) {
+        //     gui.timerswnd.show(!gui.timerswnd.visible);
+        //     gui.timerswnd.raise();
+        // } else if (ad[1].equals("clover")) {
+        //     new Thread(new FeedClover(gui), "FeedClover").start();
+        // } else if (ad[1].equals("fish")) {
+        //     new Thread(new ButcherFish(gui), "ButcherFish").start();
+        // } else if (ad[1].equals("rope")) {
+        //     new Thread(new LeashAnimal(gui), "LeashAnimal").start();
+        // } else if (ad[1].equals("livestock")) {
+        //     gui.livestockwnd.show(!gui.livestockwnd.visible);
+        //     gui.livestockwnd.raise();
+        // } else if (ad[1].equals("shoo")) {
+        //     new Thread(new Shoo(gui), "Shoo").start();
+        // } else if (ad[1].equals("dream")) {
+        //     new Thread(new DreamHarvester(gui), "DreamHarvester").start();
+        // } else if (ad[1].equals("trellis-harvest")) {
+        //     new Thread(new TrellisHarvest(gui), "TrellisHarvest").start();
+        // } else if (ad[1].equals("trellis-destroy")) {
+        //     new Thread(new TrellisDestroy(gui), "TrellisDestroy").start();
+        // } else if (ad[1].equals("cheesetray-fill")) {
+        //     new Thread(new FillCheeseTray(gui), "FillCheeseTray").start();
+        // } else if (ad[1].equals("equipweapon")) {
+        //     new Thread(new EquipWeapon(gui), "EquipWeapon").start();
+        // } else if (ad[1].equals("dismount")) {
+        //     new Thread(new Dismount(gui), "Dismount").start();
+        // } else if (ad[1].equals("waterempty")) {
+        //     new Thread(new FillWithWater(gui), "FillWithWater").start();
+        // } else if (ad[1].equals("flaskempty")) {
+        //     new Thread(new EmptyFlask(gui), "EmptyFlask").start();
+        // } else if (ad[1].equals("pepper")){
+        //     new Thread(new Pepper(gui), "Pepper").start();
+        // }
+    }
+
 
     public void use(PagButton r, boolean reset) {
 	Collection<PagButton> sub = new ArrayList<>();
