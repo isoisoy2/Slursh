@@ -372,7 +372,7 @@ public class Utils {
         } catch (SecurityException e) {
         }
     }
-    
+
     static boolean getprefb(String prefname, boolean def) {
 	try {
 	    return(prefs().getBoolean(prefname, def));
@@ -1792,20 +1792,46 @@ public class Utils {
     };
 
     static {
-	Console.setscmd("die", new Console.Command() {
-		public void run(Console cons, String[] args) {
-		    throw(new Error("Triggered death"));
-		}
-	    });
-	Console.setscmd("threads", new Console.Command() {
-		public void run(Console cons, String[] args) {
-		    Utils.dumptg(null, cons.out);
-		}
-	    });
-	Console.setscmd("gc", new Console.Command() {
-		public void run(Console cons, String[] args) {
-		    System.gc();
-		}
-	    });
+    	Console.setscmd("die", new Console.Command() {
+    		public void run(Console cons, String[] args) {
+    		    throw(new Error("Triggered death"));
+    		}
+    	    });
+    	Console.setscmd("threads", new Console.Command() {
+    		public void run(Console cons, String[] args) {
+    		    Utils.dumptg(null, cons.out);
+    		}
+    	    });
+    	Console.setscmd("gc", new Console.Command() {
+    		public void run(Console cons, String[] args) {
+    		    System.gc();
+    		}
+    	    });
+    }
+    // NOTE: will not work with values having large integer part
+    public static String fmt1DecPlace(double value) {
+        double rvalue = (double) Math.round(value * 10) / 10;
+        return (rvalue % 1 == 0) ? Integer.toString((int)rvalue) : Double.toString(rvalue);
+    }
+
+    public static Color hex2rgb(String clrhex) {
+        try {
+            return new Color(
+                    Integer.valueOf(clrhex.substring(0, 2), 16),
+                    Integer.valueOf(clrhex.substring(2, 4), 16),
+                    Integer.valueOf(clrhex.substring(4, 6), 16),
+                    255);
+        } catch (NumberFormatException e) {
+        }
+        return null;
+    }
+
+    public static String timeLeft(long at) {
+      		long t = at - System.currentTimeMillis();
+      		if (t<0) return "Finishing...";
+      		long hours = t / 3600000;
+      		long mins = t / 60000 % 60;
+      		long seconds = t / 1000 % 60;
+      		return String.format("%02d:%02d:%02d",hours,mins,seconds);
     }
 }

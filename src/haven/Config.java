@@ -97,6 +97,17 @@ public class Config {
     public static boolean mapshowgrid = Utils.getprefb("mapshowgrid", false);
 
     public static boolean resinfo = Utils.getprefb("resinfo", false);
+    public static boolean showservertime = Utils.getprefb("showservertime", true);
+    public static boolean quickslots = Utils.getprefb("quickslots", true);
+
+    public static boolean showprogressperc = Utils.getprefb("showprogressperc", false);
+
+    public static Coord chatsz = Utils.getprefc("chatsz", new Coord(683, 111));
+    public static boolean chatsave = Utils.getprefb("chatsave", false);
+    public static boolean chatalarm = Utils.getprefb("chatalarm", true);
+    public static double chatalarmvol = Utils.getprefd("chatalarmvol", 0.8);
+    public final static String chatfile = "chatlog.txt";
+    public static PrintWriter chatlog = null;
 
 
     static {

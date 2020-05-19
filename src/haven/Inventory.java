@@ -26,6 +26,8 @@
 
 package haven;
 
+import haven.res.ui.tt.q.qbuff.QBuff;
+
 import java.util.*;
 
 public class Inventory extends Widget implements DTarget {
@@ -51,12 +53,12 @@ public class Inventory extends Widget implements DTarget {
 	}
 	super.draw(g);
     }
-	
+
     public Inventory(Coord sz) {
 	super(invsq.sz().add(new Coord(-1, -1)).mul(sz).add(new Coord(1, 1)));
 	isz = sz;
     }
-    
+
     public boolean mousewheel(Coord c, int amount) {
 	if(ui.modshift) {
 	    Inventory minv = getparent(GameUI.class).maininv;
@@ -69,7 +71,7 @@ public class Inventory extends Widget implements DTarget {
 	}
 	return(true);
     }
-    
+
     public void addchild(Widget child, Object... args) {
 	add(child);
 	Coord c = (Coord)args[0];
@@ -78,7 +80,7 @@ public class Inventory extends Widget implements DTarget {
 	    wmap.put(i, add(new WItem(i), c.mul(sqsz).add(1, 1)));
 	}
     }
-    
+
     public void cdestroy(Widget w) {
 	super.cdestroy(w);
 	if(w instanceof GItem) {
@@ -86,29 +88,99 @@ public class Inventory extends Widget implements DTarget {
 	    ui.destroy(wmap.remove(i));
 	}
     }
-    
+
     public boolean drop(Coord cc, Coord ul) {
-	Coord dc;
-	if(dropul)
-	    dc = ul.add(sqsz.div(2)).div(sqsz);
-	else
-	    dc = cc.div(sqsz);
-	wdgmsg("drop", dc);
-	return(true);
+    	Coord dc;
+    	if(dropul)
+    	    dc = ul.add(sqsz.div(2)).div(sqsz);
+    	else
+    	    dc = cc.div(sqsz);
+    	wdgmsg("drop", dc);
+    	return(true);
     }
-	
+
     public boolean iteminteract(Coord cc, Coord ul) {
 	return(false);
     }
-	
+
     public void uimsg(String msg, Object... args) {
-	if(msg == "sz") {
-	    isz = (Coord)args[0];
-	    resize(invsq.sz().add(new Coord(-1, -1)).mul(isz).add(new Coord(1, 1)));
-	} else if(msg == "mode") {
-	    dropul = (((Integer)args[0]) == 0);
-	} else {
-	    super.uimsg(msg, args);
-	}
+    	if(msg == "sz") {
+    	    isz = (Coord)args[0];
+    	    resize(invsq.sz().add(new Coord(-1, -1)).mul(isz).add(new Coord(1, 1)));
+    	} else if(msg == "mode") {
+    	    dropul = (((Integer)args[0]) == 0);
+    	} else {
+    	    super.uimsg(msg, args);
+    	}
+    }
+    /* Following getItem* methods do partial matching of the name *on purpose*.
+       Because when localization is turned on, original English name will be in the brackets
+       next to the translation
+    */
+    public List<WItem> getItemsPartial(String... names) {
+        List<WItem> items = new ArrayList<WItem>();
+        for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+            if (wdg instanceof WItem) {
+                String wdgname = ((WItem)wdg).item.getname();
+                for (String name : names) {
+                    if (wdgname.contains(name)) {
+                        items.add((WItem) wdg);
+                        break;
+                    }
+                }
+            }
+        }
+        return items;
+    }
+
+    public WItem getItemPartial(String name) {
+        for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+            if (wdg instanceof WItem) {
+                String wdgname = ((WItem)wdg).item.getname();
+                if (wdgname.contains(name))
+                    return (WItem) wdg;
+            }
+        }
+        return null;
+    }
+
+    public int getItemPartialCount(String name) {
+        int count = 0;
+        for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+            if (wdg instanceof WItem) {
+                String wdgname = ((WItem)wdg).item.getname();
+                if (wdgname.contains(name))
+                    count++;
+            }
+        }
+        return count;
+    }
+
+    public int getFreeSpace() {
+        int feespace = isz.x * isz.y;
+        for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+            if (wdg instanceof WItem)
+                feespace -= (wdg.sz.x * wdg.sz.y) / (sqsz.x * sqsz.y);
+        }
+        return feespace;
+    }
+
+    public boolean drink(int threshold) {
+        IMeter.Meter stam = gameui().getmeter("stam", 0);
+        if (stam == null || stam.a > threshold)
+            return false;
+
+        List<WItem> containers = getItemsPartial("Waterskin", "Waterflask", "Kuksa","Cup");
+        for (WItem wi : containers) {
+            ItemInfo.Contents cont = wi.item.getcontents();
+            if (cont != null) {
+                FlowerMenu.setNextSelection("Drink");
+                ui.lcc = wi.rootpos();
+                wi.item.wdgmsg("iact", wi.c, 0);
+                return true;
+            }
+        }
+
+        return false;
     }
 }

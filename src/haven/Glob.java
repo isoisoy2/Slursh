@@ -50,7 +50,12 @@ public class Glob {
     public Indir<Resource> sky1 = null, sky2 = null;
     public double skyblend = 0.0;
     private Map<Indir<Resource>, Object> wmap = new HashMap<Indir<Resource>, Object>();
-    
+
+    public String servertime;
+    public Tex servertimetex;
+    public static final double SERVER_TIME_RATIO = 3.29d;
+    public double serverEpoch, localEpoch = Utils.rtime();
+
     public Glob(Session sess) {
 	this.sess = sess;
 	map = new MCache(sess);
@@ -67,13 +72,13 @@ public class Glob {
     public static class CAttr extends Observable {
 	String nm;
 	int base, comp;
-	
+
 	public CAttr(String nm, int base, int comp) {
 	    this.nm = nm.intern();
 	    this.base = base;
 	    this.comp = comp;
 	}
-	
+
 	public void update(int base, int comp) {
 	    if((base == this.base) && (comp == this.comp))
 		return;
@@ -83,7 +88,7 @@ public class Glob {
 	    notifyObservers(null);
 	}
     }
-    
+
     private static Color colstep(Color o, Color t, double a) {
 	int or = o.getRed(), og = o.getGreen(), ob = o.getBlue(), oa = o.getAlpha();
 	int tr = t.getRed(), tg = t.getGreen(), tb = t.getBlue(), ta = t.getAlpha();
@@ -144,19 +149,63 @@ public class Glob {
 
     private final double timefac = 3.0;
     private double lastrep = 0, rgtime = 0;
+
     public double globtime() {
-	double now = Utils.rtime();
-	double raw = ((now - epoch) * timefac) + time;
-	if(lastrep == 0) {
-	    rgtime = raw;
-	} else {
-	    double gd = (now - lastrep) * timefac;
-	    rgtime += gd;
-	    if(Math.abs(rgtime + gd - raw) > 1.0)
-		rgtime = rgtime + ((raw - rgtime) * (1.0 - Math.pow(10.0, -(now - lastrep))));
-	}
-	lastrep = now;
-	return(rgtime);
+    	double now = Utils.rtime();
+    	//double raw = ((now - epoch) * timefac) + time;
+        double raw = ((now - localEpoch) * SERVER_TIME_RATIO) + serverEpoch;
+    	if(lastrep == 0) {
+    	    rgtime = raw;
+    	} else {
+    	    //double gd = (now - lastrep) * timefac;
+            double gd = (now - lastrep) * SERVER_TIME_RATIO;
+    	    rgtime += gd;
+    	    if(Math.abs(rgtime + gd - raw) > 1.0)
+    		rgtime = rgtime + ((raw - rgtime) * (1.0 - Math.pow(10.0, -(now - lastrep))));
+    	}
+    	lastrep = now;
+    	return(rgtime);
+    }
+
+    private static final long secinday = 60 * 60 * 24;
+    private static final long dewyladysmantletimemin = 4 * 60 * 60 + 45 * 60;
+    private static final long dewyladysmantletimemax = 7 * 60 * 60 + 15 * 60;
+
+    private void servertimecalc() {
+        if (ast == null)
+            return;
+
+        long secs = (long)globtime();
+        long day = secs / secinday;
+        long secintoday = secs % secinday;
+        long hours = secintoday / 3600;
+        long mins = (secintoday % 3600) / 60;
+        int nextseason = (int)Math.ceil((1 - ast.sp) * (ast.is == 1 ? 30 : 10));
+
+        String fmt;
+        switch (ast.is) {
+            case 0:
+                fmt = nextseason == 1 ? "Day %d, %02d:%02d. Spring (%d RL day left)." : "Day %d, %02d:%02d. Spring (%d RL days left).";
+                break;
+            case 1:
+                fmt = nextseason == 1 ? "Day %d, %02d:%02d. Summer (%d RL day left)." : "Day %d, %02d:%02d. Summer (%d RL days left).";
+                break;
+            case 2:
+                fmt = nextseason == 1 ? "Day %d, %02d:%02d. Autumn (%d RL day left)." : "Day %d, %02d:%02d. Autumn (%d RL days left).";
+                break;
+            case 3:
+                fmt = nextseason == 1 ? "Day %d, %02d:%02d. Winter (%d RL day left)." : "Day %d, %02d:%02d. Winter (%d RL days left).";
+                break;
+            default:
+                fmt = "Unknown Season";
+        }
+
+        servertime = String.format(Resource.getLocString(Resource.BUNDLE_LABEL, fmt), day, hours, mins, nextseason);
+
+        if (secintoday >= dewyladysmantletimemin && secintoday <= dewyladysmantletimemax)
+            servertime += Resource.getLocString(Resource.BUNDLE_LABEL, " (Dewy Lady's Mantle)");
+
+        servertimetex = Text.render(servertime).tex();
     }
 
     public void blob(Message msg) {
@@ -166,79 +215,84 @@ public class Glob {
 	    Object[] a = msg.list();
 	    int n = 0;
 	    if(t == "tm") {
-		time = ((Number)a[n++]).doubleValue();
-		epoch = Utils.rtime();
-		if(!inc)
-		    lastrep = 0;
+            serverEpoch = ((Number) a[n++]).doubleValue();
+            localEpoch = Utils.rtime();
+            if (!inc)
+                lastrep = 0;
+            servertimecalc();
+    		// time = ((Number)a[n++]).doubleValue();
+    		// epoch = Utils.rtime();
+    		// if(!inc)
+    		//     lastrep = 0;
 	    } else if(t == "astro") {
-		double dt = ((Number)a[n++]).doubleValue();
-		double mp = ((Number)a[n++]).doubleValue();
-		double yt = ((Number)a[n++]).doubleValue();
-		boolean night = (Integer)a[n++] != 0;
-		Color mc = (Color)a[n++];
-		int is = (n < a.length) ? ((Number)a[n++]).intValue() : 1;
-		double sp = (n < a.length) ? ((Number)a[n++]).doubleValue() : 0.5;
-		double sd = (n < a.length) ? ((Number)a[n++]).doubleValue() : 0.5;
-		ast = new Astronomy(dt, mp, yt, night, mc, is, sp, sd);
+    		double dt = ((Number)a[n++]).doubleValue();
+    		double mp = ((Number)a[n++]).doubleValue();
+    		double yt = ((Number)a[n++]).doubleValue();
+    		boolean night = (Integer)a[n++] != 0;
+    		Color mc = (Color)a[n++];
+    		int is = (n < a.length) ? ((Number)a[n++]).intValue() : 1;
+    		double sp = (n < a.length) ? ((Number)a[n++]).doubleValue() : 0.5;
+    		double sd = (n < a.length) ? ((Number)a[n++]).doubleValue() : 0.5;
+    		ast = new Astronomy(dt, mp, yt, night, mc, is, sp, sd);
 	    } else if(t == "light") {
-		synchronized(this) {
-		    tlightamb = (Color)a[n++];
-		    tlightdif = (Color)a[n++];
-		    tlightspc = (Color)a[n++];
-		    tlightang = ((Number)a[n++]).doubleValue();
-		    tlightelev = ((Number)a[n++]).doubleValue();
-		    if(inc) {
-			olightamb = lightamb;
-			olightdif = lightdif;
-			olightspc = lightspc;
-			olightang = lightang;
-			olightelev = lightelev;
-			lchange = 0;
-		    } else {
-			lightamb = tlightamb;
-			lightdif = tlightdif;
-			lightspc = tlightspc;
-			lightang = tlightang;
-			lightelev = tlightelev;
-			lchange = -1;
-		    }
-		}
+    		synchronized(this) {
+    		    tlightamb = (Color)a[n++];
+    		    tlightdif = (Color)a[n++];
+    		    tlightspc = (Color)a[n++];
+    		    tlightang = ((Number)a[n++]).doubleValue();
+    		    tlightelev = ((Number)a[n++]).doubleValue();
+    		    if(inc) {
+    			olightamb = lightamb;
+    			olightdif = lightdif;
+    			olightspc = lightspc;
+    			olightang = lightang;
+    			olightelev = lightelev;
+    			lchange = 0;
+    		    } else {
+    			lightamb = tlightamb;
+    			lightdif = tlightdif;
+    			lightspc = tlightspc;
+    			lightang = tlightang;
+    			lightelev = tlightelev;
+    			lchange = -1;
+    		    }
+    		}
 	    } else if(t == "sky") {
-		synchronized(this) {
-		    if(a.length < 1) {
-			sky1 = sky2 = null;
-			skyblend = 0.0;
-		    } else {
-			sky1 = sess.getres(((Number)a[n++]).intValue());
-			if(a.length < 2) {
-			    sky2 = null;
-			    skyblend = 0.0;
-			} else {
-			    sky2 = sess.getres(((Number)a[n++]).intValue());
-			    skyblend = ((Number)a[n++]).doubleValue();
-			}
-		    }
-		}
+    		synchronized(this) {
+    		    if(a.length < 1) {
+    			sky1 = sky2 = null;
+    			skyblend = 0.0;
+    		    } else {
+    			sky1 = sess.getres(((Number)a[n++]).intValue());
+    			if(a.length < 2) {
+    			    sky2 = null;
+    			    skyblend = 0.0;
+    			} else {
+    			    sky2 = sess.getres(((Number)a[n++]).intValue());
+    			    skyblend = ((Number)a[n++]).doubleValue();
+    			}
+    		    }
+    		}
 	    } else if(t == "wth") {
-		synchronized(this) {
-		    if(!inc)
-			wmap.clear();
-		    Collection<Object> old = new LinkedList<Object>(wmap.keySet());
-		    while(n < a.length) {
-			Indir<Resource> res = sess.getres(((Number)a[n++]).intValue());
-			Object[] args = (Object[])a[n++];
-			Object curv = wmap.get(res);
-			if(curv instanceof Weather) {
-			    Weather cur = (Weather)curv;
-			    cur.update(args);
-			} else {
-			    wmap.put(res, args);
-			}
-			old.remove(res);
-		    }
-		    for(Object p : old)
-			wmap.remove(p);
-		}
+    		synchronized(this) {
+    		    if(!inc)
+    			wmap.clear();
+    		    Collection<Object> old = new LinkedList<Object>(wmap.keySet());
+    		    while(n < a.length) {
+    			Indir<Resource> res = sess.getres(((Number)a[n++]).intValue());
+    			Object[] args = (Object[])a[n++];
+    			Object curv = wmap.get(res);
+    			if(curv instanceof Weather) {
+    			    Weather cur = (Weather)curv;
+    			    cur.update(args);
+    			} else {
+    			    wmap.put(res, args);
+    			}
+    			old.remove(res);
+    		    }
+    		    for(Object p : old)
+    			wmap.remove(p);
+    		}
 	    } else {
 		System.err.println("Unknown globlob type: " + t);
 	    }
@@ -294,24 +348,24 @@ public class Glob {
     }
 
     public static class FrameInfo extends State {
-	public static final Slot<FrameInfo> slot = new Slot<>(Slot.Type.SYS, FrameInfo.class);
-	public static final Uniform u_globtime = new Uniform(Type.FLOAT, "globtime", p -> {
-		FrameInfo inf = p.get(slot);
-		return((inf == null) ? 0.0f : (float)(inf.globtime % 10000.0));
-	    }, slot);
-	public final double globtime;
+    	public static final Slot<FrameInfo> slot = new Slot<>(Slot.Type.SYS, FrameInfo.class);
+    	public static final Uniform u_globtime = new Uniform(Type.FLOAT, "globtime", p -> {
+    		FrameInfo inf = p.get(slot);
+    		return((inf == null) ? 0.0f : (float)(inf.globtime % 10000.0));
+    	    }, slot);
+    	public final double globtime;
 
-	public FrameInfo(Glob glob) {
-	    this.globtime = glob.globtime();
-	}
+    	public FrameInfo(Glob glob) {
+    	    this.globtime = glob.globtime();
+    	}
 
-	public ShaderMacro shader() {return(null);}
-	public void apply(Pipe p) {p.put(slot, this);}
+    	public ShaderMacro shader() {return(null);}
+    	public void apply(Pipe p) {p.put(slot, this);}
 
-	public static Expression globtime() {
-	    return(u_globtime.ref());
-	}
+    	public static Expression globtime() {
+    	    return(u_globtime.ref());
+    	}
 
-	public String toString() {return(String.format("#<globinfo @%fs>", globtime));}
+    	public String toString() {return(String.format("#<globinfo @%fs>", globtime));}
     }
 }

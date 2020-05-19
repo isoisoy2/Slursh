@@ -34,13 +34,13 @@ import java.awt.Graphics;
 
 public abstract class ItemInfo {
     public final Owner owner;
-    
+
     public interface Owner extends OwnerContext {
 	@Deprecated
 	public default Glob glob() {return(context(Glob.class));}
 	public List<ItemInfo> info();
     }
-    
+
     public interface ResOwner extends Owner {
 	public Resource resource();
     }
@@ -48,7 +48,7 @@ public abstract class ItemInfo {
     public interface SpriteOwner extends ResOwner {
 	public GSprite sprite();
     }
-    
+
     public static class Raw {
 	public final Object[] data;
 	public final double time;
@@ -97,11 +97,11 @@ public abstract class ItemInfo {
 	    return(null);
 	}
     }
-    
+
     public ItemInfo(Owner owner) {
 	this.owner = owner;
     }
-    
+
     public static class Layout {
 	private final List<Tip> tips = new ArrayList<Tip>();
 	private final Map<ID, Tip> itab = new HashMap<ID, Tip>();
@@ -155,44 +155,44 @@ public abstract class ItemInfo {
 	}
 	public int order() {return(100);}
     }
-    
+
     public static class AdHoc extends Tip {
 	public final Text str;
-	
+
 	public AdHoc(Owner owner, String str) {
 	    super(owner);
 	    this.str = Text.render(str);
 	}
-	
+
 	public BufferedImage tipimg() {
 	    return(str.img);
 	}
     }
 
     public static class Name extends Tip {
-	public final Text str;
-	
-	public Name(Owner owner, Text str) {
-	    super(owner);
-	    this.str = str;
-	}
-	
-	public Name(Owner owner, String str) {
-	    this(owner, Text.render(str));
-	}
-	
-	public BufferedImage tipimg() {
-	    return(str.img);
-	}
+    	public final Text str;
 
-	public int order() {return(0);}
+    	public Name(Owner owner, Text str) {
+    	    super(owner);
+    	    this.str = str;
+    	}
 
-	public Tip shortvar() {
-	    return(new Tip(owner) {
-		    public BufferedImage tipimg() {return(str.img);}
-		    public int order() {return(0);}
-		});
-	}
+    	public Name(Owner owner, String str) {
+    	    this(owner, Text.render(str));
+    	}
+
+    	public BufferedImage tipimg() {
+    	    return(str.img);
+    	}
+
+    	public int order() {return(0);}
+
+    	public Tip shortvar() {
+    	    return(new Tip(owner) {
+    		    public BufferedImage tipimg() {return(str.img);}
+    		    public int order() {return(0);}
+    		});
+    	}
     }
 
     public static class Pagina extends Tip {
@@ -217,30 +217,51 @@ public abstract class ItemInfo {
     }
 
     public static class Contents extends Tip {
-	public final List<ItemInfo> sub;
-	private static final Text.Line ch = Text.render("Contents:");
-	
-	public Contents(Owner owner, List<ItemInfo> sub) {
-	    super(owner);
-	    this.sub = sub;
-	}
-	
-	public BufferedImage tipimg() {
-	    BufferedImage stip = longtip(sub);
-	    BufferedImage img = TexI.mkbuf(new Coord(stip.getWidth() + 10, stip.getHeight() + 15));
-	    Graphics g = img.getGraphics();
-	    g.drawImage(ch.img, 0, 0, null);
-	    g.drawImage(stip, 10, 15, null);
-	    g.dispose();
-	    return(img);
-	}
+    	public final List<ItemInfo> sub;
+    	private static final Text.Line ch = Text.render("Contents:");
+        public double content = 0;
+        public boolean isseeds;
 
-	public Tip shortvar() {
-	    return(new Tip(owner) {
-		    public BufferedImage tipimg() {return(shorttip(sub));}
-		    public int order() {return(100);}
-		});
-	}
+    	public Contents(Owner owner, List<ItemInfo> sub) {
+    	    super(owner);
+    	    this.sub = sub;
+
+            for (ItemInfo info : sub) {
+                if (info instanceof ItemInfo.Name) {
+                    ItemInfo.Name name = (ItemInfo.Name) info;
+                    if (name.str != null) {
+                        // determine whether we are dealing with seeds by testing for
+                        // the absence of decimal separator (this will work irregardless of current localization)
+                        int amountend = name.str.text.indexOf(' ');
+                        isseeds = name.str.text.lastIndexOf('.', amountend) < 0;
+                        if (amountend > 0) {
+                            try {
+                                content = Double.parseDouble(name.str.text.substring(0, amountend));
+                                break;
+                            } catch (NumberFormatException nfe) {
+                            }
+                        }
+                    }
+                }
+            }
+    	}
+
+    	public BufferedImage tipimg() {
+    	    BufferedImage stip = longtip(sub);
+    	    BufferedImage img = TexI.mkbuf(new Coord(stip.getWidth() + 10, stip.getHeight() + 15));
+    	    Graphics g = img.getGraphics();
+    	    g.drawImage(ch.img, 0, 0, null);
+    	    g.drawImage(stip, 10, 15, null);
+    	    g.dispose();
+    	    return(img);
+    	}
+
+    	public Tip shortvar() {
+    	    return(new Tip(owner) {
+    		    public BufferedImage tipimg() {return(shorttip(sub));}
+    		    public int order() {return(100);}
+    		});
+    	}
     }
 
     public static BufferedImage catimgs(int margin, BufferedImage... imgs) {
@@ -353,7 +374,7 @@ public abstract class ItemInfo {
     public static List<ItemInfo> buildinfo(Owner owner, Object[] rawinfo) {
 	return(buildinfo(owner, new Raw(rawinfo)));
     }
-    
+
     private static String dump(Object arg) {
 	if(arg instanceof Object[]) {
 	    StringBuilder buf = new StringBuilder();

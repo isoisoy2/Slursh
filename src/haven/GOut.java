@@ -148,54 +148,63 @@ public class GOut {
     }
 
     public void rimage(Tex tex, Coord c, Coord sz) {
-	Coord cc = new Coord();
-	Coord br = c.add(sz);
-	for(cc.y = c.y; cc.y < c.y + sz.y; cc.y += tex.sz().y) {
-	    for(cc.x = c.x; cc.x < c.x + sz.x; cc.x += tex.sz().x)
-		image(tex, cc, c, br);
-	}
+    	Coord cc = new Coord();
+    	Coord br = c.add(sz);
+    	for(cc.y = c.y; cc.y < c.y + sz.y; cc.y += tex.sz().y) {
+    	    for(cc.x = c.x; cc.x < c.x + sz.x; cc.x += tex.sz().x)
+    		image(tex, cc, c, br);
+    	}
     }
 
     /* Draw texture at c, with the extra state s applied. */
     public void image(Tex tex, Coord c, State s) {
-	Pipe bk = cur2d.copy();
-	cur2d.prep(s);
-	tex.crender(this, c.add(tx), ul, br);
-	cur2d.copy(bk);
+    	Pipe bk = cur2d.copy();
+    	cur2d.prep(s);
+    	tex.crender(this, c.add(tx), ul, br);
+    	cur2d.copy(bk);
     }
 
     public void atext(String text, Coord c, double ax, double ay) {
-	Text t = Text.render(text);
-	Tex T = t.tex();
-	aimage(T, c, ax, ay);
-	T.dispose();
+    	Text t = Text.render(text);
+    	Tex T = t.tex();
+    	aimage(T, c, ax, ay);
+    	T.dispose();
+    }
+
+    public void atextstroked(String text, Coord c, double ax, double ay, Color color, Color stroke, Text.Foundry foundry) {
+        Text t = Text.renderstroked(text, color, stroke, foundry);
+        Tex T = t.tex();
+        Coord sz = t.sz();
+        image(T, c.add((int) ((double) sz.x * -ax), (int) ((double) sz.y * -ay)));
+        T.dispose();
+        //checkerr();
     }
 
     public void text(String text, Coord c) {
-	atext(text, c, 0, 0);
+	    atext(text, c, 0, 0);
     }
 
     public void drawp(Model.Mode mode, float[] data, int n) {
-	out.draw(cur2d, new Model(mode, new VertexArray(vf_pos, new VertexArray.Buffer(data.length * 4, DataBuffer.Usage.EPHEMERAL, DataBuffer.Filler.of(data))), null, 0, n));
+	    out.draw(cur2d, new Model(mode, new VertexArray(vf_pos, new VertexArray.Buffer(data.length * 4, DataBuffer.Usage.EPHEMERAL, DataBuffer.Filler.of(data))), null, 0, n));
     }
 
     public void drawp(Model.Mode mode, float[] data) {
-	drawp(mode, data, data.length / 2);
+	    drawp(mode, data, data.length / 2);
     }
 
     public void drawt(Model.Mode mode, float[] data, int n) {
-	out.draw(cur2d, new Model(mode, new VertexArray(vf_tex, new VertexArray.Buffer(data.length * 4, DataBuffer.Usage.EPHEMERAL, DataBuffer.Filler.of(data))), null, 0, n));
+	    out.draw(cur2d, new Model(mode, new VertexArray(vf_tex, new VertexArray.Buffer(data.length * 4, DataBuffer.Usage.EPHEMERAL, DataBuffer.Filler.of(data))), null, 0, n));
     }
 
     public void drawt(Model.Mode mode, float[] data) {
-	drawt(mode, data, data.length / 4);
+	    drawt(mode, data, data.length / 4);
     }
 
     public void line(Coord c1, Coord c2, double w) {
-	usestate(new States.LineWidth(w));
-	float[] data = {c1.x + tx.x + 0.5f, c1.y + tx.y + 0.5f,
-			c2.x + tx.x + 0.5f, c2.y + tx.y + 0.5f};
-	drawp(Model.Mode.LINES, data);
+    	usestate(new States.LineWidth(w));
+    	float[] data = {c1.x + tx.x + 0.5f, c1.y + tx.y + 0.5f,
+    			c2.x + tx.x + 0.5f, c2.y + tx.y + 0.5f};
+    	drawp(Model.Mode.LINES, data);
     }
 
     public void frect2(Coord ul, Coord br) {
@@ -275,7 +284,7 @@ public class GOut {
 	data[p++] = (float)(c.y - (Math.sin(a2) * r.y));
 	drawp(Model.Mode.TRIANGLE_FAN, data);
     }
-	
+
     public void fellipse(Coord c, Coord r) {
 	fellipse(c, r, 0, Math.PI * 2);
     }

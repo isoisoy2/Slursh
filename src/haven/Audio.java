@@ -37,11 +37,11 @@ public class Audio {
     public static final AudioFormat fmt = new AudioFormat(44100, 16, 2, true, false);
     private static int bufsize = 4096;
     public static double volume = 1.0;
-    
+
     static {
 	volume = Double.parseDouble(Utils.getpref("sfxvol", "1.0"));
     }
-    
+
     public static void setvolume(double volume) {
 	Audio.volume = volume;
 	Utils.setpref("sfxvol", Double.toString(volume));
@@ -50,7 +50,7 @@ public class Audio {
     public interface CS {
 	public int get(double[][] buf, int len);
     }
-    
+
     public static class Mixer implements CS {
 	public final boolean cont;
 	private final Collection<CS> clips = new LinkedList<CS>();
@@ -316,90 +316,90 @@ public class Audio {
     }
 
     public static class Monitor implements CS {
-	public final CS bk;
-	public boolean eof = false;
+    	public final CS bk;
+    	public boolean eof = false;
 
-	public Monitor(CS bk) {
-	    this.bk = bk;
-	}
+    	public Monitor(CS bk) {
+    	    this.bk = bk;
+    	}
 
-	public int get(double[][] dst, int ns) {
-	    int ret = bk.get(dst, ns);
-	    if((ret < 0) && !eof) {
-		eof = true;
-		eof();
-	    }
-	    return(ret);
-	}
+    	public int get(double[][] dst, int ns) {
+    	    int ret = bk.get(dst, ns);
+    	    if((ret < 0) && !eof) {
+    		eof = true;
+    		eof();
+    	    }
+    	    return(ret);
+    	}
 
-	protected void eof() {
-	    synchronized(this) {
-		notifyAll();
-	    }
-	}
+    	protected void eof() {
+    	    synchronized(this) {
+    		notifyAll();
+    	    }
+    	}
 
-	public void finwait() throws InterruptedException {
-	    synchronized(this) {
-		while(!eof) {
-		    wait();
-		}
-	    }
-	}
+    	public void finwait() throws InterruptedException {
+    	    synchronized(this) {
+    		while(!eof) {
+    		    wait();
+    		}
+    	    }
+    	}
     }
 
     public static abstract class Repeater implements CS {
-	private CS cur = null;
+    	private CS cur = null;
 
-	public int get(double[][] buf, int ns) {
-	    while(true) {
-		if(cur == null) {
-		    if((cur = cons()) == null)
-			return(-1);
-		}
-		int ret = cur.get(buf, ns);
-		if(ret >= 0)
-		    return(ret);
-		cur = null;
-	    }
-	}
+    	public int get(double[][] buf, int ns) {
+    	    while(true) {
+    		if(cur == null) {
+    		    if((cur = cons()) == null)
+    			return(-1);
+    		}
+    		int ret = cur.get(buf, ns);
+    		if(ret >= 0)
+    		    return(ret);
+    		cur = null;
+    	    }
+    	}
 
-	protected abstract CS cons();
+    	protected abstract CS cons();
     }
 
     public static class LDump implements CS {
-	public final CS bk;
-	private double val = 0.0;
-	private int n = 0, iv;
+    	public final CS bk;
+    	private double val = 0.0;
+    	private int n = 0, iv;
 
-	public LDump(CS bk, int iv) {
-	    this.bk = bk;
-	    this.iv = iv;
-	}
+    	public LDump(CS bk, int iv) {
+    	    this.bk = bk;
+    	    this.iv = iv;
+    	}
 
-	public LDump(CS bk) {
-	    this(bk, 44100);
-	}
+    	public LDump(CS bk) {
+    	    this(bk, 44100);
+    	}
 
-	public int get(double[][] buf, int ns) {
-	    int nch = buf.length;
-	    int ret = bk.get(buf, ns);
-	    if(ret < 0) {
-		if(n > 0)
-		    System.err.println(val / n);
-	    } else {
-		for(int ch = 0; ch < nch; ch++) {
-		    for(int sm = 0; sm < ret; sm++) {
-			val += Math.abs(buf[ch][sm]);
-			if(++n >= 44100) {
-			    System.err.print((val / n) + " ");
-			    val = 0;
-			    n = 0;
-			}
-		    }
-		}
-	    }
-	    return(ret);
-	}
+    	public int get(double[][] buf, int ns) {
+    	    int nch = buf.length;
+    	    int ret = bk.get(buf, ns);
+    	    if(ret < 0) {
+    		if(n > 0)
+    		    System.err.println(val / n);
+    	    } else {
+    		for(int ch = 0; ch < nch; ch++) {
+    		    for(int sm = 0; sm < ret; sm++) {
+    			val += Math.abs(buf[ch][sm]);
+    			if(++n >= 44100) {
+    			    System.err.print((val / n) + " ");
+    			    val = 0;
+    			    n = 0;
+    			}
+    		    }
+    		}
+    	    }
+    	    return(ret);
+    	}
     }
 
     private static class Player extends HackThread {
@@ -408,14 +408,14 @@ public class Audio {
 	private final Object queuemon = new Object();
 	private Collection<Runnable> queue = new LinkedList<Runnable>();
 	private volatile boolean reopen = false;
-	
+
 	Player(CS stream) {
 	    super("Haven audio player");
 	    this.stream = stream;
 	    nch = fmt.getChannels();
 	    setDaemon(true);
 	}
-	
+
 	private int fillbuf(byte[] dst, int off, int len) {
 	    int ns = len / (2 * nch);
 	    double[][] val = new double[nch][ns];
@@ -523,13 +523,13 @@ public class Audio {
 	    }
 	}
     }
-    
+
     public static void play(CS clip) {
-	if(clip == null)
-	    throw(new NullPointerException());
-	Player pl = ckpl(true);
-	if(pl != null)
-	    ((Mixer)pl.stream).add(clip);
+    	if(clip == null)
+    	    throw(new NullPointerException());
+    	Player pl = ckpl(true);
+    	if(pl != null)
+    	    ((Mixer)pl.stream).add(clip);
     }
 
     public static void stop(CS clip) {
@@ -537,7 +537,7 @@ public class Audio {
 	if(pl != null)
 	    ((Mixer)pl.stream).stop(clip);
     }
-    
+
     public static void queue(Runnable d) {
 	Player pl = ckpl(true);
 	synchronized(pl.queuemon) {
@@ -547,29 +547,33 @@ public class Audio {
 
     private static Map<Resource, Resource.Audio> reslastc = new HashMap<Resource, Resource.Audio>();
     public static CS fromres(Resource res) {
-	Collection<Resource.Audio> clips = res.layers(Resource.audio);
-	synchronized(reslastc) {
-	    Resource.Audio last = reslastc.get(res);
-	    int sz = clips.size();
-	    int s = (int)(Math.random() *  (((sz > 2) && (last != null))?(sz - 1):sz));
-	    Resource.Audio clip = null;
-	    for(Resource.Audio cp : clips) {
-		if(cp == last)
-		    continue;
-		clip = cp;
-		if(--s < 0)
-		    break;
-	    }
-	    if(sz > 2)
-		reslastc.put(res, clip);
-	    return(clip.stream());
-	}
+    	Collection<Resource.Audio> clips = res.layers(Resource.audio);
+    	synchronized(reslastc) {
+    	    Resource.Audio last = reslastc.get(res);
+    	    int sz = clips.size();
+    	    int s = (int)(Math.random() *  (((sz > 2) && (last != null))?(sz - 1):sz));
+    	    Resource.Audio clip = null;
+    	    for(Resource.Audio cp : clips) {
+    		if(cp == last)
+    		    continue;
+    		clip = cp;
+    		if(--s < 0)
+    		    break;
+    	    }
+    	    if(sz > 2)
+    		reslastc.put(res, clip);
+    	    return(clip.stream());
+    	}
     }
 
     public static void play(Resource res) {
-	play(fromres(res));
+	    play(fromres(res));
     }
 
+    public static void play(Resource res, double vol) {
+        play(new Audio.VolAdjust(fromres(res), vol));
+    }
+    
     public static void play(final Indir<Resource> clip) {
 	queue(new Runnable() {
 		public void run() {
@@ -581,7 +585,7 @@ public class Audio {
 		}
 	    });
     }
-    
+
     public static void main(String[] args) throws Exception {
 	Collection<Monitor> clips = new LinkedList<Monitor>();
 	for(int i = 0; i < args.length; i++) {
@@ -597,7 +601,7 @@ public class Audio {
 	for(Monitor c : clips)
 	    c.finwait();
     }
-    
+
     static {
 	Console.setscmd("sfx", new Console.Command() {
 		public void run(Console cons, String[] args) {
