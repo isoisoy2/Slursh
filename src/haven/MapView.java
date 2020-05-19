@@ -2235,6 +2235,15 @@ public class MapView extends PView implements DTarget, Console.Directory {
     		}
     	    });
     }
+    public void canceltasks() {
+        // if (pf != null)
+        //     pf.terminate = true;
+        // stopWalker = true;
+        // if (steelrefueler != null)
+        //     steelrefueler.terminate();
+        // if (musselPicker != null)
+        //     musselPicker.interrupt();
+    }
 
     public void refreshGobsAll() {
         OCache oc = glob.oc;
