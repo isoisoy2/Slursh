@@ -207,21 +207,21 @@ public class ChatUI extends Widget {
     	public Channel(boolean closable) {
     	    sb = add(new Scrollbar(0, 0, 0));
     	    if(closable)
-    		cb = add(new IButton("gfx/hud/chat-close", "", "-d", "-h"));
+    		    cb = add(new IButton("gfx/hud/chat-close", "", "-d", "-h"));
     	    else
-    		cb = null;
+    		    cb = null;
     	}
 
     	public void append(Message msg) {
     	    synchronized(msgs) {
-    		msgs.add(msg);
-    		int y = 0;
-    		for(Message m : msgs)
-    		    y += m.sz().y;
-    		boolean b = sb.val >= sb.max;
-    		sb.max = y - ih();
-    		if(b)
-    		    sb.val = sb.max;
+        		msgs.add(msg);
+        		int y = 0;
+        		for(Message m : msgs)
+        		    y += m.sz().y;
+        		boolean b = sb.val >= sb.max;
+        		sb.max = y - ih();
+        		if(b)
+        		    sb.val = sb.max;
     	    }
     	}
 
@@ -309,41 +309,41 @@ public class ChatUI extends Widget {
     	    public final TextHitInfo ch;
 
     	    public CharPos(Message msg, RichText.TextPart part, TextHitInfo ch) {
-    		this.msg = msg;
-    		this.part = part;
-    		this.ch = ch;
+        		this.msg = msg;
+        		this.part = part;
+        		this.ch = ch;
     	    }
 
     	    public boolean equals(Object oo) {
-    		if(!(oo instanceof CharPos)) return(false);
-    		CharPos o = (CharPos)oo;
-    		return((o.msg == this.msg) && (o.part == this.part) && o.ch.equals(this.ch));
+        		if(!(oo instanceof CharPos)) return(false);
+        		CharPos o = (CharPos)oo;
+        		return((o.msg == this.msg) && (o.part == this.part) && o.ch.equals(this.ch));
     	    }
     	}
 
     	public final Comparator<CharPos> poscmp = new Comparator<CharPos>() {
     	    public int compare(CharPos a, CharPos b) {
-    		if(a.msg != b.msg) {
-    		    synchronized(msgs) {
-    			for(Message msg : msgs) {
-    			    if(msg == a.msg)
-    				return(-1);
-    			    else if(msg == b.msg)
-    				return(1);
-    			}
-    		    }
-    		    throw(new IllegalStateException("CharPos message is no longer contained in the log"));
-    		} else if(a.part != b.part) {
-    		    for(RichText.Part part = ((RichText)a.msg.text()).parts; part != null; part = part.next) {
-    			if(part == a.part)
-    			    return(-1);
-    			else
-    			    return(1);
-    		    }
-    		    throw(new IllegalStateException("CharPos is no longer contained in the log"));
-    		} else {
-    		    return(a.ch.getInsertionIndex() - b.ch.getInsertionIndex());
-    		}
+        		if(a.msg != b.msg) {
+        		    synchronized(msgs) {
+            			for(Message msg : msgs) {
+            			    if(msg == a.msg)
+            				return(-1);
+            			    else if(msg == b.msg)
+            				return(1);
+            			}
+        		    }
+        		    throw(new IllegalStateException("CharPos message is no longer contained in the log"));
+        		} else if(a.part != b.part) {
+        		    for(RichText.Part part = ((RichText)a.msg.text()).parts; part != null; part = part.next) {
+            			if(part == a.part)
+            			    return(-1);
+            			else
+            			    return(1);
+        		    }
+        		    throw(new IllegalStateException("CharPos is no longer contained in the log"));
+        		} else {
+        		    return(a.ch.getInsertionIndex() - b.ch.getInsertionIndex());
+        		}
     	    }
     	};
 
@@ -353,11 +353,11 @@ public class ChatUI extends Widget {
         		for(Message msg : msgs) {
         		    Coord sz = msg.sz();
         		    if((c.y >= y) && (c.y < y + sz.y)) {
-        			if(hc != null) {
-        			    hc.x = c.x;
-        			    hc.y = c.y - y;
-        			}
-        			return(msg);
+            			if(hc != null) {
+            			    hc.x = c.x;
+            			    hc.y = c.y - y;
+            			}
+            			return(msg);
         		    }
         		    y += sz.y;
         		}
@@ -387,20 +387,20 @@ public class ChatUI extends Widget {
     	    Coord hc = new Coord();
     	    Message msg = messageat(c, hc);
     	    if((msg == null) || !(msg.text() instanceof RichText))
-    		return(null);
+    		    return(null);
     	    RichText rt = (RichText)msg.text();
     	    RichText.Part p = rt.partat(hc);
     	    if(p == null) {
-    		RichText.TextPart lp = null;
-    		for(RichText.Part part = ((RichText)msg.text()).parts; part != null; part = part.next) {
-    		    if(part instanceof RichText.TextPart)
-    			lp = (RichText.TextPart)part;
-    		}
-    		if(lp == null) return(null);
-    		return(new CharPos(msg, lp, TextHitInfo.trailing(lp.end - lp.start - 1)));
+        		RichText.TextPart lp = null;
+        		for(RichText.Part part = ((RichText)msg.text()).parts; part != null; part = part.next) {
+        		    if(part instanceof RichText.TextPart)
+        			lp = (RichText.TextPart)part;
+        		}
+        		if(lp == null) return(null);
+        		return(new CharPos(msg, lp, TextHitInfo.trailing(lp.end - lp.start - 1)));
     	    }
     	    if(!(p instanceof RichText.TextPart))
-    		return(null);
+    		    return(null);
     	    RichText.TextPart tp = (RichText.TextPart)p;
     	    return(new CharPos(msg, tp, tp.charat(hc)));
     	}
@@ -411,16 +411,16 @@ public class ChatUI extends Widget {
 
     	public boolean mousedown(Coord c, int btn) {
     	    if(super.mousedown(c, btn))
-    		return(true);
+    		      return(true);
     	    if(btn == 1) {
-    		selstart = selend = null;
-    		CharPos ch = charat(c);
-    		if(ch != null) {
-    		    selorig = lasthit = ch;
-    		    dragging = false;
-    		    grab = ui.grabmouse(this);
-    		}
-    		return(true);
+        		selstart = selend = null;
+        		CharPos ch = charat(c);
+        		if(ch != null) {
+        		    selorig = lasthit = ch;
+        		    dragging = false;
+        		    grab = ui.grabmouse(this);
+        		}
+        		return(true);
     	    }
     	    return(false);
     	}
@@ -431,14 +431,14 @@ public class ChatUI extends Widget {
         		if((ch != null) && !ch.equals(lasthit)) {
         		    lasthit = ch;
         		    if(!dragging && !ch.equals(selorig))
-        			dragging = true;
+        			    dragging = true;
         		    int o = poscmp.compare(selorig, ch);
         		    if(o < 0) {
-        			selstart = selorig; selend = ch;
+        			    selstart = selorig; selend = ch;
         		    } else if(o > 0) {
-        			selstart = ch; selend = selorig;
+        			    selstart = ch; selend = selorig;
         		    } else {
-        			selstart = selend = null;
+        			    selstart = selend = null;
         		    }
         		}
     	    } else {
@@ -461,35 +461,35 @@ public class ChatUI extends Widget {
             			sel = true;
             			for(part = rt.parts; part != null; part = part.next) {
             			    if(part == start.part)
-            				break;
+            				    break;
             			}
         		    }
         		    if(sel) {
-        			for(; part != null; part = part.next) {
-        			    if(!(part instanceof RichText.TextPart))
-        				    continue;
-        			    RichText.TextPart tp = (RichText.TextPart)part;
-        			    CharacterIterator iter = tp.ti();
-        			    int sch;
-        			    if(tp == start.part)
-        				            sch = tp.start + start.ch.getInsertionIndex();
-        			    else
-        				            sch = tp.start;
-        			    int ech;
-        			    if(tp == end.part)
-        				            ech = tp.start + end.ch.getInsertionIndex();
-        			    else
-        				            ech = tp.end;
-        			    for(int i = sch; i < ech; i++)
-        				            buf.append(iter.setIndex(i));
-        			    if(part == end.part) {
-            				sel = false;
-            				break;
-        			    }
-        			    buf.append(' ');
-        			}
-        			if(sel)
-        			    buf.append('\n');
+            			for(; part != null; part = part.next) {
+            			    if(!(part instanceof RichText.TextPart))
+            				    continue;
+            			    RichText.TextPart tp = (RichText.TextPart)part;
+            			    CharacterIterator iter = tp.ti();
+            			    int sch;
+            			    if(tp == start.part)
+            				    sch = tp.start + start.ch.getInsertionIndex();
+            			    else
+            				    sch = tp.start;
+            			    int ech;
+            			    if(tp == end.part)
+            				    ech = tp.start + end.ch.getInsertionIndex();
+            			    else
+            				    ech = tp.end;
+            			    for(int i = sch; i < ech; i++)
+            				    buf.append(iter.setIndex(i));
+            			    if(part == end.part) {
+                				sel = false;
+                				break;
+            			    }
+            			    buf.append(' ');
+            			}
+            			if(sel)
+            			    buf.append('\n');
         		    }
         		    if(msg == end.msg)
         			    break;
@@ -497,7 +497,7 @@ public class ChatUI extends Widget {
     	    }
     	    Clipboard cl;
     	    if((cl = java.awt.Toolkit.getDefaultToolkit().getSystemSelection()) == null)
-    		cl = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+    		    cl = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
     	    try {
         		final CharPos ownsel = selstart;
         		cl.setContents(new StringSelection(buf.toString()),
@@ -530,15 +530,15 @@ public class ChatUI extends Widget {
 
     	public boolean mouseup(Coord c, int btn) {
     	    if(btn == 1) {
-    		if(selorig != null) {
-    		    if(selstart != null)
-    			selected(selstart, selend);
-    		    else
-    			clicked(selorig);
-    		    grab.remove();
-    		    selorig = null;
-    		    dragging = false;
-    		}
+        		if(selorig != null) {
+        		    if(selstart != null)
+        			    selected(selstart, selend);
+        		    else
+        			    clicked(selorig);
+        		    grab.remove();
+        		    selorig = null;
+        		    dragging = false;
+        		}
     	    }
     	    return(super.mouseup(c, btn));
     	}
@@ -558,51 +558,51 @@ public class ChatUI extends Widget {
     	    RichText rt = (RichText)msg.text();
     	    boolean sel = msg != selstart.msg;
     	    for(RichText.Part part = rt.parts; part != null; part = part.next) {
-    		if(!(part instanceof RichText.TextPart))
-    		    continue;
-    		RichText.TextPart tp = (RichText.TextPart)part;
-    		if(tp.start == tp.end)
-    		    continue;
-    		TextHitInfo a, b;
-    		if(sel) {
-    		    a = TextHitInfo.leading(0);
-    		} else if(tp == selstart.part) {
-    		    a = selstart.ch;
-    		    sel = true;
-    		} else {
-    		    continue;
-    		}
-    		if(tp == selend.part) {
-    		    sel = false;
-    		    b = selend.ch;
-    		} else {
-    		    b = TextHitInfo.trailing(tp.end - tp.start - 1);
-    		}
-    		Coord ul = new Coord(tp.x + (int)tp.advance(0, a.getInsertionIndex()), tp.y + y);
-    		Coord sz = new Coord((int)tp.advance(a.getInsertionIndex(), b.getInsertionIndex()), tp.height());
-    		g.chcolor(0, 0, 255, 255);
-    		g.frect(ul, sz);
-    		g.chcolor();
-    		if(!sel)
-    		    break;
+        		if(!(part instanceof RichText.TextPart))
+        		    continue;
+        		RichText.TextPart tp = (RichText.TextPart)part;
+        		if(tp.start == tp.end)
+        		    continue;
+        		TextHitInfo a, b;
+        		if(sel) {
+        		    a = TextHitInfo.leading(0);
+        		} else if(tp == selstart.part) {
+        		    a = selstart.ch;
+        		    sel = true;
+        		} else {
+        		    continue;
+        		}
+        		if(tp == selend.part) {
+        		    sel = false;
+        		    b = selend.ch;
+        		} else {
+        		    b = TextHitInfo.trailing(tp.end - tp.start - 1);
+        		}
+        		Coord ul = new Coord(tp.x + (int)tp.advance(0, a.getInsertionIndex()), tp.y + y);
+        		Coord sz = new Coord((int)tp.advance(a.getInsertionIndex(), b.getInsertionIndex()), tp.height());
+        		g.chcolor(0, 0, 255, 255);
+        		g.frect(ul, sz);
+        		g.chcolor();
+        		if(!sel)
+        		    break;
     	    }
     	}
 
     	public void uimsg(String name, Object... args) {
     	    if(name == "sel") {
-    		select();
+    		    select();
     	    } else if(name == "dsp") {
-    		display();
+    		    display();
     	    } else {
-    		super.uimsg(name, args);
+    		    super.uimsg(name, args);
     	    }
     	}
 
     	public void wdgmsg(Widget sender, String msg, Object... args) {
     	    if(sender == cb) {
-    		wdgmsg("close");
+    		    wdgmsg("close");
     	    } else {
-    		super.wdgmsg(sender, msg, args);
+    		    super.wdgmsg(sender, msg, args);
     	    }
     	}
 
@@ -689,17 +689,17 @@ public class ChatUI extends Widget {
 
     	public void uimsg(String msg, Object... args) {
     	    if((msg == "msg") || (msg == "log")) {
-    		String line = (String)args[0];
-    		Color col = null;
-    		if(args.length > 1) col = (Color)args[1];
-    		if(col == null) col = Color.WHITE;
-    		int urgency = (args.length > 2)?(Integer)args[2]:0;
-    		Message cmsg = new SimpleMessage(line, col, iw());
-    		append(cmsg);
-    		if(urgency > 0)
-    		    notify(cmsg, urgency);
+        		String line = (String)args[0];
+        		Color col = null;
+        		if(args.length > 1) col = (Color)args[1];
+        		if(col == null) col = Color.WHITE;
+        		int urgency = (args.length > 2)?(Integer)args[2]:0;
+        		Message cmsg = new SimpleMessage(line, col, iw());
+        		append(cmsg);
+        		if(urgency > 0)
+        		    notify(cmsg, urgency);
     	    } else {
-    		super.uimsg(msg, args);
+    		    super.uimsg(msg, args);
     	    }
     	}
 
@@ -1202,10 +1202,10 @@ public class ChatUI extends Widget {
 
 
     public void notify(Channel chan, Channel.Message msg) {
-	synchronized(notifs) {
-	    notifs.addFirst(new Notification(chan, msg));
-	}
-	Audio.play(notifsfx);
+    	synchronized(notifs) {
+    	    notifs.addFirst(new Notification(chan, msg));
+    	}
+    	//udio.play(notifsfx);
     }
 
     private class Spring extends NormAnim {
@@ -1294,7 +1294,7 @@ public class ChatUI extends Widget {
 
     public boolean mousedown(Coord c, int button) {
     	int bmfx = (sz.x - bmf.sz().x) / 2;
-    	if((button == 1) && (c.y < bmf.sz().y) && (c.x >= bmfx) && (c.x <= (bmfx + bmf.sz().x))) {
+    	if((button == 1) && c.x > sz.x - 9) {
     	    dm = ui.grabmouse(this);
     	    doff = c;
             resizehoriz = true;
@@ -1318,7 +1318,7 @@ public class ChatUI extends Widget {
                 resize(sz.x, savedh = Math.max(111, sz.y + doff.y - c.y));
                 GameUI gui = gameui();
                 if (gui.questpanel != null)
-                    gui.questpanel.c = new Coord(10, gui.sz.y - gui.chat.sz.y - gui.beltwdg.sz.y - gui.questpanel.sz.y - 10);
+                    gui.questpanel.c = new Coord(10, gui.sz.y - gui.chat.sz.y - gui.beltwdg.sz.y - gui.questpanel.sz.y - 20);
             }
     	} else {
     	    super.mousemove(c);

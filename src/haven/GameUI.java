@@ -39,7 +39,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     private static final int blpw = 142, brpw = 142;
     public final String chrid, genus;
     public final long plid;
-    private final Hidepanel ulpanel, umpanel, urpanel, /*blpanel,*/ brpanel, menupanel;
+    private final Hidepanel ulpanel, umpanel, urpanel, brpanel, menupanel; /*blpanel,*/
     public Avaview portrait;
     public MenuGrid menu;
     public MapView map;
@@ -171,7 +171,14 @@ public class GameUI extends ConsoleHost implements Console.Directory {
         }, new Coord(1, 0)));
 
     	ulpanel = add(new Hidepanel("gui-ul", null, new Coord(-1, -1)));
-    	umpanel = add(new Hidepanel("gui-um", null, new Coord( 0, -1)));
+    	umpanel = add(new Hidepanel("gui-um", null, new Coord( 0, -1)){
+            @Override
+            public Coord base() {
+                if (base != null)
+                    return base.get();
+                return new Coord(parent.sz.x / 2 - this.sz.x / 2, 0);
+            }
+        });
     	urpanel = add(new Hidepanel("gui-ur", null, new Coord( 1, -1)));
 
     	//Tex lbtnbg = Resource.loadtex("gfx/hud/lbtn-bg");
@@ -180,13 +187,14 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     	//blpanel.add(new Img(lbtnbg), 0, 0);
 
     	// minimapc = new Coord(4, 34 + (lbtnbg.sz().y - 33));
-    	// Tex rbtnbg = Resource.loadtex("gfx/hud/csearch-bg");
-    	// Img brframe = brpanel.add(new Img(Resource.loadtex("gfx/hud/brframe")), rbtnbg.sz().x - 22, 0);
-    	// menugridc = brframe.c.add(20, 34);
-    	// Img rbtnimg = brpanel.add(new Img(rbtnbg), 0, brpanel.sz.y - rbtnbg.sz().y);
-    	// menupanel.add(new MainMenu(), 0, 0);
+    	//Tex rbtnbg = Resource.loadtex("gfx/hud/csearch-bg");
+    	//Img brframe = brpanel.add(new Img(Resource.loadtex("gfx/hud/brframe")), rbtnbg.sz().x - 22, 0);
+        brpanel.add(new Img(Resource.loadtex("gfx/hud/brframe")),0, 0);
+    	//menugridc = brframe.c.add(20, 34);
+    	//Img rbtnimg = brpanel.add(new Img(rbtnbg), 0, brpanel.sz.y - rbtnbg.sz().y);
+    	menupanel.add(new MainMenu(), 0, 0);
     	// mapbuttons();
-    	// menubuttons(rbtnimg);
+    	//menubuttons(rbtnimg);
     	// foldbuttons();
 
     	portrait = ulpanel.add(new Avaview(Avaview.dasz, plid, "avacam") {
@@ -288,22 +296,22 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     private final IButton[] fold_br = new IButton[4];
     private final IButton[] fold_bl = new IButton[2];
     private void updfold(boolean reset) {
-	int br;
-	if(brpanel.tvis && menupanel.tvis)
-	    br = 0;
-	else if(brpanel.tvis && !menupanel.tvis)
-	    br = 1;
-	else if(!brpanel.tvis && !menupanel.tvis)
-	    br = 2;
-	else
-	    br = 3;
-	for(int i = 0; i < fold_br.length; i++)
-	    fold_br[i].show(i == br);
+    	int br;
+    	if(brpanel.tvis && menupanel.tvis)
+    	    br = 0;
+    	else if(brpanel.tvis && !menupanel.tvis)
+    	    br = 1;
+    	else if(!brpanel.tvis && !menupanel.tvis)
+    	    br = 2;
+    	else
+    	    br = 3;
+    	for(int i = 0; i < fold_br.length; i++)
+    	    fold_br[i].show(i == br);
 
-	//fold_bl[1].show(!blpanel.tvis);
+    	//fold_bl[1].show(!blpanel.tvis);
 
-	if(reset)
-	    resetui();
+    	if(reset)
+    	    resetui();
     }
 
     private void foldbuttons() {
@@ -1512,7 +1520,8 @@ public class GameUI extends ConsoleHost implements Console.Directory {
 	    adda(new IButton("gfx/hud/hb-btn-chat", "", "-d", "-h") {
 		    Tex glow;
 		    {
-			this.tooltip = RichText.render("Chat ($col[255,255,0]{Ctrl+C})", 0);
+			this.tooltip = RichText.render(Resource.getLocString(Resource.BUNDLE_LABEL, "Chat ($col[255,255,0]{Ctrl+C})"), 0);
+            //this.tooltip = RichText.render("Chat ($col[255,255,0]{Ctrl+C})", 0);
 			glow = new TexI(PUtils.rasterimg(PUtils.blurmask(up.getRaster(), 2, 2, Color.WHITE)));
 		    }
 
