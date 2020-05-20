@@ -53,11 +53,14 @@ public class UI {
     public GSettings gprefs = GSettings.load(true);
     private boolean gprefsdirty = false;
     public final ActAudio.Root audio = new ActAudio.Root();
-    
+
+    public int beltWndId = -1;
+    public GameUI gui;
+
     {
 	lastevent = lasttick = Utils.rtime();
     }
-	
+
     public interface Receiver {
 	public void rcvmsg(int widget, String msg, Object... args);
     }
@@ -110,7 +113,7 @@ public class UI {
 		    }
 		});
 	}
-	
+
 	private void findcmds(Map<String, Command> map, Widget wdg) {
 	    if(wdg instanceof Directory) {
 		Map<String, Command> cmds = ((Directory)wdg).findcmds();
@@ -133,14 +136,14 @@ public class UI {
     public static class UIException extends RuntimeException {
 	public String mname;
 	public Object[] args;
-		
+
 	public UIException(String message, String mname, Object... args) {
 	    super(message);
 	    this.mname = mname;
 	    this.args = args;
 	}
     }
-	
+
     public UI(Context uictx, Coord sz, Session sess) {
 	this.uictx = uictx;
 	root = new RootWidget(this, sz);
@@ -148,11 +151,11 @@ public class UI {
 	rwidgets.put(root, 0);
 	this.sess = sess;
     }
-	
+
     public void setreceiver(Receiver rcvr) {
 	this.rcvr = rcvr;
     }
-	
+
     public void bind(Widget w, int id) {
 	synchronized(widgets) {
 	    widgets.put(id, w);
@@ -199,7 +202,7 @@ public class UI {
 	    afterdraws.clear();
 	}
     }
-	
+
     public void newwidget(int id, String type, int parent, Object[] pargs, Object... cargs) throws InterruptedException {
 	Widget.Factory f = Widget.gettype2(type);
 	synchronized(this) {
@@ -266,7 +269,7 @@ public class UI {
 	for(Widget child = wdg.child; child != null; child = child.next)
 	    removeid(child);
     }
-	
+
     public void removed(Widget wdg) {
 	for(Iterator<Grab> i = mousegrab.iterator(); i.hasNext();) {
 	    Grab g = i.next();
@@ -284,7 +287,7 @@ public class UI {
 	removeid(wdg);
 	wdg.reqdestroy();
     }
-    
+
     public void destroy(int id) {
 	synchronized(this) {
 	    Widget wdg = getwidget(id);
@@ -292,7 +295,7 @@ public class UI {
 		destroy(wdg);
 	}
     }
-	
+
     public void wdgmsg(Widget sender, String msg, Object... args) {
 	int id = widgetid(sender);
 	if(id < 0) {
@@ -302,7 +305,7 @@ public class UI {
 	if(rcvr != null)
 	    rcvr.rcvmsg(id, msg, args);
     }
-	
+
     public void uimsg(int id, String msg, Object... args) {
 	Widget wdg = getwidget(id);
 	if(wdg != null)
@@ -310,7 +313,7 @@ public class UI {
 	else
 	    throw(new UIException("Uimsg to non-existent widget " + id, msg, args));
     }
-	
+
     private void setmods(InputEvent ev) {
 	int mod = ev.getModifiersEx();
 	Debug.kf1 = modshift = (mod & InputEvent.SHIFT_DOWN_MASK) != 0;
@@ -336,7 +339,7 @@ public class UI {
 	    root.globtype(key, ev);
 	}
     }
-	
+
     public void keyup(KeyEvent ev) {
 	setmods(ev);
 	for(Grab g : c(keygrab)) {
@@ -345,11 +348,11 @@ public class UI {
 	}
 	root.keyup(ev);
     }
-	
+
     private Coord wdgxlate(Coord c, Widget wdg) {
 	return(c.sub(wdg.rootpos()));
     }
-	
+
     public boolean dropthing(Widget w, Coord c, Object thing) {
 	if(w instanceof DropTarget) {
 	    if(((DropTarget)w).dropthing(c, thing))
@@ -374,7 +377,7 @@ public class UI {
 	}
 	root.mousedown(c, button);
     }
-	
+
     public void mouseup(MouseEvent ev, Coord c, int button) {
 	setmods(ev);
 	mc = c;
@@ -384,7 +387,7 @@ public class UI {
 	}
 	root.mouseup(c, button);
     }
-	
+
     public void mousemove(MouseEvent ev, Coord c) {
 	setmods(ev);
 	mc = c;
@@ -394,7 +397,7 @@ public class UI {
     public void setmousepos(Coord c) {
 	uictx.setmousepos(c);
     }
-	
+
     public void mousewheel(MouseEvent ev, Coord c, int amount) {
 	setmods(ev);
 	lcc = mc = c;

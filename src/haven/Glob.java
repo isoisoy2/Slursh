@@ -43,6 +43,8 @@ public class Glob {
     public Color lightamb = null, lightdif = null, lightspc = null;
     public Color olightamb = null, olightdif = null, olightspc = null;
     public Color tlightamb = null, tlightdif = null, tlightspc = null;
+    public static Color dlightamb = new Color(200, 200, 200);
+    public static Color dlightspc = new Color(255, 255, 255);
     public double lightang = 0.0, lightelev = 0.0;
     public double olightang = 0.0, olightelev = 0.0;
     public double tlightang = 0.0, tlightelev = 0.0;

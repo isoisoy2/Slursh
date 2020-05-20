@@ -887,20 +887,30 @@ public class MapView extends PView implements DTarget, Console.Directory {
     public DirLight amblight = null;
     private RenderTree.Slot s_amblight = null;
     private void amblight() {
-	synchronized(glob) {
-	    if(glob.lightamb != null) {
-		amblight = new DirLight(glob.lightamb, glob.lightdif, glob.lightspc, Coord3f.o.sadd((float)glob.lightelev, (float)glob.lightang, 1f));
-		amblight.prio(100);
-	    } else {
-		amblight = null;
-	    }
-	}
-	if(s_amblight != null) {
-	    s_amblight.remove();
-	    s_amblight = null;
-	}
-	if(amblight != null)
-	    s_amblight = basic.add(amblight);
+    	synchronized(glob) {
+    	    if(glob.lightamb != null) {
+                Color lightamb, lightdif, lightspc;
+                if (Config.daylight) {
+                    lightamb = glob.dlightamb;
+                    lightdif = glob.dlightamb;
+                    lightspc = glob.dlightspc;
+                } else {
+                    lightamb = glob.lightamb;
+                    lightdif = glob.lightdif;
+                    lightspc = glob.lightspc;
+                }
+        		amblight = new DirLight(lightamb, lightdif, lightspc, Coord3f.o.sadd((float)glob.lightelev, (float)glob.lightang, 1f));
+        		amblight.prio(100);
+    	    } else {
+        		amblight = null;
+    	    }
+    	}
+    	if(s_amblight != null) {
+    	    s_amblight.remove();
+    	    s_amblight = null;
+    	}
+    	if(amblight != null)
+    	    s_amblight = basic.add(amblight);
     }
 
     public static final Uniform amblight_idx = new Uniform(Type.INT, p -> {

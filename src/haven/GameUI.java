@@ -76,6 +76,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     public QuickSlotsWdg quickslots;
     private ErrorSysMsgCallback errmsgcb;
     public CraftHistoryBelt histbelt;
+    public Equipory equinv;
 
     private static final OwnerContext.ClassResolver<BeltSlot> beltctxr = new OwnerContext.ClassResolver<BeltSlot>()
 	.add(Glob.class, slot -> slot.wdg().ui.sess.glob)
@@ -229,6 +230,14 @@ public class GameUI extends ConsoleHost implements Console.Directory {
         if (!Config.quickslots)
             quickslots.hide();
         add(quickslots, Utils.getprefc("quickslotsc", new Coord(430, JOGLPanel.lshape.sz().y - 160)));
+
+        if (!chrid.equals("")) {
+            Utils.loadprefchklist("boulderssel_" + chrid, Config.boulders);
+            Utils.loadprefchklist("bushessel_" + chrid, Config.bushes);
+            Utils.loadprefchklist("treessel_" + chrid, Config.trees);
+            Utils.loadprefchklist("iconssel_" + chrid, Config.icons);
+            opts.setMapSettings();
+        }
 
         fbelt = new FBelt(chrid, Utils.getprefb("fbelt_vertical", true));
         add(fbelt, Utils.getprefc("fbelt_c", new Coord(20, 200)));
@@ -1240,17 +1249,20 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     	    setfocus(map);
     	    return(true);
     	} else if (kb_drink.key().match(ev)){ //add later
-            // if (!maininv.drink(100)) {
-            //     for (Widget w = lchild; w != null; w = w.prev) {
-            //         if (w instanceof BeltWnd && w.child instanceof InventoryBelt) {
-            //             ((InventoryBelt)w.child).drink(100);
-            //             break;
-            //         }
-            //     }
-            // }
-            //
-            // equinv.drinkeq(100);
-            // return true;
+            if (!maininv.drink(100)) {
+                for (Widget w = lchild; w != null; w = w.prev) {
+                    if (w instanceof BeltWnd && w.child instanceof InventoryBelt) {
+                        ((InventoryBelt)w.child).drink(100);
+                        break;
+                    }
+                }
+            }
+
+            equinv.drinkeq(100);
+            return true;
+        } else if (ev.isControlDown() && ev.getKeyCode() == KeyEvent.VK_N) {
+            Config.daylight = !Config.daylight;
+            Utils.setprefb("daylight", Config.daylight);
         }
     	return(super.globtype(key, ev));
     }

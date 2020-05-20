@@ -177,7 +177,7 @@ public class LoginScreen extends Widget {
 
         @Override
         protected void drawbg(GOut g) {
-            g.chcolor(0, 0, 0, 120);
+            g.chcolor(0, 0, 0, 250); //120
             g.rect(Coord.z, sz);
             g.chcolor();
         }

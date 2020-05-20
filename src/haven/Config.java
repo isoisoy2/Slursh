@@ -86,16 +86,6 @@ public class Config {
     public static String version;
     public static String gitrev;
 
-    public static boolean mapshowviewdist = Utils.getprefb("mapshowviewdist", false);
-    public static boolean mapshowgrid = Utils.getprefb("mapshowgrid", false);
-
-    public static boolean resinfo = Utils.getprefb("resinfo", false);
-
-    public static Coord chatsz = Utils.getprefc("chatsz", new Coord(683, 111));
-
-    public static boolean chatalarm = Utils.getprefb("chatalarm", true);
-    public static double chatalarmvol = Utils.getprefd("chatalarmvol", 0.8);
-    public final static String chatfile = "chatlog.txt";
 
     // Video Settings
     public static boolean disabletiletrans = Utils.getprefb("disabletiletrans", false);
@@ -107,6 +97,7 @@ public class Config {
     public static boolean simplecrops = Utils.getprefb("simplecrops", false);
     public static boolean hidecrops = Utils.getprefb("hidecrops", false);
     public static boolean showfps = Utils.getprefb("showfps", false);
+    public static boolean minimapsmooth = Utils.getprefb("minimapsmooth", false);
 
     // Audio Settings
     public static boolean timersalarm = Utils.getprefb("timersalarm", false);
@@ -134,6 +125,12 @@ public class Config {
     public static boolean studyhist = Utils.getprefb("studyhist", false);
     public static boolean studybuff = Utils.getprefb("studybuff", false);
     public static boolean bonsai = Utils.getprefb("bonsai", false);
+    public static boolean showcupboardstatus = Utils.getprefb("showcupboardstatus", false);
+    public static boolean extraCircle = Utils.getprefb("extraCircle", true);
+    public static boolean hungermeter = Utils.getprefb("hungermeter", false);
+    public static boolean fepmeter = Utils.getprefb("fepmeter", false);
+    public static boolean colorfulCavein = Utils.getprefb("colorfulCavein", false);
+    public static boolean seasonStag = Utils.getprefb("seasonStag", false);
 
     // General Settings
     public static boolean chatsave = Utils.getprefb("chatsave", false);
@@ -153,6 +150,7 @@ public class Config {
     public static boolean dropMinedOre = Utils.getprefb("dropMinedOre", true);
     public static boolean dropMinedOrePrecious = Utils.getprefb("dropMinedOrePrecious", true);
     public static boolean dropMinedCurios = Utils.getprefb("dropMinedCurios", true);
+    public static boolean symbelsaver = Utils.getprefb("symbelsaver", true);
 
     // Control Settings
     public static int badcamsensitivity = Utils.getprefi("badcamsensitivity", 5);
@@ -178,28 +176,418 @@ public class Config {
     public static int fontadd = Utils.getprefi("fontadd", 0);
     public static int fontsizechat = Utils.getprefi("fontsizechat", 14);
 
+    // Combat Settings
+    public static boolean showdmgop = Utils.getprefb("showdmgop", true);
+    public static boolean showothercombatinfo = Utils.getprefb("showothercombatinfo", false);
+    public static boolean hlightcuropp = Utils.getprefb("hlightcuropp", true);
+    public static boolean showcooldown = Utils.getprefb("showcooldown", true);
+    public static boolean showarchvector = Utils.getprefb("showarchvector", false);
+    public static boolean logcombatactions = Utils.getprefb("logcombatactions", false);
+    public static boolean altfightui = Utils.getprefb("altfightui", false);
+    public static boolean combaltopenings = Utils.getprefb("combaltopenings", false);
+    public static boolean combshowkeys = Utils.getprefb("combshowkeys", true);
+    public static boolean proximityaggro = Utils.getprefb("proximityaggro", false);
+    public static boolean proximityanimal = Utils.getprefb("proximityanimal", false);
+
+    //Flower Menus
+    public static boolean autopickmussels = Utils.getprefb("autopickmussels", false);
+
+    // Quality settings
+    public static boolean showquality = Utils.getprefb("showquality", true);
+    public static boolean qualitywhole = Utils.getprefb("qualitywhole", false);
+    public static boolean qualitybg = Utils.getprefb("qualitybg", false);
+    public static int qualitybgtransparency = Utils.getprefi("qualitybgtransparency", 5);
+
+
     // Sound alarms
     public static boolean alarmunknown = Utils.getprefb("alarmunknown", false);
     public static double alarmunknownvol = Utils.getprefd("alarmunknownvol", 0.32);
     public static boolean alarmred = Utils.getprefb("alarmred", false);
     public static double alarmredvol = Utils.getprefd("alarmredvol", 0.32);
-    public static int playerAlarm = Utils.getprefi("playerAlarm",0);
-    public static int whiteplayerAlarm = Utils.getprefi("whiteplayerAlarm", 0);
-    public static boolean alarmbram =  Utils.getprefb("alarmbram", false);
-    public static double alarmbramvol = Utils.getprefd("alarmbramvol", 1.0);
-    public static double alarmonforagablesvol = Utils.getprefd("alarmonforagablesvol", 0.8);
-    public static boolean alarmlocres = Utils.getprefb("alarmlocres", false);
-    public static double alarmlocresvol = Utils.getprefd("alarmlocresvol", 0.8);
-    public static boolean alarmtroll = Utils.getprefb("alarmtroll", false);
-    public static double alarmtrollvol = Utils.getprefd("alarmtrollvol", 0.8);
+    public static boolean chatalarm = Utils.getprefb("chatalarm", true);
+    public static double chatalarmvol = Utils.getprefd("chatalarmvol", 0.8);
     public static boolean studyalarm = Utils.getprefb("studyalarm", false);
     public static double studyalarmvol = Utils.getprefd("studyalarmvol", 0.8);
+    public static boolean alarmtroll = Utils.getprefb("alarmtroll", false);
+    public static double alarmtrollvol = Utils.getprefd("alarmtrollvol", 0.8);
     public static boolean alarmWolf = Utils.getprefb("alarmWolf", false);
     public static double alarmWolfvol = Utils.getprefd("alarmWolfvol", 0.5);
     public static boolean alarmCatch = Utils.getprefb("alarmCatch", true);
     public static double alarmCatchvol = Utils.getprefd("alarmCatchvol", 0.8);
+    public static boolean alarmbram =  Utils.getprefb("alarmbram", false);
+    public static double alarmbramvol = Utils.getprefd("alarmbramvol", 1.0);
+    public static boolean alarmlocres = Utils.getprefb("alarmlocres", false);
+    public static double alarmlocresvol = Utils.getprefd("alarmlocresvol", 0.8);
+    public static double alarmonforagablesvol = Utils.getprefd("alarmonforagablesvol", 0.8);
+
+    public static int playerAlarm = Utils.getprefi("playerAlarm",0);
+    public static int whiteplayerAlarm = Utils.getprefi("whiteplayerAlarm", 0);
+
+    // Other
+    public static boolean hideWall = Utils.getprefb("hideWall", false);
+    public static boolean hideMine = Utils.getprefb("hideMine", false);
+    public static boolean hidegobs = Utils.getprefb("hidegobs", false);
+    public static boolean showplantgrowstage = Utils.getprefb("showplantgrowstage", false);
+    public static boolean autostudy = Utils.getprefb("autostudy", false);
+    public static boolean showminerad = Utils.getprefb("showminerad", false);
+    public static boolean showfarmrad = Utils.getprefb("showfarmrad", false);
+    public static boolean statuswdgvisible = Utils.getprefb("statuswdgvisible", false);
+    public static boolean mapshowviewdist = Utils.getprefb("mapshowviewdist", false);
+    public static boolean mapshowgrid = Utils.getprefb("mapshowgrid", false);
+    public static boolean resinfo = Utils.getprefb("resinfo", false);
+    public static Coord chatsz = Utils.getprefc("chatsz", new Coord(683, 111));
+    public final static String chatfile = "chatlog.txt";
+    public static boolean daylight = Utils.getprefb("daylight", false);
 
 
+    public final static HashMap<String, CheckListboxItem> alarmitems = new HashMap<String, CheckListboxItem>(9) {{
+        put("gfx/terobjs/herbs/flotsam", new CheckListboxItem("Peculiar Flotsam"));
+        put("gfx/terobjs/herbs/chimingbluebell", new CheckListboxItem("Chiming Bluebell"));
+        put("gfx/terobjs/herbs/edelweiss", new CheckListboxItem("Edelweiß"));
+        put("gfx/terobjs/herbs/bloatedbolete", new CheckListboxItem("Bloated Bolete"));
+        put("gfx/terobjs/herbs/glimmermoss", new CheckListboxItem("Glimmermoss"));
+        put("gfx/terobjs/herbs/camomile", new CheckListboxItem("Camomile"));
+        put("gfx/terobjs/herbs/clay-cave", new CheckListboxItem("Cave Clay"));
+        put("gfx/terobjs/herbs/mandrake", new CheckListboxItem("Mandrake Root"));
+        put("gfx/terobjs/herbs/seashell", new CheckListboxItem("Rainbow Shell"));
+    }};
+
+    public final static Set<String> locres = new HashSet<String>(Arrays.asList(
+            "gfx/terobjs/saltbasin",
+            "gfx/terobjs/abyssalchasm",
+            "gfx/terobjs/windthrow",
+            "gfx/terobjs/icespire",
+            "gfx/terobjs/woodheart",
+            "gfx/terobjs/jotunmussel",
+            "gfx/terobjs/guanopile",
+            "gfx/terobjs/geyser",
+            "gfx/terobjs/claypit",
+            "gfx/terobjs/caveorgan",
+            "gfx/terobjs/crystalpatch",
+            "gfx/terobjs/fairystone",
+            "gfx/terobjs/lilypadlotus"
+    ));
+
+    // Minimap Settings
+    public final static HashMap<String, CheckListboxItem> boulders = new HashMap<String, CheckListboxItem>(31) {{
+        put("basalt", new CheckListboxItem("Basalt"));
+        put("schist", new CheckListboxItem("Schist"));
+        put("dolomite", new CheckListboxItem("Dolomite"));
+        put("gneiss", new CheckListboxItem("Gneiss"));
+        put("granite", new CheckListboxItem("Granite"));
+        put("porphyry", new CheckListboxItem("Porphyry"));
+        put("quartz", new CheckListboxItem("Quartz"));
+        put("limestone", new CheckListboxItem("Limestone"));
+        put("sandstone", new CheckListboxItem("Sandstone"));
+        put("cinnabar", new CheckListboxItem("Cinnabar"));
+        put("feldspar", new CheckListboxItem("Feldspar"));
+        put("marble", new CheckListboxItem("Marble"));
+        put("flint", new CheckListboxItem("Flint"));
+        put("hornblende", new CheckListboxItem("Hornblende"));
+        put("olivine", new CheckListboxItem("Olivine"));
+        put("alabaster", new CheckListboxItem("Alabaster"));
+        //16
+        put("micolite", new CheckListboxItem("Microlite"));
+        put("mica", new CheckListboxItem("Mica"));
+        put("fluorospar", new CheckListboxItem("Fluorospar"));
+        put("zincspar", new CheckListboxItem("Zincspar"));
+        put("sodalite", new CheckListboxItem("Sodalite"));
+        put("apatite", new CheckListboxItem("Apatite"));
+        put("kyanite", new CheckListboxItem("Kyanite"));
+        put("corund", new CheckListboxItem("Corund"));
+        put("orthoclase", new CheckListboxItem("Orthoclase"));
+        put("soapstone", new CheckListboxItem("Soapstone"));
+        put("gabbro", new CheckListboxItem("Gabbro"));
+        put("breccia", new CheckListboxItem("Breccia"));
+        put("diabase", new CheckListboxItem("Diabase"));
+        put("arkose", new CheckListboxItem("Arkose"));
+        put("diorite", new CheckListboxItem("Diorite")); //31
+    }};
+
+    public final static HashMap<String, CheckListboxItem> bushes = new HashMap<String, CheckListboxItem>(24) {{
+        put("arrowwood", new CheckListboxItem("Arrowwood"));
+        put("crampbark", new CheckListboxItem("Crampbark"));
+        put("sandthorn", new CheckListboxItem("Sandthorn"));
+        put("blackberrybush", new CheckListboxItem("Blackberry"));
+        put("dogrose", new CheckListboxItem("Dogrose"));
+        put("spindlebush", new CheckListboxItem("Spindlebush"));
+        put("blackcurrant", new CheckListboxItem("Blackcurrant"));
+        put("elderberrybush", new CheckListboxItem("Elderberry"));
+        put("teabush", new CheckListboxItem("Tea"));
+        put("blackthorn", new CheckListboxItem("Blackthorn"));
+        put("gooseberrybush", new CheckListboxItem("Gooseberry"));
+        put("tibast", new CheckListboxItem("Tibast"));
+        put("bogmyrtle", new CheckListboxItem("Bogmyrtle"));
+        put("hawthorn", new CheckListboxItem("Hawthorn"));
+        put("tundrarose", new CheckListboxItem("Tundrarose"));
+        put("boxwood", new CheckListboxItem("Boxwood"));
+        put("holly", new CheckListboxItem("Hollyberry"));
+        put("woodbine", new CheckListboxItem("Fly Woodbine"));
+        put("bsnightshade", new CheckListboxItem("Bittersweet Nightshade"));
+        put("raspberrybush", new CheckListboxItem("Raspberry"));
+        put("caprifole", new CheckListboxItem("Caprifole"));
+        put("redcurrant", new CheckListboxItem("Redcurrant"));
+        put("gorse", new CheckListboxItem("Gorse"));
+        put("mastic", new CheckListboxItem("Mastic"));
+    }};
+
+    public final static HashMap<String, CheckListboxItem> trees = new HashMap<String, CheckListboxItem>(62) {{
+        put("alder", new CheckListboxItem("Alder"));
+        put("corkoak", new CheckListboxItem("Corkoak"));
+        put("plumtree", new CheckListboxItem("Plum Tree"));
+        put("juniper", new CheckListboxItem("Juniper (T)"));
+        put("crabappletree", new CheckListboxItem("Crabapple"));
+        put("kingsoak", new CheckListboxItem("King's Oak"));
+        put("oak", new CheckListboxItem("Oak"));
+        put("walnuttree", new CheckListboxItem("Walnut Tree"));
+        put("birdcherrytree", new CheckListboxItem("Birdcherry Tree"));
+        put("larch", new CheckListboxItem("Larch"));
+        put("poplar", new CheckListboxItem("Poplar"));
+        put("whitebeam", new CheckListboxItem("Whitebeam"));
+        put("appletree", new CheckListboxItem("Apple Tree"));
+        put("cypress", new CheckListboxItem("Cypress"));
+        put("buckthorn", new CheckListboxItem("Buckthorn"));
+        put("laurel", new CheckListboxItem("Laurel"));
+        put("ash", new CheckListboxItem("Ash"));
+        put("elm", new CheckListboxItem("Elm (T)"));
+        put("rowan", new CheckListboxItem("Rowan"));
+        put("willow", new CheckListboxItem("Willow (T)"));
+        put("cedar", new CheckListboxItem("Cedar (T)"));
+        put("linden", new CheckListboxItem("Linden (T)"));
+        put("olivetree", new CheckListboxItem("Olive Tree"));
+        put("aspen", new CheckListboxItem("Aspen"));
+        put("fir", new CheckListboxItem("Fir"));
+        put("baywillow", new CheckListboxItem("Baywillow"));
+        put("goldenchain", new CheckListboxItem("Goldenchain"));
+        put("peartree", new CheckListboxItem("Pear Tree"));
+        put("sallow", new CheckListboxItem("Sallow"));
+        put("yew", new CheckListboxItem("Yew"));
+        put("cherry", new CheckListboxItem("Cherry"));
+        put("maple", new CheckListboxItem("Maple"));
+        put("beech", new CheckListboxItem("Beech (T)"));
+        put("chestnuttree", new CheckListboxItem("Chestnut Tree"));
+        put("hazel", new CheckListboxItem("Hazel"));
+        put("spruce", new CheckListboxItem("Spruce"));
+        put("hornbeam", new CheckListboxItem("Hornbeam"));
+        put("oldtrunk", new CheckListboxItem("Mirkwood Log"));
+        put("conkertree", new CheckListboxItem("Conker Tree"));
+        put("mulberry", new CheckListboxItem("Mulberry"));
+        put("sweetgum", new CheckListboxItem("Sweetgum"));
+        put("pine", new CheckListboxItem("Pine"));
+        put("birch", new CheckListboxItem("Birch (T)"));
+        put("planetree", new CheckListboxItem("Plane Tree"));
+        put("quincetree", new CheckListboxItem("Quince"));
+        put("almondtree", new CheckListboxItem("Almond"));
+        put("terebinth", new CheckListboxItem("Terebinth"));
+        put("chastetree", new CheckListboxItem("Chastetree"));
+        put("treeheath", new CheckListboxItem("Tree Heath"));
+        put("lotetree", new CheckListboxItem("Lote Tree"));
+        put("sorbtree", new CheckListboxItem("Sorb"));
+        put("persimmontree", new CheckListboxItem("Persimmon"));
+        put("medlartree", new CheckListboxItem("Medlar"));
+        put("silverfir", new CheckListboxItem("Silver Fir"));
+        put("mayflower", new CheckListboxItem("Mayflower"));
+        put("stonepine", new CheckListboxItem("Stone Pine"));
+        put("blackpine", new CheckListboxItem("Black Pine"));
+        put("lemontree", new CheckListboxItem("Lemon Tree"));
+        put("strawberrytree", new CheckListboxItem("Wood Strawberry")); //59
+        put("sycamore", new CheckListboxItem("Sycamore"));
+        put("dogwood", new CheckListboxItem("Dogwood"));
+        put("carobtree", new CheckListboxItem("Carob Tree"));
+    }};
+
+    public final static HashMap<String, CheckListboxItem> icons = new HashMap<String, CheckListboxItem>(67) {{
+        put("dandelion", new CheckListboxItem("Dandelion"));
+        put("chantrelle", new CheckListboxItem("Chantrelle"));
+        put("blueberry", new CheckListboxItem("Blueberry"));
+        put("rat", new CheckListboxItem("Rat"));
+        put("chicken", new CheckListboxItem("Chicken"));
+        put("chick", new CheckListboxItem("Chick"));
+        put("spindlytaproot", new CheckListboxItem("Spindly Taproot"));
+        put("stingingnettle", new CheckListboxItem("Stinging Nettle"));
+        put("dragonfly", new CheckListboxItem("Dragonfly"));
+        put("toad", new CheckListboxItem("Toad")); //10
+        put("bram", new CheckListboxItem("Battering Ram"));
+        put("rowboat", new CheckListboxItem("Rowboat"));
+        put("arrow", new CheckListboxItem("Arrow"));
+        put("boarspear", new CheckListboxItem("Boar Spear"));
+        put("frog", new CheckListboxItem("Frog"));
+        put("wagon", new CheckListboxItem("Wagon"));
+        put("wheelbarrow", new CheckListboxItem("Wheelbarrow"));
+        put("cart", new CheckListboxItem("Cart"));
+        put("wball", new CheckListboxItem("Wrecking Ball"));
+        put("windweed", new CheckListboxItem("Wild Windsown Weed"));
+        put("mussels", new CheckListboxItem("Mussels"));
+        put("mallard", new CheckListboxItem("Duck"));
+        put("ladybug", new CheckListboxItem("Ladybug"));
+        put("silkmoth", new CheckListboxItem("Silkmoth"));
+        put("hedgehog", new CheckListboxItem("Hedgehog")); //25
+        put("squirrel", new CheckListboxItem("Squirrel"));
+        put("rabbit", new CheckListboxItem("Rabbit"));
+        put("lingon", new CheckListboxItem("Lingonberries"));
+        put("grub", new CheckListboxItem("Grub"));
+        put("yellowfoot", new CheckListboxItem("Yellowfoot"));
+        put("chives", new CheckListboxItem("Chives"));
+        put("rustroot", new CheckListboxItem("Rustroot"));
+        put("boostspeed", new CheckListboxItem("Speed Boost"));
+        put("adder", new CheckListboxItem("Adder"));
+        put("crab", new CheckListboxItem("Crab"));
+        put("clover", new CheckListboxItem("Clover"));
+        put("ladysmantle", new CheckListboxItem("Lady's Mantle"));
+        put("grasshopper", new CheckListboxItem("Grasshopper"));
+        put("irrbloss", new CheckListboxItem("Irrlight"));
+        put("opiumdragon", new CheckListboxItem("Opium Dragon")); //40
+        put("snapdragon", new CheckListboxItem("Uncommon Snapdragon"));
+        put("cattail", new CheckListboxItem("Cattail"));
+        put("forestsnail", new CheckListboxItem("Forest Snail"));
+        put("forestlizard", new CheckListboxItem("Forest Lizard"));
+        put("mole", new CheckListboxItem("Mole"));
+        put("cavemoth", new CheckListboxItem("Cave Moth"));
+        put("thornythistle", new CheckListboxItem("Thorny Thistle"));
+        put("mistletoe", new CheckListboxItem("Mistletoe"));
+        put("waterstrider", new CheckListboxItem("Waterstrider"));
+        put("firefly", new CheckListboxItem("Firefly"));
+        //SLush Additions
+        put("bat", new CheckListboxItem("Bat"));
+        put("cavelouse", new CheckListboxItem("Cave Louse"));
+        put("greenooze", new CheckListboxItem("Slime"));
+        //here
+        put("duskfern", new CheckListboxItem("Dusk Fern"));
+        put("sandflea", new CheckListboxItem("Sand Flea")); //55
+        put("jellyfish", new CheckListboxItem("Jelly Fish"));
+        put("snowcap", new CheckListboxItem("Snow Cap Mushroom"));
+        put("precioussnowflake", new CheckListboxItem("Precious Snowflake"));
+        put("stallion", new CheckListboxItem("Stallion"));
+        put("mare", new CheckListboxItem("Mare")); //60
+        put("bordercairn", new CheckListboxItem("Border Cairn"));
+        put("spark", new CheckListboxItem("Kicksled"));
+        put("wellspring", new CheckListboxItem("Wellspring"));
+        put("tidepool", new CheckListboxItem("Tide Pool"));
+        put("lampstalk", new CheckListboxItem("Lampstalk")); //65
+        put("seamark", new CheckListboxItem("Seamark"));
+        put("coltsfoot", new CheckListboxItem("Coltsfoot"));
+    }};
+
+    public final static Map<String, Tex> additonalicons = new HashMap<String, Tex>(23) {{
+        put("gfx/terobjs/vehicle/bram", Resource.loadtex("gfx/icons/bram"));
+        put("gfx/kritter/toad/toad", Resource.loadtex("gfx/icons/toad"));
+        put("gfx/terobjs/vehicle/rowboat", Resource.loadtex("gfx/icons/rowboat"));
+        put("gfx/kritter/chicken/chicken", Resource.loadtex("gfx/icons/deadhen"));
+        put("gfx/kritter/chicken/rooster", Resource.loadtex("gfx/icons/deadrooster"));
+        put("gfx/kritter/rabbit/rabbit", Resource.loadtex("gfx/icons/deadrabbit"));
+        put("gfx/kritter/hedgehog/hedgehog", Resource.loadtex("gfx/icons/deadhedgehog"));
+        put("gfx/kritter/squirrel/squirrel", Resource.loadtex("gfx/icons/deadsquirrel"));
+        put("gfx/terobjs/items/arrow", Resource.loadtex("gfx/icons/arrow"));
+        put("gfx/terobjs/items/boarspear", Resource.loadtex("gfx/icons/arrow"));
+        put("gfx/kritter/frog/frog", Resource.loadtex("gfx/icons/frog"));
+        put("gfx/terobjs/vehicle/wagon", Resource.loadtex("gfx/icons/wagon"));
+        put("gfx/terobjs/vehicle/wheelbarrow", Resource.loadtex("gfx/icons/wheelbarrow"));
+        put("gfx/terobjs/vehicle/cart", Resource.loadtex("gfx/icons/cart"));
+        put("gfx/terobjs/vehicle/wreckingball", Resource.loadtex("gfx/icons/wball"));
+        put("gfx/kritter/nidbane/nidbane", Resource.loadtex("gfx/icons/spooky"));
+        put("gfx/kritter/horse/stallion", Resource.loadtex("gfx/icons/tamhorse"));
+        put("gfx/kritter/horse/mare", Resource.loadtex("gfx/icons/tamhorsemare"));
+        put("gfx/terobjs/bordercairn", Resource.loadtex("gfx/icons/cairnicon"));
+        put("gfx/terobjs/wonders/wellspring", Resource.loadtex("gfx/icons/wellspringicon")); //20
+        put("gfx/terobjs/vehicle/spark", Resource.loadtex("gfx/icons/kicksled"));
+        put("gfx/terobjs/map/tidepool", Resource.loadtex("gfx/icons/tidepool"));
+        put("gfx/terobjs/seamark", Resource.loadtex("gfx/icons/cairnicon"));
+    }};
+
+    // Flower menus
+    public final static HashMap<String, CheckListboxItem> flowermenus = new HashMap<String, CheckListboxItem>(29) {{
+        put("Pick", new CheckListboxItem("Pick", Resource.BUNDLE_FLOWER));
+        put("Harvest", new CheckListboxItem("Harvest", Resource.BUNDLE_FLOWER));
+        put("Eat", new CheckListboxItem("Eat", Resource.BUNDLE_FLOWER));
+        put("Split", new CheckListboxItem("Split", Resource.BUNDLE_FLOWER));
+        put("Kill", new CheckListboxItem("Kill", Resource.BUNDLE_FLOWER));
+        put("Slice", new CheckListboxItem("Slice", Resource.BUNDLE_FLOWER));
+        put("Pluck", new CheckListboxItem("Pluck", Resource.BUNDLE_FLOWER));
+        put("Clean", new CheckListboxItem("Clean", Resource.BUNDLE_FLOWER));
+        put("Skin", new CheckListboxItem("Skin", Resource.BUNDLE_FLOWER));
+        put("Flay", new CheckListboxItem("Flay", Resource.BUNDLE_FLOWER));
+        put("Butcher", new CheckListboxItem("Butcher", Resource.BUNDLE_FLOWER));
+        put("Giddyup!", new CheckListboxItem("Giddyup!", Resource.BUNDLE_FLOWER));
+        put("Shear wool", new CheckListboxItem("Shear wool", Resource.BUNDLE_FLOWER));
+        put("Harvest wax", new CheckListboxItem("Harvest wax", Resource.BUNDLE_FLOWER));
+        put("Slice up", new CheckListboxItem("Slice up", Resource.BUNDLE_FLOWER));
+        put("Chip stone", new CheckListboxItem("Chip stone", Resource.BUNDLE_FLOWER));
+        put("Peer into", new CheckListboxItem("Peer into", Resource.BUNDLE_FLOWER));
+        put("Break", new CheckListboxItem("Break", Resource.BUNDLE_FLOWER));
+        put("Scale", new CheckListboxItem("Scale", Resource.BUNDLE_FLOWER));
+        // SLush Additions
+        put("Deliver", new CheckListboxItem("Deliver",Resource.BUNDLE_FLOWER));
+        put("Cargo", new CheckListboxItem("Cargo", Resource.BUNDLE_FLOWER));
+        put("Man the helm", new CheckListboxItem("Man the helm", Resource.BUNDLE_FLOWER));
+        put("Wring neck", new CheckListboxItem("Wring neck", Resource.BUNDLE_FLOWER));
+        put("Memorize", new CheckListboxItem("Memorize", Resource.BUNDLE_FLOWER));
+        put("Make kin", new CheckListboxItem("Make kin", Resource.BUNDLE_FLOWER));
+        put("Collect bones", new CheckListboxItem("Collect bones", Resource.BUNDLE_FLOWER)); //27
+        put("Crack open", new CheckListboxItem("Crack open", Resource.BUNDLE_FLOWER));
+        put("Open", new CheckListboxItem("Open", Resource.BUNDLE_FLOWER));
+    }};
+
+    public final static Set<String> mineablesStone = new HashSet<String>(Arrays.asList(
+            "gneiss",
+            "basalt",
+            //"cinnabar",
+            "dolomite",
+            "feldspar",
+            "flint",
+            "granite",
+            "hornblende",
+            "limestone",
+            "marble",
+            "porphyry",
+            "quartz",
+            "sandstone",
+            "schist",
+            "blackcoal",
+            "gabbro",
+            "soapstone",
+            "olivine",
+            "apatite",
+            "kyanite",
+            "corund",
+            "orthoclase",
+            "sodalite",
+            "alabaster",
+            "zincspar",
+            "fluorospar",
+            "microlite",
+            "mica",
+            "slate",
+            "breccia",
+            "diabase",
+            "arkose",
+            "diorite"
+    ));
+
+    public final static Set<String> mineablesOre = new HashSet<String>(Arrays.asList(
+            "cassiterite",
+            "chalcopyrite",
+            "malachite",
+            "ilmenite",
+            "limonite",
+            "hematite",
+            "magnetite",
+            "cinnabar"
+    ));
+
+    public final static Set<String> mineablesOrePrecious = new HashSet<String>(Arrays.asList(
+            "galena",
+            "argentite",
+            "hornsilver",
+            "petzite",
+            "sylvanite",
+            "nagyagite"
+    ));
+
+    public final static Set<String> mineablesCurios = new HashSet<String>(Arrays.asList(
+            "catgold",
+            "petrifiedshell",
+            "strangecrystal"
+    ));
 
     public final static HashMap<String, CheckListboxItem> disableanim = new HashMap<String, CheckListboxItem>(4) {{
         put("gfx/terobjs/beehive", new CheckListboxItem("Beehives"));
@@ -208,8 +596,123 @@ public class Config {
         put("/idle", new CheckListboxItem("Idle animals"));
     }};
 
+    public final static HashMap<String, String[]> cures = new HashMap<String, String[]>(25) {{
+        put("paginae/wound/antburn", new String[]{
+                "gfx/invobjs/herbs/yarrow"
+        });
+        put("paginae/wound/blunttrauma", new String[]{
+                "gfx/invobjs/toadbutter",
+                "gfx/invobjs/leech",
+                "gfx/invobjs/gauze",
+                "gfx/invobjs/hartshornsalve",
+                "gfx/invobjs/camomilecompress",
+                "gfx/invobjs/opium"
+        });
+        put("paginae/wound/bruise", new String[]{
+                "gfx/invobjs/leech"
+        });
+        put("paginae/wound/concussion", new String[]{
+                "gfx/invobjs/coldcompress",
+                "gfx/invobjs/opium"
+        });
+        put("paginae/wound/cruelincision", new String[]{
+                "gfx/invobjs/gauze",
+                "gfx/invobjs/stitchpatch",
+                "gfx/invobjs/rootfill"
+        });
+        put("paginae/wound/deepcut", new String[]{
+                "gfx/invobjs/gauze",
+                "gfx/invobjs/stingingpoultice",
+                "gfx/invobjs/rootfill",
+                "gfx/invobjs/herbs/waybroad",
+                "gfx/invobjs/honeybroadaid"
+        });
+        put("paginae/wound/fellslash", new String[]{
+                "gfx/invobjs/gauze"
+        });
+        put("paginae/wound/nicksnknacks", new String[]{
+                "gfx/invobjs/herbs/yarrow",
+                "gfx/invobjs/honeybroadaid"
+        });
+        put("paginae/wound/punchsore", new String[]{
+                "gfx/invobjs/mudointment",
+                "gfx/invobjs/opium"
+        });
+        put("paginae/wound/scrapesncuts", new String[]{
+                "gfx/invobjs/herbs/yarrow",
+                "gfx/invobjs/mudointment",
+                "gfx/invobjs/honeybroadaid"
+        });
+        put("paginae/wound/severemauling", new String[]{
+                "gfx/invobjs/hartshornsalve",
+                "gfx/invobjs/opium"
+        });
+        put("paginae/wound/swollenbump", new String[]{
+                "gfx/invobjs/coldcompress",
+                "gfx/invobjs/leech",
+                "gfx/invobjs/stingingpoultice"
+        });
+        put("paginae/wound/unfaced", new String[]{
+                "gfx/invobjs/toadbutter",
+                "gfx/invobjs/leech",
+                "gfx/invobjs/mudointment",
+                "gfx/invobjs/kelpcream"
+        });
+        put("paginae/wound/wretchedgore", new String[]{
+                "gfx/invobjs/stitchpatch"
+        });
+        put("paginae/wound/blackeye", new String[]{
+                "gfx/invobjs/hartshornsalve",
+                "gfx/invobjs/honeybroadaid",
+                "gfx/invobjs/toadbutter"
+        });
+        put("paginae/wound/bladekiss", new String[]{
+                "gfx/invobjs/gauze",
+                "gfx/invobjs/toadbutter"
+        });
+        put("paginae/wound/somethingbroken", new String[]{
+                "gfx/invobjs/camomilecompress"
+        });
+        put("paginae/wound/infectedsore", new String[]{
+                "gfx/invobjs/camomilecompress",
+                "gfx/invobjs/soapbar",
+                "gfx/invobjs/opium",
+                "gfx/invobjs/antpaste"
+        });
+        put("paginae/wound/nastylaceration", new String[]{
+                "gfx/invobjs/stitchpatch",
+                "gfx/invobjs/toadbutter"
+        });
+        put("paginae/wound/sealfinger", new String[]{
+                "gfx/invobjs/hartshornsalve",
+                "gfx/invobjs/kelpcream",
+                "gfx/invobjs/antpaste"
+        });
+        put("paginae/wound/coalcough", new String[]{
+                "gfx/invobjs/opium"
+        });
+        put("paginae/wound/beesting", new String[]{
+                "gfx/invobjs/kelpcream",
+                "gfx/invobjs/antpaste"
+        });
+        put("paginae/wound/leechburns", new String[]{
+                "gfx/invobjs/toadbutter"
+        });
+        put("paginae/wound/midgebite", new String[]{
+                "gfx/invobjs/herbs/yarrow"
+        });
+        put("paginae/wound/sandfleabites", new String[]{
+                "gfx/invobjs/herbs/yarrow"
+        });
+        put("paginae/wound/crabcaressed", new String[]{
+                "gfx/invobjs/antpaste"
+        });
+    }};
+
     static {
         Utils.loadprefchklist("disableanim", Config.disableanim);
+        Utils.loadprefchklist("alarmitems", Config.alarmitems);
+
     	String p;
     	if((p = getprop("haven.authck", null)) != null)
     	    authck = Utils.hex2byte(p);
