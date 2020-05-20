@@ -65,6 +65,9 @@ public class LoginScreen extends Widget {
         add(new LoginList(200, 29), new Coord(10,10));
         statusBtn = adda(new Button(200, "Initializing..."), sz.x-210, 80,0,1);
         StartUpdaterThread();
+        // GameUI.swimon = false;
+        // GameUI.trackon = false;
+        // GameUI.crimeon = false;
     }
 
     private static abstract class Login extends Widget {
@@ -220,7 +223,7 @@ public class LoginScreen extends Widget {
         protected void drawitem(GOut g, LoginData item, int i) {
             if (hover == i) {
                 g.chcolor(96, 96, 96, 255);
-                g.frect(Coord.z, g.br); //sz -> br
+                g.frect2(Coord.z, g.br); //sz -> br
                 g.chcolor();
             }
             Tex tex = Text.render(item.name, Color.WHITE, textfs).tex();

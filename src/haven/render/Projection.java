@@ -55,6 +55,15 @@ public class Projection extends Transform {
 			   n.z));
     }
     
+    public Coord get2dCoord(float[] homoc, Coord wndsz) {
+        float[] o = fin(Matrix4f.id).mul4(homoc);
+        float d = 1 / o[3];
+        float nx = o[0] * d;
+        float ny = o[1] * d;
+        return new Coord((int)(((nx + 1) / 2) * wndsz.x), (int)(((-ny + 1) / 2) * wndsz.y));
+    }
+
+
     public static Matrix4f makefrustum(Matrix4f d, float left, float right, float bottom, float top, float near, float far) {
 	d.m[ 0] = (2 * near) / (right - left);
 	d.m[ 5] = (2 * near) / (top - bottom);
@@ -68,11 +77,11 @@ public class Projection extends Transform {
 	d.m[12] = d.m[13] = d.m[15] = 0.0f;
 	return(d);
     }
-    
+
     public static Projection frustum(float left, float right, float bottom, float top, float near, float far) {
 	return(new Projection(makefrustum(new Matrix4f(), left, right, bottom, top, near, far)));
     }
-    
+
     public static Matrix4f makeortho(Matrix4f d, float left, float right, float bottom, float top, float near, float far) {
 	d.m[ 0] = 2 / (right - left);
 	d.m[ 5] = 2 / (top - bottom);
@@ -86,7 +95,7 @@ public class Projection extends Transform {
 	d.m[ 8] = d.m[ 9] = d.m[11] = 0.0f;
 	return(d);
     }
-    
+
     public static Projection ortho(float left, float right, float bottom, float top, float near, float far) {
 	return(new Projection(makeortho(new Matrix4f(), left, right, bottom, top, near, far)));
     }

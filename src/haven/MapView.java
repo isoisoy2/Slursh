@@ -2244,6 +2244,33 @@ public class MapView extends PView implements DTarget, Console.Directory {
         // if (musselPicker != null)
         //     musselPicker.interrupt();
     }
+    public void removeCustomSprites(int id) {
+        OCache oc = ui.sess.glob.oc;
+        synchronized (oc) {
+            for (Gob gob : oc) {
+                Gob.Overlay ol = gob.findol(id);
+                if (ol != null)
+                    gob.ols.remove(ol);
+            }
+        }
+    }
+
+    public void addHealthSprites() {
+        OCache oc = glob.oc;
+        // synchronized (oc) {
+        //     for (Gob gob : oc) {
+        //         final GobHealth hlt = gob.getattr(GobHealth.class);
+        //         if (hlt != null && hlt.hp < 4) {
+        //             Gob.Overlay ol = gob.findol(Sprite.GOB_HEALTH_ID);
+        //             if (ol == null)
+        //                 gob.addol(new Gob.Overlay(Sprite.GOB_HEALTH_ID, new GobHealthSprite(hlt.hp)));
+        //             else if (((GobHealthSprite)ol.spr).val != hlt.hp)
+        //                 ((GobHealthSprite)ol.spr).update(hlt.hp);
+        //             oc.changed(gob);
+        //         }
+        //     }
+        // }
+    }
 
     public void refreshGobsAll() {
         OCache oc = glob.oc;

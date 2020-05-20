@@ -45,7 +45,7 @@ public class OptWnd extends Window {
     public static final int VERTICAL_MARGIN = 10;
     public static final int HORIZONTAL_MARGIN = 5;
     public static final int VERTICAL_AUDIO_MARGIN = 5;
-    public final Panel main, video, audio, keybind;
+    public final Panel main, video, audio, keybind, display, map, general, control, mapping, uis, combat, quality, flowermenus, soundalarms;
     public Panel current;
 
     public void chpanel(Panel p) {
@@ -81,10 +81,10 @@ public class OptWnd extends Window {
     }
 
     public class Panel extends Widget {
-	public Panel() {
-	    visible = false;
-	    c = Coord.z;
-	}
+    	public Panel() {
+    	    visible = false;
+    	    c = Coord.z;
+    	}
     }
 
     private void error(String msg) {
@@ -93,11 +93,146 @@ public class OptWnd extends Window {
     	    gui.error(msg);
     }
 
+
+    public OptWnd(boolean gopts) {
+    	super(new Coord(620, 400), "Options", true);
+    	main = add(new Panel());
+    	video = add(new VideoPanel(main));
+    	audio = add(new Panel());
+    	keybind = add(new BindingPanel(main));
+        map = add(new Panel());
+        display = add(new Panel());
+        general = add(new Panel());
+        control = add(new Panel());
+        mapping = add(new Panel());
+        uis = add(new Panel());
+        combat = add(new Panel());
+        quality = add(new Panel());
+        flowermenus = add(new Panel());
+        soundalarms = add(new Panel());
+    	//int y;
+        initMain(gopts);
+        initAudio();
+        initDisplay();
+        initMinimap();
+        initGeneral();
+        initControl();
+        initUis();
+        initCombat();
+        // initQuality();
+        // initFlowermenus();
+        // initSoundAlarms();
+        // initMapping();
+
+    	// main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 0));
+    	// main.add(new PButton(200, "Audio settings", 'a', audio), new Coord(0, 30));
+    	// main.add(new PButton(200, "Keybindings", 'k', keybind), new Coord(0, 60));
+    	// if(gopts) {
+    	//     main.add(new Button(200, "Switch character") {
+    	// 	    public void click() {
+    	// 		getparent(GameUI.class).act("lo", "cs");
+    	// 	    }
+    	// 	}, new Coord(0, 120));
+    	//     main.add(new Button(200, "Log out") {
+    	// 	    public void click() {
+    	// 		getparent(GameUI.class).act("lo");
+    	// 	    }
+    	// 	}, new Coord(0, 150));
+    	// }
+    	// main.add(new Button(200, "Close") {
+    	// 	public void click() {
+    	// 	    OptWnd.this.hide();
+    	// 	}
+    	//     }, new Coord(0, 180));
+    	// main.pack();
+        //
+    	// y = 0;
+    	// audio.add(new Label("Master audio volume"), new Coord(0, y));
+    	// y += 15;
+    	// audio.add(new HSlider(200, 0, 1000, (int)(Audio.volume * 1000)) {
+    	// 	public void changed() {
+    	// 	    Audio.setvolume(val / 1000.0);
+    	// 	}
+    	//     }, new Coord(0, y));
+    	// y += 30;
+    	// audio.add(new Label("In-game event volume"), new Coord(0, y));
+    	// y += 15;
+    	// audio.add(new HSlider(200, 0, 1000, 0) {
+    	// 	protected void attach(UI ui) {
+    	// 	    super.attach(ui);
+    	// 	    val = (int)(ui.audio.pos.volume * 1000);
+    	// 	}
+    	// 	public void changed() {
+    	// 	    ui.audio.pos.setvolume(val / 1000.0);
+    	// 	}
+    	//     }, new Coord(0, y));
+    	// y += 20;
+    	// audio.add(new Label("Ambient volume"), new Coord(0, y));
+    	// y += 15;
+    	// audio.add(new HSlider(200, 0, 1000, 0) {
+    	// 	protected void attach(UI ui) {
+    	// 	    super.attach(ui);
+    	// 	    val = (int)(ui.audio.amb.volume * 1000);
+    	// 	}
+    	// 	public void changed() {
+    	// 	    ui.audio.amb.setvolume(val / 1000.0);
+    	// 	}
+    	//     }, new Coord(0, y));
+    	// y += 35;
+    	// audio.add(new PButton(200, "Back", 27, main), new Coord(0, 180));
+    	// audio.pack();
+
+    	chpanel(main);
+    }
+
+    private void initMain(boolean gopts) {
+        main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 0));
+        main.add(new PButton(200, "Audio settings", 'a', audio), new Coord(0, 30));
+        main.add(new PButton(200, "Key Bindings", 'b', keybind), new Coord(0, 60));
+        main.add(new PButton(200, "Minimap settings", 'm', map), new Coord(0, 90));
+        main.add(new PButton(200, "General settings", 'g', general), new Coord(210, 0));
+        main.add(new PButton(200, "Display settings", 'd', display), new Coord(210, 30));
+        main.add(new PButton(200, "Control settings", 'k', control), new Coord(210, 60));
+        main.add(new PButton(200, "UI settings", 'u', uis), new Coord(210, 90));
+        main.add(new PButton(200, "Combat settings", 'c', combat), new Coord(210, 120));
+        // main.add(new PButton(200, "Quality settings", 'q', quality), new Coord(420, 0));
+        // main.add(new PButton(200, "Menu settings", 'f', flowermenus), new Coord(420, 30));
+        // main.add(new PButton(200, "Sound alarms", 's', soundalarms), new Coord(420, 60));
+        // main.add(new PButton(200, "Mapping settings", 'e', mapping), new Coord(420, 90));
+
+
+        if (gopts) {
+            main.add(new Button(200, "Switch character") {
+                public void click() {
+                    GameUI gui = gameui();
+                    gui.act("lo", "cs");
+                    if (gui != null & gui.map != null)
+                        gui.map.canceltasks();
+                }
+            }, new Coord(210, 300));
+            main.add(new Button(200, "Log out") {
+                public void click() {
+                    GameUI gui = gameui();
+                    gui.act("lo");
+                    if (gui != null & gui.map != null)
+                        gui.map.canceltasks();
+                }
+            }, new Coord(210, 330));
+        }
+        main.add(new Button(200, "Close") {
+            public void click() {
+                OptWnd.this.hide();
+            }
+        }, new Coord(210, 360));
+        main.pack();
+    }
+
     public class VideoPanel extends Panel {
     	public VideoPanel(Panel back) {
     	    super();
     	    add(new PButton(200, "Back", 27, back), new Coord(210, 360));
-    	    pack();
+    	    //pack();
+            resize(new Coord(620, 400));
 	    }
 
     	public class CPanel extends Widget {
@@ -223,6 +358,114 @@ public class OptWnd extends Window {
         		// 	    curcf = null;
         		// 	}
         		// }, new Coord(0, 150));
+                appender.add(new CheckBox("TBA Disable biome tile transitions (requires logout)") {
+                    {
+                        a = Config.disabletiletrans;
+                    }
+                    public void set(boolean val) {
+                        Config.disabletiletrans = val;
+                        Utils.setprefb("disabletiletrans", val);
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Disable terrain smoothing (requires logout)") {
+                    {
+                        a = Config.disableterrainsmooth;
+                    }
+                    public void set(boolean val) {
+                        Config.disableterrainsmooth = val;
+                        Utils.setprefb("disableterrainsmooth", val);
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Disable terrain elevation (requires logout)") {
+                    {
+                        a = Config.disableelev;
+                    }
+                    public void set(boolean val) {
+                        Config.disableelev = val;
+                        Utils.setprefb("disableelev", val);
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Disable flavor objects including ambient sounds") {
+                    {
+                        a = Config.hideflocomplete;
+                    }
+
+                    public void set(boolean val) {
+                        Utils.setprefb("hideflocomplete", val);
+                        Config.hideflocomplete = val;
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Hide flavor objects but keep sounds (requires logout)") {
+                    {
+                        a = Config.hideflovisual;
+                    }
+
+                    public void set(boolean val) {
+                        Utils.setprefb("hideflovisual", val);
+                        Config.hideflovisual = val;
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Show weather") {
+                    {
+                        a = Config.showweather;
+                    }
+
+                    public void set(boolean val) {
+                        Utils.setprefb("showweather", val);
+                        Config.showweather = val;
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Simple crops (req. logout)") {
+                    {
+                        a = Config.simplecrops;
+                    }
+
+                    public void set(boolean val) {
+                        Utils.setprefb("simplecrops", val);
+                        Config.simplecrops = val;
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Hide crops") {
+                    {
+                        a = Config.hidecrops;
+                    }
+
+                    public void set(boolean val) {
+                        Utils.setprefb("hidecrops", val);
+                        Config.hidecrops = val;
+                        a = val;
+                    }
+                });
+                appender.add(new CheckBox("TBA Show FPS") {
+                    {
+                        a = Config.showfps;
+                    }
+
+                    public void set(boolean val) {
+                        Utils.setprefb("showfps", val);
+                        Config.showfps = val;
+                        a = val;
+                    }
+                });
+
+                appender.add(new Label("TBA Disable animations (req. restart):"));
+                CheckListbox disanimlist = new CheckListbox(320, Math.min(8, Config.disableanim.values().size()), 18 + Config.fontadd) {
+                    @Override
+                    protected void itemclick(CheckListboxItem itm, int button) {
+                        super.itemclick(itm, button);
+                        Utils.setprefchklst("disableanim", Config.disableanim); //dunno
+                    }
+                };
+                for (CheckListboxItem itm : Config.disableanim.values())
+                    disanimlist.items.add(itm);
+                appender.add(disanimlist);
 
                 pack();
     	    }
@@ -245,14 +488,14 @@ public class OptWnd extends Window {
 						     "$col[255,255,0]{Delete}: Disable keybinding", 0);
         public class BindingPanel extends Panel {
     	private int addbtn(Widget cont, String nm, KeyBinding cmd, int y) {
-    	    Widget btn = cont.add(new SetButton(175, cmd), 100, y);
-    	    cont.adda(new Label(nm), 0, y + (btn.sz.y / 2), 0, 0.5);
+    	    Widget btn = cont.add(new SetButton(175, cmd), 300, y); //100
+    	    cont.adda(new Label(nm), cont.sz.x / 5, y + (btn.sz.y / 2), 0, 0.5); //0
     	    return(y + 30);
     	}
 
     	public BindingPanel(Panel back) {
     	    super();
-    	    Widget cont = add(new Scrollport(new Coord(300, 300))).cont;
+    	    Widget cont = add(new Scrollport(new Coord(620, 325))).cont;
     	    int y = 0;
     	    cont.adda(new Label("Main menu"), cont.sz.x / 2, y, 0.5, 0); y += 20;
     	    y = addbtn(cont, "Inventory", GameUI.kb_inv, y);
@@ -287,7 +530,10 @@ public class OptWnd extends Window {
     	    for(int i = 0; i < Fightsess.kb_acts.length; i++)
     		y = addbtn(cont, String.format("Combat action %d", i + 1), Fightsess.kb_acts[i], y);
     	    y = addbtn(cont, "Switch targets", Fightsess.kb_relcycle, y);
+            y = addbtn(cont, "Toggle peace opponent",Fightsess.kb_peace, y);
     	    y += 10;
+            cont.adda(new Label("Misc"), cont.sz.x / 2, y, 0.5, 0); y += 20;
+            y = addbtn(cont, "Drink hotkey", GameUI.kb_drink, y);
     	    y = cont.sz.y + 10;
     	    adda(new PointBind(200), cont.sz.x / 2, y, 0.5, 0); y += 30;
     	    adda(new PButton(200, "Back", 27, back), cont.sz.x / 2, y, 0.5, 0); y += 30;
@@ -433,139 +679,6 @@ public class OptWnd extends Window {
     	}
     }
 
-    public OptWnd(boolean gopts) {
-    	super(new Coord(620, 400), "Options", true);
-    	main = add(new Panel());
-    	video = add(new VideoPanel(main));
-    	audio = add(new Panel());
-    	keybind = add(new BindingPanel(main));
-        // display = add(new Panel());
-        // map = add(new Panel());
-        // general = add(new Panel());
-        // combat = add(new Panel());
-        // control = add(new Panel());
-        // mapping = add(new Panel());
-        // uis = add(new Panel());
-        // quality = add(new Panel());
-        // flowermenus = add(new Panel());
-        // soundalarms = add(new Panel());
-    	//int y;
-        initMain(gopts);
-        initAudio();
-        // initDisplay();
-        // initMinimap();
-        // initGeneral();
-        // initCombat();
-        // initControl();
-        // initUis();
-        // initQuality();
-        // initFlowermenus();
-        // initSoundAlarms();
-        // initKeyBind();
-        // initMapping();
-
-    	// main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 0));
-    	// main.add(new PButton(200, "Audio settings", 'a', audio), new Coord(0, 30));
-    	// main.add(new PButton(200, "Keybindings", 'k', keybind), new Coord(0, 60));
-    	// if(gopts) {
-    	//     main.add(new Button(200, "Switch character") {
-    	// 	    public void click() {
-    	// 		getparent(GameUI.class).act("lo", "cs");
-    	// 	    }
-    	// 	}, new Coord(0, 120));
-    	//     main.add(new Button(200, "Log out") {
-    	// 	    public void click() {
-    	// 		getparent(GameUI.class).act("lo");
-    	// 	    }
-    	// 	}, new Coord(0, 150));
-    	// }
-    	// main.add(new Button(200, "Close") {
-    	// 	public void click() {
-    	// 	    OptWnd.this.hide();
-    	// 	}
-    	//     }, new Coord(0, 180));
-    	// main.pack();
-        //
-    	// y = 0;
-    	// audio.add(new Label("Master audio volume"), new Coord(0, y));
-    	// y += 15;
-    	// audio.add(new HSlider(200, 0, 1000, (int)(Audio.volume * 1000)) {
-    	// 	public void changed() {
-    	// 	    Audio.setvolume(val / 1000.0);
-    	// 	}
-    	//     }, new Coord(0, y));
-    	// y += 30;
-    	// audio.add(new Label("In-game event volume"), new Coord(0, y));
-    	// y += 15;
-    	// audio.add(new HSlider(200, 0, 1000, 0) {
-    	// 	protected void attach(UI ui) {
-    	// 	    super.attach(ui);
-    	// 	    val = (int)(ui.audio.pos.volume * 1000);
-    	// 	}
-    	// 	public void changed() {
-    	// 	    ui.audio.pos.setvolume(val / 1000.0);
-    	// 	}
-    	//     }, new Coord(0, y));
-    	// y += 20;
-    	// audio.add(new Label("Ambient volume"), new Coord(0, y));
-    	// y += 15;
-    	// audio.add(new HSlider(200, 0, 1000, 0) {
-    	// 	protected void attach(UI ui) {
-    	// 	    super.attach(ui);
-    	// 	    val = (int)(ui.audio.amb.volume * 1000);
-    	// 	}
-    	// 	public void changed() {
-    	// 	    ui.audio.amb.setvolume(val / 1000.0);
-    	// 	}
-    	//     }, new Coord(0, y));
-    	// y += 35;
-    	// audio.add(new PButton(200, "Back", 27, main), new Coord(0, 180));
-    	// audio.pack();
-
-    	chpanel(main);
-    }
-    private void initMain(boolean gopts) {
-        main.add(new PButton(200, "Video settings", 'v', video), new Coord(0, 0));
-        main.add(new PButton(200, "Audio settings", 'a', audio), new Coord(0, 30));
-        //main.add(new PButton(200, "Display settings", 'd', display), new Coord(0, 60));
-        // main.add(new PButton(200, "Minimap settings", 'm', map), new Coord(0, 90));
-        // main.add(new PButton(200, "General settings", 'g', general), new Coord(210, 0));
-        // main.add(new PButton(200, "Combat settings", 'c', combat), new Coord(210, 30));
-        // main.add(new PButton(200, "Control settings", 'k', control), new Coord(210, 60));
-        // main.add(new PButton(200, "Mapping settings", 'e', mapping), new Coord(210, 90));
-        // main.add(new PButton(200, "UI settings", 'u', uis), new Coord(210, 120));
-        // main.add(new PButton(200, "Quality settings", 'q', quality), new Coord(420, 0));
-        // main.add(new PButton(200, "Menu settings", 'f', flowermenus), new Coord(420, 30));
-        // main.add(new PButton(200, "Sound alarms", 's', soundalarms), new Coord(420, 60));
-        // main.add(new PButton(200, "Key Bindings", 'b', keybind), new Coord(420, 90));
-        // main.add(new PButton(200, "Established Shortcuts", 'l', shorts), new Coord(420,120));
-        // main.add(new PButton(200, "Slush Additions", 'h', slush), new Coord(0,120));
-        if (gopts) {
-            main.add(new Button(200, "Switch character") {
-                public void click() {
-                    GameUI gui = gameui();
-                    gui.act("lo", "cs");
-                    if (gui != null & gui.map != null)
-                        gui.map.canceltasks();
-                }
-            }, new Coord(210, 300));
-            main.add(new Button(200, "Log out") {
-                public void click() {
-                    GameUI gui = gameui();
-                    gui.act("lo");
-                    if (gui != null & gui.map != null)
-                        gui.map.canceltasks();
-                }
-            }, new Coord(210, 330));
-        }
-        main.add(new Button(200, "Close") {
-            public void click() {
-                OptWnd.this.hide();
-            }
-        }, new Coord(210, 360));
-        main.pack();
-    }
-
     private void initAudio() {
         initAudioFirstColumn();
         audio.add(new PButton(200, "Back", 27, main), new Coord(210, 360));
@@ -608,131 +721,943 @@ public class OptWnd extends Window {
                 ui.audio.amb.setvolume(val / 1000.0);
             }
         });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("Timers alarm volume"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.timersalarmvol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.timersalarmvol = vol;
-        //         Utils.setprefd("timersalarmvol", vol);
-        //     }
-        // });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("'Chip' sound volume"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.sfxchipvol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.sfxchipvol = vol;
-        //         Utils.setprefd("sfxchipvol", vol);
-        //     }
-        // });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("Quern sound volume"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.sfxquernvol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.sfxquernvol = vol;
-        //         Utils.setprefd("sfxquernvol", vol);
-        //     }
-        // });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("'Whip' sound volume"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.sfxwhipvol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.sfxwhipvol = vol;
-        //         Utils.setprefd("sfxwhipvol", vol);
-        //     }
-        // });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("'Squeak' sound volume"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.sfxsquvol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.sfxsquvol = vol;
-        //         Utils.setprefd("sfxsquvol", vol);
-        //     }
-        // });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("'Clap/Whistle' sound volume"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.sfxclwhvol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.sfxclwhvol = vol;
-        //         Utils.setprefd("sfxclwhvol", vol);
-        //     }
-        // });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("Fireplace sound volume (req. restart)"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.sfxfirevol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.sfxfirevol = vol;
-        //         Utils.setprefd("sfxfirevol", vol);
-        //     }
-        // });
-        // appender.setVerticalMargin(0);
-        // appender.add(new Label("Bees sound volume (req. logout)"));
-        // appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
-        // appender.add(new HSlider(200, 0, 1000, 0) {
-        //     protected void attach(UI ui) {
-        //         super.attach(ui);
-        //         val = (int) (Config.sfxbeevol * 1000);
-        //     }
-        //
-        //     public void changed() {
-        //         double vol = val / 1000.0;
-        //         Config.sfxbeevol = vol;
-        //         Utils.setprefd("sfxbeevol", vol);
-        //     }
-        // });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA Timers alarm volume"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.timersalarmvol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.timersalarmvol = vol;
+                Utils.setprefd("timersalarmvol", vol);
+            }
+        });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA 'Chip' sound volume"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.sfxchipvol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.sfxchipvol = vol;
+                Utils.setprefd("sfxchipvol", vol);
+            }
+        });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA Quern sound volume"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.sfxquernvol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.sfxquernvol = vol;
+                Utils.setprefd("sfxquernvol", vol);
+            }
+        });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA 'Whip' sound volume"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.sfxwhipvol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.sfxwhipvol = vol;
+                Utils.setprefd("sfxwhipvol", vol);
+            }
+        });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA 'Squeak' sound volume"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.sfxsquvol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.sfxsquvol = vol;
+                Utils.setprefd("sfxsquvol", vol);
+            }
+        });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA 'Clap/Whistle' sound volume"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.sfxclwhvol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.sfxclwhvol = vol;
+                Utils.setprefd("sfxclwhvol", vol);
+            }
+        });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA Fireplace sound volume (req. restart)"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.sfxfirevol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.sfxfirevol = vol;
+                Utils.setprefd("sfxfirevol", vol);
+            }
+        });
+        appender.setVerticalMargin(0);
+        appender.add(new Label("TBA Bees sound volume (req. logout)"));
+        appender.setVerticalMargin(VERTICAL_AUDIO_MARGIN);
+        appender.add(new HSlider(200, 0, 1000, 0) {
+            protected void attach(UI ui) {
+                super.attach(ui);
+                val = (int) (Config.sfxbeevol * 1000);
+            }
+
+            public void changed() {
+                double vol = val / 1000.0;
+                Config.sfxbeevol = vol;
+                Utils.setprefd("sfxbeevol", vol);
+            }
+        });
+    }
+
+    private void initDisplay() {
+        initDisplayFirstColumn();
+        initDisplaySecondColumn();
+        display.add(new PButton(200, "Back", 27, main), new Coord(210, 360));
+        display.pack();
+    }
+
+    private void initDisplayFirstColumn() {
+        final WidgetVerticalAppender appender = new WidgetVerticalAppender(withScrollport(display, new Coord(310, 350)));
+        appender.setVerticalMargin(VERTICAL_MARGIN);
+        appender.add(new CheckBox("TBA Display kin names") {
+            {
+                a = Config.showkinnames;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showkinnames", val);
+                Config.showkinnames = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Display item completion progress bar") {
+            {
+                a = Config.itemmeterbar;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("itemmeterbar", val);
+                Config.itemmeterbar = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Show hourglass percentage") {
+            {
+                a = Config.showprogressperc;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showprogressperc", val);
+                Config.showprogressperc = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Show attributes & softcap values in craft window") {
+            {
+                a = Config.showcraftcap;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showcraftcap", val);
+                Config.showcraftcap = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Show objects health") {
+            {
+                a = Config.showgobhp;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showgobhp", val);
+                Config.showgobhp = val;
+                a = val;
+
+                GameUI gui = gameui();
+                if (gui != null && gui.map != null) {
+                    if (val)
+                        gui.map.addHealthSprites();
+                    else
+                        gui.map.removeCustomSprites(Sprite.GOB_HEALTH_ID);
+                }
+            }
+        });
+        appender.add(new CheckBox("TBA Show player's path") {
+            {
+                a = Config.showplayerpaths;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showplayerpaths", val);
+                Config.showplayerpaths = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Show animal radius") {
+            {
+                a = Config.showanimalrad;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showanimalrad", val);
+                Config.showanimalrad = val;
+                a = val;
+            }
+        });
+
+    }
+
+    private void initDisplaySecondColumn() {
+        final WidgetVerticalAppender appender = new WidgetVerticalAppender(withScrollport(display, new Coord(310, 350), new Coord(310,0)));
+        appender.setVerticalMargin(VERTICAL_MARGIN);
+        appender.add(new CheckBox("TBA Highlight empty/finished drying frames") {
+            {
+                a = Config.showdframestatus;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showdframestatus", val);
+                Config.showdframestatus = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Highlight empty/finished tanning tubs") {
+            {
+                a = Config.showtanningstatus;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showtanningstatus", val);
+                Config.showtanningstatus = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Highlight finished garden pots") {
+            {
+                a = Config.highlightpots;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("highlightpots", val);
+                Config.highlightpots = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Draw circles around party members") {
+            {
+                a = Config.partycircles;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("partycircles", val);
+                Config.partycircles = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Show last used curios in study window") {
+            {
+                a = Config.studyhist;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("studyhist", val);
+                Config.studyhist = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Display buff icon when study has free slots") {
+            {
+                a = Config.studybuff;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("studybuff", val);
+                Config.studybuff = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Miniature trees (req. logout)") {
+            {
+                a = Config.bonsai;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("bonsai", val);
+                Config.bonsai = val;
+                a = val;
+            }
+        });
+
+    }
+
+    private void initMinimap() {
+        map.add(new Label("Show boulders:"), new Coord(10, 0));
+        map.add(new Label("Show bushes:"), new Coord(165, 0));
+        map.add(new Label("Show trees:"), new Coord(320, 0));
+        map.add(new Label("Hide icons:"), new Coord(475, 0));
+
+        map.add(new PButton(200, "Back", 27, main), new Coord(210, 360));
+        map.pack();
+    }
+
+    private void initGeneral() {
+        final WidgetVerticalAppender appender = new WidgetVerticalAppender(withScrollport(general, new Coord(620, 350)));
+
+        appender.setVerticalMargin(VERTICAL_MARGIN);
+        appender.setHorizontalMargin(HORIZONTAL_MARGIN);
+
+        appender.add(new CheckBox("TBA Save chat logs to disk") {
+            {
+                a = Config.chatsave;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("chatsave", val);
+                Config.chatsave = val;
+                a = val;
+                if (!val && Config.chatlog != null) {
+                    try {
+                        Config.chatlog.close();
+                        Config.chatlog = null;
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        });
+        appender.add(new CheckBox("TBA Notify when kin comes online") {
+            {
+                a = Config.notifykinonline;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("notifykinonline", val);
+                Config.notifykinonline = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Auto hearth") {
+            {
+                a = Config.autohearth;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("autohearth", val);
+                Config.autohearth = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Auto logout on unknown/red players") {
+            {
+                a = Config.autologout;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("autologout", val);
+                Config.autologout = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Run on login") {
+            {
+                a = Config.runonlogin;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("runonlogin", val);
+                Config.runonlogin = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Show server time") {
+            {
+                a = Config.showservertime;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showservertime", val);
+                Config.showservertime = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Enable tracking on login") {
+            {
+                a = Config.enabletracking;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("enabletracking", val);
+                Config.enabletracking = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Enable criminal acts on login") {
+            {
+                a = Config.enablecrime;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("enablecrime", val);
+                Config.enablecrime = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Drop everything!!!") {
+            {
+                a = Config.dropEverything;
+            }
+
+            public void set(boolean val) {
+                //Utils.setprefb("dropEverything", val);
+                Config.dropEverything = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Drop soil") {
+            {
+                a = Config.dropSoil;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("dropSoil", val);
+                Config.dropSoil = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Automatically drop leeches from equipment.") {
+          {
+              a = Config.leechdrop;
+          }
+
+          public void set(boolean val) {
+              Utils.setprefb("leechdrop", val);
+              Config.leechdrop = val;
+              a = val;
+          }
+        });
+        appender.add(new CheckBox("TBA Drop cattail head and root") {
+            {
+                a = Config.dropCat;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("dropCat", val);
+                Config.dropCat = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Drop mined stones") {
+            {
+                a = Config.dropMinedStones;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("dropMinedStones", val);
+                Config.dropMinedStones = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Drop mined ore") {
+            {
+                a = Config.dropMinedOre;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("dropMinedOre", val);
+                Config.dropMinedOre = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Drop mined silver/gold ore") {
+            {
+                a = Config.dropMinedOrePrecious;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("dropMinedOrePrecious", val);
+                Config.dropMinedOrePrecious = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Drop mined cat gold, petrified seashells, strange crystals") {
+            {
+                a = Config.dropMinedCurios;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("dropMinedCurios", val);
+                Config.dropMinedCurios = val;
+                a = val;
+            }
+        });
+
+        general.add(new PButton(200, "Back", 27, main), new Coord(210, 360));
+        general.pack();
+    }
+
+    private void initControl() {
+        final WidgetVerticalAppender appender = new WidgetVerticalAppender(withScrollport(control, new Coord(620, 350)));
+
+        appender.setVerticalMargin(VERTICAL_MARGIN);
+        appender.setHorizontalMargin(HORIZONTAL_MARGIN);
+
+        appender.addRow(new Label("TBA Bad camera scrolling sensitivity"),
+            new HSlider(50, 0, 50, 0) {
+                protected void attach(UI ui) {
+                    super.attach(ui);
+                    val = Config.badcamsensitivity;
+                }
+
+                public void changed() {
+                    Config.badcamsensitivity = val;
+                    Utils.setprefi("badcamsensitivity", val);
+                }
+        });
+        appender.add(new CheckBox("TBA Use French (AZERTY) keyboard layout") {
+            {
+                a = Config.userazerty;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("userazerty", val);
+                Config.userazerty = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Reverse bad camera MMB x-axis") {
+            {
+                a = Config.reversebadcamx;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("reversebadcamx", val);
+                Config.reversebadcamx = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Reverse bad camera MMB y-axis") {
+            {
+                a = Config.reversebadcamy;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("reversebadcamy", val);
+                Config.reversebadcamy = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Force hardware cursor (req. restart)") {
+            {
+                a = Config.hwcursor;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("hwcursor", val);
+                Config.hwcursor = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Disable dropping items over water (overridable with Ctrl)") {
+            {
+                a = Config.nodropping;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("nodropping", val);
+                Config.nodropping = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Disable dropping items over anywhere (overridable with Ctrl)") {
+            {
+                a = Config.nodropping_all;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("nodropping_all", val);
+                Config.nodropping_all = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("Enable full zoom-out in Ortho cam") {
+            {
+                a = Config.enableorthofullzoom;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("enableorthofullzoom", val);
+                Config.enableorthofullzoom = val;
+                a = val;
+            }
+        });
+
+        control.add(new PButton(200, "Back", 27, main), new Coord(210, 360));
+        control.pack();
+    }
+
+    private void initUis() {
+        final WidgetVerticalAppender appender = new WidgetVerticalAppender(withScrollport(uis, new Coord(620, 310)));
+
+        appender.setVerticalMargin(VERTICAL_MARGIN);
+        appender.setHorizontalMargin(HORIZONTAL_MARGIN);
+
+        appender.addRow(new Label("Language (req. restart):"), langDropdown());
+        appender.add(new CheckBox("Show quick hand slots") {
+            {
+                a = Config.quickslots;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("quickslots", val);
+                Config.quickslots = val;
+                a = val;
+
+                try {
+                    Widget qs = ((GameUI) parent.parent.parent).quickslots;
+                    if (qs != null) {
+                        if (val)
+                            qs.show();
+                        else
+                            qs.hide();
+                    }
+                } catch (ClassCastException e) { // in case we are at the login screen
+                }
+            }
+        });
+        appender.add(new CheckBox("TBA Alternative equipment belt window") {
+            {
+                a = Config.quickbelt;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("quickbelt", val);
+                Config.quickbelt = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("Show F-key toolbar") {
+            {
+                a = Config.fbelt;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("fbelt", val);
+                Config.fbelt = val;
+                a = val;
+                GameUI gui = gameui();
+                if (gui != null) {
+                    FBelt fbelt = gui.fbelt;
+                    if (fbelt != null) {
+                        if (val)
+                            fbelt.show();
+                        else
+                            fbelt.hide();
+                    }
+                }
+            }
+        });
+        appender.add(new CheckBox("TBA Show inventory on login") {
+            {
+                a = Config.showinvonlogin;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("showinvonlogin", val);
+                Config.showinvonlogin = val;
+                a = val;
+            }
+        });
+        appender.add(new CheckBox("TBA Show Craft/Build history toolbar") {
+            {
+                a = Config.histbelt;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("histbelt", val);
+                Config.histbelt = val;
+                a = val;
+                GameUI gui = gameui();
+                if (gui != null) {
+                    CraftHistoryBelt histbelt = gui.histbelt;
+                    if (histbelt != null) {
+                        if (val)
+                            histbelt.show();
+                        else
+                            histbelt.hide();
+                    }
+                }
+            }
+        });
+        appender.add(new CheckBox("TBA Display confirmation dialog when using magic") {
+            {
+                a = Config.confirmmagic;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("confirmmagic", val);
+                Config.confirmmagic = val;
+                a = val;
+            }
+        });
+        appender.addRow(new Label("TBA Tree bounding box color (6-digit HEX):"),
+                new TextEntry(85, Config.treeboxclr) {
+                    @Override
+                    public boolean keydown(KeyEvent ev) {
+                        if (!parent.visible)
+                            return false;
+
+                        boolean ret = buf.key(ev);
+                        if (text.length() == 6) {
+                            Color clr = Utils.hex2rgb(text);
+                            if (clr != null) {
+                                //GobHitbox.fillclrstate = new States.ColState(clr);
+                                Utils.setpref("treeboxclr", text);
+                            }
+                        }
+                        return ret;
+                    }
+                }
+        );
+        appender.addRow(new Label("TBA Chat font size (req. restart):"), makeFontSizeChatDropdown());
+        appender.add(new CheckBox("TBA Font antialiasing") {
+            {
+                a = Config.fontaa;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("fontaa", val);
+                Config.fontaa = val;
+                a = val;
+            }
+        });
+        appender.addRow(new CheckBox("TBA Custom interface font (req. restart):") {
+            {
+                a = Config.usefont;
+            }
+
+            public void set(boolean val) {
+                Utils.setprefb("usefont", val);
+                Config.usefont = val;
+                a = val;
+            }
+        }, makeFontsDropdown());
+
+        final Label fontAdd = new Label("");
+        appender.addRow(
+                new Label("TBA Increase font size by (req. restart):"),
+                new HSlider(160, 0, 3, Config.fontadd) {
+                    public void added() {
+                        updateLabel();
+                    }
+                    public void changed() {
+                        Utils.setprefi("fontadd", val);
+                        Config.fontadd = val;
+                        updateLabel();
+                    }
+                    private void updateLabel() {
+                        fontAdd.settext(String.format("%d", val));
+                    }
+                },
+                fontAdd
+        );
+
+        Button resetWndBtn = new Button(220, "Reset Windows (req. logout)") {
+            @Override
+            public void click() {
+                try {
+                    for (String key : Utils.prefs().keys()) {
+                        if (key.endsWith("_c")) {
+                            Utils.delpref(key);
+                        }
+                    }
+                } catch (BackingStoreException e) {
+                }
+                Utils.delpref("mmapc");
+                Utils.delpref("mmapwndsz");
+                Utils.delpref("mmapsz");
+                Utils.delpref("quickslotsc");
+                Utils.delpref("chatsz");
+                Utils.delpref("chatvis");
+                Utils.delpref("menu-visible");
+                Utils.delpref("fbelt_vertical");
+            }
+        };
+        uis.add(resetWndBtn, new Coord(620 / 2 - resetWndBtn.sz.x / 2 , 320));
+        uis.add(new PButton(200, "Back", 27, main), new Coord(210, 360));
+        uis.pack();
+    }
+
+    private void initCombat() { //combat
+        
+
+    }
+
+    private Dropbox<Locale> langDropdown() {
+        List<Locale> languages = enumerateLanguages();
+        List<String> values = languages.stream().map(x -> x.getDisplayName()).collect(Collectors.toList());
+        return new Dropbox<Locale>(10, values) {
+            {
+                super.change(new Locale(Resource.language));
+            }
+
+            @Override
+            protected Locale listitem(int i) {
+                return languages.get(i);
+            }
+
+            @Override
+            protected int listitems() {
+                return languages.size();
+            }
+
+            @Override
+            protected void drawitem(GOut g, Locale item, int i) {
+                g.text(item.getDisplayName(), Coord.z);
+            }
+
+            @Override
+            public void change(Locale item) {
+                super.change(item);
+                Utils.setpref("language", item.toString());
+            }
+        };
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private Dropbox<String> makeFontsDropdown() {
+        final List<String> fonts = Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
+        return new Dropbox<String>(8, fonts) {
+            {
+                super.change(Config.font);
+            }
+
+            @Override
+            protected String listitem(int i) {
+                return fonts.get(i);
+            }
+
+            @Override
+            protected int listitems() {
+                return fonts.size();
+            }
+
+            @Override
+            protected void drawitem(GOut g, String item, int i) {
+                g.text(item, Coord.z);
+            }
+
+            @Override
+            public void change(String item) {
+                super.change(item);
+                Config.font = item;
+                Utils.setpref("font", item);
+            }
+        };
+    }
+
+    private List<Locale> enumerateLanguages() {
+        Set<Locale> languages = new HashSet<>();
+        languages.add(new Locale("en"));
+
+        Enumeration<URL> en;
+        try {
+            en = this.getClass().getClassLoader().getResources("l10n");
+            if (en.hasMoreElements()) {
+                URL url = en.nextElement();
+                JarURLConnection urlcon = (JarURLConnection) (url.openConnection());
+                try (JarFile jar = urlcon.getJarFile()) {
+                    Enumeration<JarEntry> entries = jar.entries();
+                    while (entries.hasMoreElements()) {
+                        String name = entries.nextElement().getName();
+                        // we assume that if tooltip localization exists then the rest exist as well
+                        // up to dev to make sure that it's true
+                        if (name.startsWith("l10n/" + Resource.BUNDLE_TOOLTIP))
+                            languages.add(new Locale(name.substring(13, 15)));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new ArrayList<Locale>(languages);
+    }
+
+    private static final List<Integer> fontSize = Arrays.asList(10, 11, 12, 13, 14, 15, 16);
+
+    private Dropbox<Integer> makeFontSizeChatDropdown() {
+        List<String> values = fontSize.stream().map(x -> x.toString()).collect(Collectors.toList());
+        return new Dropbox<Integer>(fontSize.size(), values) {
+            {
+                super.change(Config.fontsizechat);
+            }
+
+            @Override
+            protected Integer listitem(int i) {
+                return fontSize.get(i);
+            }
+
+            @Override
+            protected int listitems() {
+                return fontSize.size();
+            }
+
+            @Override
+            protected void drawitem(GOut g, Integer item, int i) {
+                g.text(item.toString(), Coord.z);
+            }
+
+            @Override
+            public void change(Integer item) {
+                super.change(item);
+                Config.fontsizechat = item;
+                Utils.setprefi("fontsizechat", item);
+            }
+        };
     }
 
     static private Scrollport.Scrollcont withScrollport(Widget widget, Coord sz) {
         final Scrollport scroll = new Scrollport(sz);
         widget.add(scroll, new Coord(0, 0));
+        return scroll.cont;
+    }
+    static private Scrollport.Scrollcont withScrollport(Widget widget, Coord sz, Coord ori) {
+        final Scrollport scroll = new Scrollport(sz);
+        widget.add(scroll, ori);
         return scroll.cont;
     }
 

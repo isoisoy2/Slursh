@@ -45,10 +45,10 @@ public class Fightview extends Widget {
     public double atkcs, atkct;
     public Indir<Resource> lastact = null;
     public double lastuse = 0;
-    private GiveButton curgive;
+    public GiveButton curgive;
     private Avaview curava;
     private Button curpurs;
-    
+
     public class Relation {
         public final long gobid;
         public final Avaview ava;
@@ -60,26 +60,26 @@ public class Fightview extends Widget {
 	public Indir<Resource> lastact = null;
 	public double lastuse = 0;
 	public boolean invalid = false;
-        
+
         public Relation(long gobid) {
             this.gobid = gobid;
             add(this.ava = new Avaview(avasz, gobid, "avacam")).canactivate = true;
 	    add(this.give = new GiveButton(0, new Coord(15, 15)));
 	    add(this.purs = new Button(70, "Pursue"));
         }
-	
+
 	public void give(int state) {
 	    if(this == current)
 		curgive.state = state;
 	    this.give.state = state;
 	}
-	
+
 	public void show(boolean state) {
 	    ava.show(state);
 	    give.show(state);
 	    purs.show(state);
 	}
-	
+
 	public void remove() {
 	    ui.destroy(ava);
 	    ui.destroy(give);
@@ -99,14 +99,14 @@ public class Fightview extends Widget {
 	lastact = act;
 	lastuse = Utils.rtime();
     }
-    
+
     @RName("frv")
     public static class $_ implements Factory {
 	public Widget create(UI ui, Object[] args) {
 	    return(new Fightview());
 	}
     }
-    
+
     public Fightview() {
         super(new Coord(width, (bg.sz().y + ymarg) * height));
     }
@@ -178,12 +178,12 @@ public class Fightview extends Widget {
 	}
 	current = rel;
     }
-    
+
     public void destroy() {
 	setcur(null);
 	super.destroy();
     }
-    
+
     public void tick(double dt) {
 	super.tick(dt);
 	for(Relation rel : lsrel) {
@@ -212,16 +212,16 @@ public class Fightview extends Widget {
         }
         super.draw(g);
     }
-    
+
     public static class Notfound extends RuntimeException {
         public final long id;
-        
+
         public Notfound(long id) {
             super("No relation for Gob ID " + id + " found");
             this.id = id;
         }
     }
-    
+
     private Relation getrel(long gobid) {
         for(Relation rel : lsrel) {
             if(rel.gobid == gobid)
@@ -229,7 +229,7 @@ public class Fightview extends Widget {
         }
         throw(new Notfound(gobid));
     }
-    
+
     public void wdgmsg(Widget sender, String msg, Object... args) {
 	if(sender == curava) {
 	    wdgmsg("click", (int)current.gobid, args[0]);
@@ -255,7 +255,7 @@ public class Fightview extends Widget {
 	}
         super.wdgmsg(sender, msg, args);
     }
-    
+
     private Indir<Resource> n2r(int num) {
 	if(num < 0)
 	    return(null);

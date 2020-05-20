@@ -217,28 +217,35 @@ public class Utils {
     }
 
     static synchronized Preferences prefs() {
-	if(prefs == null) {
-	    Preferences node = Preferences.userNodeForPackage(Utils.class);
-	    if(Config.prefspec != null)
-		node = node.node(Config.prefspec);
-	    prefs = node;
-	}
-	return(prefs);
+    	if(prefs == null) {
+    	    Preferences node = Preferences.userNodeForPackage(Utils.class);
+    	    if(Config.prefspec != null)
+    		node = node.node(Config.prefspec);
+    	    prefs = node;
+    	}
+    	return(prefs);
     }
 
+    static void delpref(String prefname) {
+        try {
+            prefs().remove(prefname);
+        } catch (SecurityException e) {
+        }
+    }
+    
     static String getpref(String prefname, String def) {
-	try {
-	    return(prefs().get(prefname, def));
-	} catch(SecurityException e) {
-	    return(def);
-	}
+    	try {
+    	    return(prefs().get(prefname, def));
+    	} catch(SecurityException e) {
+    	    return(def);
+    	}
     }
 
     static void setpref(String prefname, String val) {
-	try {
-	    prefs().put(prefname, val);
-	} catch(SecurityException e) {
-	}
+    	try {
+    	    prefs().put(prefname, val);
+    	} catch(SecurityException e) {
+    	}
     }
 
     static String[] getprefsa(String prefname, String[] def) {

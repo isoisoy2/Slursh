@@ -86,32 +86,130 @@ public class Config {
     public static String version;
     public static String gitrev;
 
-    public static int fontsizechat = Utils.getprefi("fontsizechat", 14);
-    public static boolean fontaa = Utils.getprefb("fontaa", false);
-    public static boolean usefont = Utils.getprefb("usefont", false);
-    public static String font = Utils.getpref("font", "SansSerif");
-    public static int fontadd = Utils.getprefi("fontadd", 0);
-
-    public static boolean enableorthofullzoom = Utils.getprefb("enableorthofullzoom", false);
     public static boolean mapshowviewdist = Utils.getprefb("mapshowviewdist", false);
     public static boolean mapshowgrid = Utils.getprefb("mapshowgrid", false);
 
     public static boolean resinfo = Utils.getprefb("resinfo", false);
-    public static boolean showservertime = Utils.getprefb("showservertime", true);
-    public static boolean quickslots = Utils.getprefb("quickslots", true);
-    public static boolean fbelt = Utils.getprefb("fbelt", false);
-
-    public static boolean showprogressperc = Utils.getprefb("showprogressperc", false);
 
     public static Coord chatsz = Utils.getprefc("chatsz", new Coord(683, 111));
-    public static boolean chatsave = Utils.getprefb("chatsave", false);
+
     public static boolean chatalarm = Utils.getprefb("chatalarm", true);
     public static double chatalarmvol = Utils.getprefd("chatalarmvol", 0.8);
     public final static String chatfile = "chatlog.txt";
-    public static PrintWriter chatlog = null;
 
+    // Video Settings
+    public static boolean disabletiletrans = Utils.getprefb("disabletiletrans", false);
+    public static boolean disableterrainsmooth = Utils.getprefb("disableterrainsmooth", false);
+    public static boolean disableelev = Utils.getprefb("disableelev", false);
+    public static boolean hideflocomplete = Utils.getprefb("hideflocomplete", false);
+    public static boolean hideflovisual = Utils.getprefb("hideflovisual", false);
+    public static boolean showweather = Utils.getprefb("showweather", false);
+    public static boolean simplecrops = Utils.getprefb("simplecrops", false);
+    public static boolean hidecrops = Utils.getprefb("hidecrops", false);
+    public static boolean showfps = Utils.getprefb("showfps", false);
+
+    // Audio Settings
+    public static boolean timersalarm = Utils.getprefb("timersalarm", false);
+    public static double timersalarmvol = Utils.getprefd("timersalarmvol", 0.8);
+    public static double sfxchipvol = Utils.getprefd("sfxchipvol", 0.9);
+    public static double sfxquernvol = Utils.getprefd("sfxquernvol", 0.9);
+    public static double sfxwhipvol = Utils.getprefd("sfxwhipvol", 0.9);
+    public static double sfxsquvol = Utils.getprefd("sfxsquvol", 0.5);
+    public static double sfxclwhvol = Utils.getprefd("sfxclwhvol", 0.5);
+    public static double sfxfirevol = Utils.getprefd("sfxfirevol", 1.0);
+    public static double sfxbeevol = Utils.getprefd("sfxbeevol", 0.5);
+
+    // Display Settings
+    public static boolean showkinnames = Utils.getprefb("showkinnames", true);
+    public static boolean itemmeterbar = Utils.getprefb("itemmeterbar", false);
+    public static boolean showprogressperc = Utils.getprefb("showprogressperc", false);
+    public static boolean showcraftcap = Utils.getprefb("showcraftcap", false);
+    public static boolean showgobhp = Utils.getprefb("showgobhp", false);
+    public static boolean showplayerpaths = Utils.getprefb("showplayerpaths", false);
+    public static boolean showanimalrad = Utils.getprefb("showanimalrad", false);
+    public static boolean showdframestatus = Utils.getprefb("showdframestatus", false);
+    public static boolean showtanningstatus = Utils.getprefb("showtanningstatus", false);
+    public static boolean highlightpots = Utils.getprefb("highlightpots", false);
+    public static boolean partycircles = Utils.getprefb("partycircles", false);
+    public static boolean studyhist = Utils.getprefb("studyhist", false);
+    public static boolean studybuff = Utils.getprefb("studybuff", false);
+    public static boolean bonsai = Utils.getprefb("bonsai", false);
+
+    // General Settings
+    public static boolean chatsave = Utils.getprefb("chatsave", false);
+    public static PrintWriter chatlog = null;
+    public static boolean notifykinonline = Utils.getprefb("notifykinonline", true);
+    public static boolean autohearth = Utils.getprefb("autohearth", false);
+    public static boolean autologout = Utils.getprefb("autologout", false);
+    public static boolean runonlogin = Utils.getprefb("runonlogin", true);
+    public static boolean showservertime = Utils.getprefb("showservertime", true);
+    public static boolean enabletracking = Utils.getprefb("enabletracking", false);
+    public static boolean enablecrime = Utils.getprefb("enablecrime", false);
+    public static boolean dropEverything = Utils.getprefb("dropEverything", false);
+    public static boolean dropSoil = Utils.getprefb("dropSoil", false);
+    public static boolean leechdrop = Utils.getprefb("leechdrop",false);
+    public static boolean dropCat = Utils.getprefb("dropCat",false);
+    public static boolean dropMinedStones = Utils.getprefb("dropMinedStones", true);
+    public static boolean dropMinedOre = Utils.getprefb("dropMinedOre", true);
+    public static boolean dropMinedOrePrecious = Utils.getprefb("dropMinedOrePrecious", true);
+    public static boolean dropMinedCurios = Utils.getprefb("dropMinedCurios", true);
+
+    // Control Settings
+    public static int badcamsensitivity = Utils.getprefi("badcamsensitivity", 5);
+    public static boolean userazerty = Utils.getprefb("userazerty", false);
+    public static boolean reversebadcamx = Utils.getprefb("reversebadcamx", false);
+    public static boolean reversebadcamy = Utils.getprefb("reversebadcamy", false);
+    public static boolean hwcursor = Utils.getprefb("hwcursor", false);
+    public static boolean nodropping = Utils.getprefb("nodropping", false);
+    public static boolean nodropping_all = Utils.getprefb("nodropping_all", false);
+    public static boolean enableorthofullzoom = Utils.getprefb("enableorthofullzoom", false);
+
+    // UI Settings
+    public static boolean quickslots = Utils.getprefb("quickslots", true);
+    public static boolean quickbelt = Utils.getprefb("quickbelt", true);
+    public static boolean fbelt = Utils.getprefb("fbelt", false);
+    public static boolean showinvonlogin = Utils.getprefb("showinvonlogin", true);
+    public static boolean histbelt = Utils.getprefb("histbelt", false);
+    public static boolean confirmmagic = Utils.getprefb("confirmmagic", true);
+    public static String treeboxclr = Utils.getpref("treeboxclr", "D7FF00");
+    public static boolean fontaa = Utils.getprefb("fontaa", false);
+    public static boolean usefont = Utils.getprefb("usefont", false);
+    public static String font = Utils.getpref("font", "SansSerif");
+    public static int fontadd = Utils.getprefi("fontadd", 0);
+    public static int fontsizechat = Utils.getprefi("fontsizechat", 14);
+
+    // Sound alarms
+    public static boolean alarmunknown = Utils.getprefb("alarmunknown", false);
+    public static double alarmunknownvol = Utils.getprefd("alarmunknownvol", 0.32);
+    public static boolean alarmred = Utils.getprefb("alarmred", false);
+    public static double alarmredvol = Utils.getprefd("alarmredvol", 0.32);
+    public static int playerAlarm = Utils.getprefi("playerAlarm",0);
+    public static int whiteplayerAlarm = Utils.getprefi("whiteplayerAlarm", 0);
+    public static boolean alarmbram =  Utils.getprefb("alarmbram", false);
+    public static double alarmbramvol = Utils.getprefd("alarmbramvol", 1.0);
+    public static double alarmonforagablesvol = Utils.getprefd("alarmonforagablesvol", 0.8);
+    public static boolean alarmlocres = Utils.getprefb("alarmlocres", false);
+    public static double alarmlocresvol = Utils.getprefd("alarmlocresvol", 0.8);
+    public static boolean alarmtroll = Utils.getprefb("alarmtroll", false);
+    public static double alarmtrollvol = Utils.getprefd("alarmtrollvol", 0.8);
+    public static boolean studyalarm = Utils.getprefb("studyalarm", false);
+    public static double studyalarmvol = Utils.getprefd("studyalarmvol", 0.8);
+    public static boolean alarmWolf = Utils.getprefb("alarmWolf", false);
+    public static double alarmWolfvol = Utils.getprefd("alarmWolfvol", 0.5);
+    public static boolean alarmCatch = Utils.getprefb("alarmCatch", true);
+    public static double alarmCatchvol = Utils.getprefd("alarmCatchvol", 0.8);
+
+
+
+    public final static HashMap<String, CheckListboxItem> disableanim = new HashMap<String, CheckListboxItem>(4) {{
+        put("gfx/terobjs/beehive", new CheckListboxItem("Beehives"));
+        put("gfx/terobjs/pow", new CheckListboxItem("Fires"));
+        put("gfx/terobjs/stockpile-trash", new CheckListboxItem("Full trash stockpiles"));
+        put("/idle", new CheckListboxItem("Idle animals"));
+    }};
 
     static {
+        Utils.loadprefchklist("disableanim", Config.disableanim);
     	String p;
     	if((p = getprop("haven.authck", null)) != null)
     	    authck = Utils.hex2byte(p);

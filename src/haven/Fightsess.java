@@ -345,6 +345,7 @@ public class Fightsess extends Widget {
 	KeyBinding.get("fgt/9", KeyMatch.forcode(KeyEvent.VK_5, KeyMatch.S)),
     };
     public static final KeyBinding kb_relcycle =  KeyBinding.get("fgt-cycle", KeyMatch.forcode(KeyEvent.VK_TAB, KeyMatch.C), KeyMatch.S);
+    public static final KeyBinding kb_peace = KeyBinding.get("peace", KeyMatch.forcode(KeyEvent.VK_CLOSE_BRACKET,0));
 
     /* XXX: This is a bit ugly, but release message do need to be
      * properly sequenced with use messages in some way. */
@@ -368,58 +369,65 @@ public class Fightsess extends Widget {
     private UI.Grab holdgrab = null;
     private int held = -1;
     public boolean globtype(char key, KeyEvent ev) {
-	// ev = new KeyEvent((java.awt.Component)ev.getSource(), ev.getID(), ev.getWhen(), ev.getModifiersEx(), ev.getKeyCode(), ev.getKeyChar(), ev.getKeyLocation());
-	{
-	    int n = -1;
-	    for(int i = 0; i < kb_acts.length; i++) {
-		if(kb_acts[i].key().match(ev)) {
-		    n = i;
-		    break;
-		}
-	    }
-	    int fn = n;
-	    if((n >= 0) && (n < actions.length)) {
-		MapView map = getparent(GameUI.class).map;
-		Coord mvc = map.rootxlate(ui.mc);
-		if(held >= 0) {
-		    new Release(held);
-		    held = -1;
-		}
-		if(mvc.isect(Coord.z, map.sz)) {
-		    map.new Maptest(mvc) {
-			    protected void hit(Coord pc, Coord2d mc) {
-				wdgmsg("use", fn, 1, ui.modflags(), mc.floor(OCache.posres));
-			    }
+    	// ev = new KeyEvent((java.awt.Component)ev.getSource(), ev.getID(), ev.getWhen(), ev.getModifiersEx(), ev.getKeyCode(), ev.getKeyChar(), ev.getKeyLocation());
+    	{
+    	    int n = -1;
+    	    for(int i = 0; i < kb_acts.length; i++) {
+    		if(kb_acts[i].key().match(ev)) {
+    		    n = i;
+    		    break;
+    		}
+    	    }
+    	    int fn = n;
+    	    if((n >= 0) && (n < actions.length)) {
+    		MapView map = getparent(GameUI.class).map;
+    		Coord mvc = map.rootxlate(ui.mc);
+    		if(held >= 0) {
+    		    new Release(held);
+    		    held = -1;
+    		}
+    		if(mvc.isect(Coord.z, map.sz)) {
+    		    map.new Maptest(mvc) {
+    			    protected void hit(Coord pc, Coord2d mc) {
+    				wdgmsg("use", fn, 1, ui.modflags(), mc.floor(OCache.posres));
+    			    }
 
-			    protected void nohit(Coord pc) {
-				wdgmsg("use", fn, 1, ui.modflags());
-			    }
-			}.run();
-		}
-		if(holdgrab == null)
-		    holdgrab = ui.grabkeys(this);
-		held = n;
-		return(true);
-	    }
-	}
-	if(kb_relcycle.key().match(ev, KeyMatch.S)) {
-	    if((ev.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == 0) {
-		Fightview.Relation cur = fv.current;
-		if(cur != null) {
-		    fv.lsrel.remove(cur);
-		    fv.lsrel.addLast(cur);
-		}
-	    } else {
-		Fightview.Relation last = fv.lsrel.getLast();
-		if(last != null) {
-		    fv.lsrel.remove(last);
-		    fv.lsrel.addFirst(last);
-		}
-	    }
-	    fv.wdgmsg("bump", (int)fv.lsrel.get(0).gobid);
-	    return(true);
-	}
-	return(super.globtype(key, ev));
+    			    protected void nohit(Coord pc) {
+    				wdgmsg("use", fn, 1, ui.modflags());
+    			    }
+    			}.run();
+    		}
+    		if(holdgrab == null)
+    		    holdgrab = ui.grabkeys(this);
+    		held = n;
+    		return(true);
+    	    }
+    	}
+    	if(kb_relcycle.key().match(ev, KeyMatch.S)) {
+    	    if((ev.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == 0) {
+        		Fightview.Relation cur = fv.current;
+        		if(cur != null) {
+        		    fv.lsrel.remove(cur);
+        		    fv.lsrel.addLast(cur);
+        		}
+    	    } else {
+        		Fightview.Relation last = fv.lsrel.getLast();
+        		if(last != null) {
+        		    fv.lsrel.remove(last);
+        		    fv.lsrel.addFirst(last);
+        		}
+    	    }
+    	    fv.wdgmsg("bump", (int)fv.lsrel.get(0).gobid);
+    	    return(true);
+    	}
+        if (kb_peace.key().match(ev)){
+          //System.out.println("key hit");
+          if(fv != null && fv.current != null && fv.curgive != null){
+            fv.curgive.mousedown(Coord.z, 1);
+          }
+
+        }
+    	return(super.globtype(key, ev));
     }
 
     public boolean keydown(KeyEvent ev) {

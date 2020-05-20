@@ -75,6 +75,7 @@ public class GameUI extends ConsoleHost implements Console.Directory {
     public AlignPanel questpanel;
     public QuickSlotsWdg quickslots;
     private ErrorSysMsgCallback errmsgcb;
+    public CraftHistoryBelt histbelt;
 
     private static final OwnerContext.ClassResolver<BeltSlot> beltctxr = new OwnerContext.ClassResolver<BeltSlot>()
 	.add(Glob.class, slot -> slot.wdg().ui.sess.glob)
@@ -234,6 +235,11 @@ public class GameUI extends ConsoleHost implements Console.Directory {
         fbelt.loadLocal();
         if (!Config.fbelt)
             fbelt.hide();
+
+        histbelt = new CraftHistoryBelt(Utils.getprefb("histbelt_vertical", true));
+        add(histbelt, Utils.getprefc("histbelt_c", new Coord(70, 200)));
+        if (!Config.histbelt)
+            histbelt.hide();
     }
 
     public static final KeyBinding kb_map = KeyBinding.get("map", KeyMatch.forchar('A', KeyMatch.C));

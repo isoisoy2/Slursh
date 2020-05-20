@@ -31,16 +31,16 @@ import javax.media.opengl.*;
 public class Matrix4f {
     public final float[] m;
     public static final Matrix4f id = identity();
-    
+
     public Matrix4f() {
 	m = new float[16];
     }
-    
+
     public Matrix4f(Matrix4f b) {
 	this();
 	System.arraycopy(b.m, 0, m, 0, 16);
     }
-    
+
     public Matrix4f(float e00, float e01, float e02, float e03, float e10, float e11, float e12, float e13, float e20, float e21, float e22, float e23, float e30, float e31, float e32, float e33) {
 	this();
 	m[ 0] = e00; m[ 4] = e01; m[ 8] = e02; m[12] = e03;
@@ -48,18 +48,18 @@ public class Matrix4f {
 	m[ 2] = e20; m[ 6] = e21; m[10] = e22; m[14] = e23;
 	m[ 3] = e30; m[ 7] = e31; m[11] = e32; m[15] = e33;
     }
-    
+
     public Matrix4f(float[] m) {
 	this.m = m;
     }
-    
+
     public static Matrix4f identity() {
 	return(new Matrix4f(1, 0, 0, 0,
 			    0, 1, 0, 0,
 			    0, 0, 1, 0,
 			    0, 0, 0, 1));
     }
-    
+
     public Matrix4f load(Matrix4f o) {
 	for(int i = 0; i < 16; i++)
 	    m[i] = o.m[i];
@@ -100,13 +100,17 @@ public class Matrix4f {
 	return(n);
     }
     
+    public float[] homoc() {
+        return new float[] { m[12], m[13], m[14], 1 };
+    }
+
     public Coord3f mul4(Coord3f b) {
 	float x = (m[ 0] * b.x) + (m[ 4] * b.y) + (m[ 8] * b.z) + m[12];
 	float y = (m[ 1] * b.x) + (m[ 5] * b.y) + (m[ 9] * b.z) + m[13];
 	float z = (m[ 2] * b.x) + (m[ 6] * b.y) + (m[10] * b.z) + m[14];
 	return(new Coord3f(x, y, z));
     }
-    
+
     public float[] mul4(float[] b) {
 	float x = (m[ 0] * b[0]) + (m[ 4] * b[1]) + (m[ 8] * b[2]) + (m[12] * b[3]);
 	float y = (m[ 1] * b[0]) + (m[ 5] * b[1]) + (m[ 9] * b[2]) + (m[13] * b[3]);
@@ -114,7 +118,7 @@ public class Matrix4f {
 	float w = (m[ 3] * b[0]) + (m[ 7] * b[1]) + (m[11] * b[2]) + (m[15] * b[3]);
 	return(new float[] {x, y, z, w});
     }
-    
+
     public Matrix4f mul(Matrix4f o) {
 	Matrix4f n = new Matrix4f();
 	int i = 0;
@@ -125,7 +129,7 @@ public class Matrix4f {
 	}
 	return(n);
     }
-    
+
     public Matrix4f mul1(Matrix4f o) {
 	int i = 0;
 	/* This should get allocated on the stack unless the JVM sucks. */
@@ -139,7 +143,7 @@ public class Matrix4f {
 	    m[i] = n[i];
 	return(this);
     }
-    
+
     public Matrix4f transpose() {
 	Matrix4f n = new Matrix4f();
 	for(int y = 0; y < 4; y++) {
@@ -149,7 +153,7 @@ public class Matrix4f {
 	}
 	return(n);
     }
-    
+
     public float[] trim3() {
 	return(new float[] {
 		m[0], m[1], m[2],
@@ -289,21 +293,21 @@ public class Matrix4f {
 	    r[i] *= det;
 	return(new Matrix4f(r));
     }
-    
+
     public void getgl(GL gl, int matrix) {
 	gl.glGetFloatv(matrix, m, 0);
     }
-    
+
     public void loadgl(GL2 gl) {
 	gl.glLoadMatrixf(m, 0);
     }
-    
+
     public static Matrix4f fromgl(GL gl, int matrix) {
 	Matrix4f m = new Matrix4f();
 	m.getgl(gl, matrix);
 	return(m);
     }
-    
+
     public String toString() {
 	StringBuilder buf = new StringBuilder();
 	buf.append('[');
