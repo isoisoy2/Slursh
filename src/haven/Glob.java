@@ -57,6 +57,7 @@ public class Glob {
     public Tex servertimetex;
     public static final double SERVER_TIME_RATIO = 3.29d;
     public double serverEpoch, localEpoch = Utils.rtime();
+    public UI ui;
 
     public Glob(Session sess) {
 	this.sess = sess;

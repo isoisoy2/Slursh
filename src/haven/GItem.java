@@ -46,6 +46,9 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
     private QBuff quality;
     public Tex metertex;
 
+    public boolean drop = false;
+    private double dropTimer = 0;
+
     @RName("item")
     public static class $_ implements Factory {
     	public Widget create(UI ui, Object[] args) {
@@ -165,7 +168,15 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
     }
 
     public void tick(double dt) {
-    	GSprite spr = spr();
+        super.tick(dt);
+      if(drop) {
+        dropTimer += dt;
+        if(dropTimer > 0.1) {
+          dropTimer = 0;
+          wdgmsg("drop", Coord.z);
+        }
+      }
+        GSprite spr = spr();
     	if(spr != null)
     	    spr.tick(dt);
     }

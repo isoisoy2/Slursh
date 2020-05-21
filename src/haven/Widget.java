@@ -78,197 +78,209 @@ public class Widget {
     }
     @RName("fcnt")
     public static class $FCont implements Factory {
-	public Widget create(UI ui, Object[] args) {
-	    Widget ret = new Widget(Coord.z) {
-		    Collection<Widget> fill = new ArrayList<Widget>();
-		    public void presize() {
-			resize(parent.sz);
-			for(Widget ch : fill)
-			    ch.resize(sz);
-		    }
-		    public void added() {presize();}
-		    public void addchild(Widget child, Object... args) {
-			if((args[0] instanceof String) && args[0].equals("fill")) {
-			    child.resize(sz);
-			    fill.add(child);
-			    add(child, Coord.z);
-			} else {
-			    super.addchild(child, args);
-			}
-		    }
-		};
-	    return(ret);
-	}
+    	public Widget create(UI ui, Object[] args) {
+    	    Widget ret = new Widget(Coord.z) {
+    		    Collection<Widget> fill = new ArrayList<Widget>();
+
+    		    public void presize() {
+    			resize(parent.sz);
+    			for(Widget ch : fill)
+    			    ch.resize(sz);
+    		    }
+
+    		    public void added() {presize();}
+
+    		    public void addchild(Widget child, Object... args) {
+        			if((args[0] instanceof String) && args[0].equals("fill")) {
+        			    child.resize(sz);
+        			    fill.add(child);
+        			    add(child, Coord.z);
+        			} else {
+        			    super.addchild(child, args);
+        			}
+    		    }
+    		};
+    	    return(ret);
+    	}
     }
 
     public static abstract class AlignPanel extends Widget {
-	protected abstract Coord getc();
+    	protected abstract Coord getc();
 
-	public <T extends Widget> T add(T child) {
-	    super.add(child);
-	    pack();
-	    if(parent != null)
-		presize();
-	    return(child);
-	}
+    	public <T extends Widget> T add(T child) {
+    	    super.add(child);
+    	    pack();
+    	    if(parent != null)
+    		presize();
+    	    return(child);
+    	}
 
-	public void cresize(Widget ch) {
-	    pack();
-	    if(parent != null)
-		presize();
-	}
+    	public void cresize(Widget ch) {
+    	    pack();
+    	    if(parent != null)
+    		presize();
+    	}
 
-	public void presize() {
-	    c = getc();
-	}
+    	public void presize() {
+    	    c = getc();
+    	}
 
-	protected void added() {presize();}
+    	protected void added() {presize();}
     }
     @RName("acnt")
     public static class $ACont implements Factory {
-	public Widget create(UI ui, final Object[] args) {
-	    final String expr = (String)args[0];
-	    return(new AlignPanel() {
-		    protected Coord getc() {
-			return(relpos(expr, this, args, 1));
-		    }
-		});
-	}
+    	public Widget create(UI ui, final Object[] args) {
+    	    final String expr = (String)args[0];
+    	    return(new AlignPanel() {
+    		    protected Coord getc() {
+    			return(relpos(expr, this, args, 1));
+    		    }
+    		});
+    	}
     }
 
     @Resource.PublishedCode(name = "wdg", instancer = FactMaker.class)
     public interface Factory {
-	public Widget create(UI ui, Object[] par);
+	    public Widget create(UI ui, Object[] par);
     }
 
     public static class FactMaker implements Resource.PublishedCode.Instancer {
-	public Factory make(Class<?> cl) throws InstantiationException, IllegalAccessException {
-	    if(Factory.class.isAssignableFrom(cl))
-		return(cl.asSubclass(Factory.class).newInstance());
-	    try {
-		final Method mkm = cl.getDeclaredMethod("mkwidget", UI.class, Object[].class);
-		int mod = mkm.getModifiers();
-		if(Widget.class.isAssignableFrom(mkm.getReturnType()) && ((mod & Modifier.STATIC) != 0) && ((mod & Modifier.PUBLIC) != 0)) {
-		    return(new Factory() {
-			    public Widget create(UI ui, Object[] args) {
-				try {
-				    return((Widget)mkm.invoke(null, ui, args));
-				} catch(Exception e) {
-				    if(e instanceof RuntimeException) throw((RuntimeException)e);
-				    throw(new RuntimeException(e));
-				}
-			    }
-			});
-		}
-	    } catch(NoSuchMethodException e) {
-	    }
-	    return(null);
-	}
+    	public Factory make(Class<?> cl) throws InstantiationException, IllegalAccessException {
+    	    if(Factory.class.isAssignableFrom(cl))
+    		    return(cl.asSubclass(Factory.class).newInstance());
+    	    try {
+        		final Method mkm = cl.getDeclaredMethod("mkwidget", UI.class, Object[].class);
+        		int mod = mkm.getModifiers();
+        		if(Widget.class.isAssignableFrom(mkm.getReturnType()) && ((mod & Modifier.STATIC) != 0) && ((mod & Modifier.PUBLIC) != 0)) {
+        		    return(new Factory() {
+        			    public Widget create(UI ui, Object[] args) {
+        				try {
+        				    return((Widget)mkm.invoke(null, ui, args));
+        				} catch(Exception e) {
+        				    if(e instanceof RuntimeException) throw((RuntimeException)e);
+        				    throw(new RuntimeException(e));
+        				}
+        			    }
+        			});
+        		}
+    	    } catch(NoSuchMethodException e) {
+    	    }
+    	    return(null);
+    	}
     }
 
     private static boolean inited = false;
+
     public static void initnames() {
-	if(!inited) {
-	    for(Factory f : dolda.jglob.Loader.get(RName.class).instances(Factory.class)) {
-		synchronized(types) {
-		    types.put(f.getClass().getAnnotation(RName.class).value(), f);
-		}
-	    }
-	    inited = true;
-	}
+    	if(!inited) {
+    	    for(Factory f : dolda.jglob.Loader.get(RName.class).instances(Factory.class)) {
+        		synchronized(types) {
+        		    types.put(f.getClass().getAnnotation(RName.class).value(), f);
+        		}
+    	    }
+    	    inited = true;
+    	}
     }
 
     public static Factory gettype2(String name) throws InterruptedException {
-	if(name.indexOf('/') < 0) {
-	    synchronized(types) {
-		return(types.get(name));
-	    }
-	} else {
-	    int ver = -1, p;
-	    if((p = name.indexOf(':')) > 0) {
-		ver = Integer.parseInt(name.substring(p + 1));
-		name = name.substring(0, p);
-	    }
-	    Indir<Resource> res = Resource.remote().load(name, ver);
-	    while(true) {
-		try {
-		    return(res.get().getcode(Factory.class, true));
-		} catch(Loading l) {
-		    l.waitfor();
-		}
-	    }
-	}
+    	if(name.indexOf('/') < 0) {
+    	    synchronized(types) {
+    		    return(types.get(name));
+    	    }
+    	} else {
+    	    int ver = -1, p;
+    	    if((p = name.indexOf(':')) > 0) {
+        		ver = Integer.parseInt(name.substring(p + 1));
+        		name = name.substring(0, p);
+    	    }
+    	    Indir<Resource> res = Resource.remote().load(name, ver);
+    	    while(true) {
+        		try {
+        		    return(res.get().getcode(Factory.class, true));
+        		} catch(Loading l) {
+        		    l.waitfor();
+        		}
+    	    }
+    	}
     }
 
     public static Factory gettype(String name) {
-	long start = System.currentTimeMillis();
-	Factory f;
-	try {
-	    f = gettype2(name);
-	} catch(InterruptedException e) {
-	    /* XXX: This is not proper behavior. On the other hand,
-	     * InterruptedException should not be checked. :-/ */
-	    throw(new RuntimeException("Interrupted while loading resource widget (took " + (System.currentTimeMillis() - start) + " ms)", e));
-	}
-	if(f == null)
-	    throw(new RuntimeException("No such widget type: " + name));
-	return(f);
+    	long start = System.currentTimeMillis();
+    	Factory f;
+    	try {
+    	    f = gettype2(name);
+    	} catch(InterruptedException e) {
+    	    /* XXX: This is not proper behavior. On the other hand,
+    	     * InterruptedException should not be checked. :-/ */
+    	    throw(new RuntimeException("Interrupted while loading resource widget (took " + (System.currentTimeMillis() - start) + " ms)", e));
+    	}
+    	if(f == null)
+    	    throw(new RuntimeException("No such widget type: " + name));
+    	return(f);
     }
 
     public Widget(Coord sz) {
-	this.c = Coord.z;
-	this.sz = sz;
+    	this.c = Coord.z;
+    	this.sz = sz;
     }
 
     public Widget() {
-	this(Coord.z);
+    	this(Coord.z);
     }
 
     public Widget(UI ui, Coord c, Coord sz) {
-	this.ui = ui;
-	this.c = c;
-	this.sz = sz;
-	this.attached = true;
+    	this.ui = ui;
+    	this.c = c;
+    	this.sz = sz;
+    	this.attached = true;
     }
 
     protected void attach(UI ui) {
-	this.ui = ui;
-	for(Widget ch = child; ch != null; ch = ch.next)
-	    ch.attach(ui);
+    	this.ui = ui;
+    	for(Widget ch = child; ch != null; ch = ch.next)
+    	    ch.attach(ui);
     }
 
     protected void attached() {
-	attached = true;
-	for(Widget ch = child; ch != null; ch = ch.next)
-	    ch.attached();
+    	attached = true;
+    	for(Widget ch = child; ch != null; ch = ch.next)
+    	    ch.attached();
     }
 
     private <T extends Widget> T add0(T child) {
-	if((child.ui == null) && (this.ui != null))
-	    ((Widget)child).attach(this.ui);
-	child.parent = this;
-	child.link();
-	child.added();
-	if(attached)
-	    child.attached();
-	if(((Widget)child).canfocus && child.visible)
-	    newfocusable(child);
-	return(child);
+    	if((child.ui == null) && (this.ui != null))
+    	    ((Widget)child).attach(this.ui);
+    	child.parent = this;
+    	child.link();
+    	child.added();
+    	if(attached)
+    	    child.attached();
+    	if(((Widget)child).canfocus && child.visible)
+    	    newfocusable(child);
+    	return(child);
     }
 
     public <T extends Widget> T add(T child) {
-	if(ui != null) {
-	    synchronized(ui) {
-		return(add0(child));
-	    }
-	} else {
-	    return(add0(child));
-	}
+    	if(ui != null) {
+    	    synchronized(ui) {
+    		return(add0(child));
+    	    }
+    	} else {
+    	    return(add0(child));
+    	}
     }
 
     public <T extends Widget> T add(T child, Coord c) {
-	child.c = c;
-	return(add(child));
+        if (child instanceof Window) {
+            child.c = Utils.getprefc(((Window) child).origcap + "_c", c);
+        } else if (child instanceof BeltWnd) {   // FIXME. this is ugly
+            child.c = Utils.getprefc(((BeltWnd) child).origcap + "_c", c);
+        } else {
+            child.c = c;
+        }
+        return (add(child));
+    // child.c = c;
+	// return(add(child));
     }
 
     public <T extends Widget> T add(T child, int x, int y) {
@@ -290,208 +302,208 @@ public class Widget {
     protected void added() {}
 
     public static class RelposError extends RuntimeException {
-	public final String spec;
-	public final int pos;
-	public final Stack<Object> stack;
+    	public final String spec;
+    	public final int pos;
+    	public final Stack<Object> stack;
 
-	public RelposError(Throwable cause, String spec, int pos, Stack<Object> stack) {
-	    super(cause);
-	    this.spec = spec;
-	    this.pos = pos;
-	    this.stack = stack;
-	}
+    	public RelposError(Throwable cause, String spec, int pos, Stack<Object> stack) {
+    	    super(cause);
+    	    this.spec = spec;
+    	    this.pos = pos;
+    	    this.stack = stack;
+    	}
 
-	public String getMessage() {
-	    return(String.format("Unhandled exception at %s+%d, stack is %s", spec, pos, stack));
-	}
+    	public String getMessage() {
+    	    return(String.format("Unhandled exception at %s+%d, stack is %s", spec, pos, stack));
+    	}
     }
 
     public Coord relpos(String spec, Object self, Object[] args, int off) {
-	int i = 0;
-	Stack<Object> st = new Stack<Object>();
-	try {
-	    while(i < spec.length()) {
-		char op = spec.charAt(i++);
-		if(Character.isDigit(op)) {
-		    int e;
-		    for(e = i; (e < spec.length()) && Character.isDigit(spec.charAt(e)); e++);
-		    st.push(Integer.parseInt(spec.substring(i - 1, e)));
-		    i = e;
-		} else if(op == '!') {
-		    st.push(args[off++]);
-		} else if(op == '$') {
-		    st.push(self);
-		} else if(op == '@') {
-		    st.push(this);
-		} else if(op == '_') {
-		    st.push(st.peek());
-		} else if(op == '.') {
-		    st.pop();
-		} else if(op == '^') {
-		    Object a = st.pop();
-		    Object b = st.pop();
-		    st.push(a);
-		    st.push(b);
-		} else if(op == 'c') {
-		    int y = (Integer)st.pop();
-		    int x = (Integer)st.pop();
-		    st.push(new Coord(x, y));
-		} else if(op == 'o') {
-		    Widget w = (Widget)st.pop();
-		    st.push(w.c.add(w.sz));
-		} else if(op == 'p') {
-		    st.push(((Widget)st.pop()).c);
-		} else if(op == 'P') {
-		    Widget parent = (Widget)st.pop();
-		    st.push(((Widget)st.pop()).parentpos(parent));
-		} else if(op == 's') {
-		    st.push(((Widget)st.pop()).sz);
-		} else if(op == 'w') {
-		    synchronized(ui) {
-			st.push(ui.getwidget((Integer)st.pop()));
-		    }
-		} else if(op == 'x') {
-		    st.push(((Coord)st.pop()).x);
-		} else if(op == 'y') {
-		    st.push(((Coord)st.pop()).y);
-		} else if(op == '+') {
-		    Object b = st.pop();
-		    Object a = st.pop();
-		    if((a instanceof Integer) && (b instanceof Integer)) {
-			st.push((Integer)a + (Integer)b);
-		    } else if((a instanceof Coord) && (b instanceof Coord)) {
-			st.push(((Coord)a).add((Coord)b));
-		    } else {
-			throw(new RuntimeException("Invalid addition operands: " + a + " + " + b));
-		    }
-		} else if(op == '-') {
-		    Object b = st.pop();
-		    Object a = st.pop();
-		    if((a instanceof Integer) && (b instanceof Integer)) {
-			st.push((Integer)a - (Integer)b);
-		    } else if((a instanceof Coord) && (b instanceof Coord)) {
-			st.push(((Coord)a).sub((Coord)b));
-		    } else {
-			throw(new RuntimeException("Invalid subtraction operands: " + a + " - " + b));
-		    }
-		} else if(op == '*') {
-		    Object b = st.pop();
-		    Object a = st.pop();
-		    if((a instanceof Integer) && (b instanceof Integer)) {
-			st.push((Integer)a * (Integer)b);
-		    } else if((a instanceof Coord) && (b instanceof Integer)) {
-			st.push(((Coord)a).mul((Integer)b));
-		    } else if((a instanceof Coord) && (b instanceof Coord)) {
-			st.push(((Coord)a).mul((Coord)b));
-		    } else {
-			throw(new RuntimeException("Invalid multiplication operands: " + a + " - " + b));
-		    }
-		} else if(op == '/') {
-		    Object b = st.pop();
-		    Object a = st.pop();
-		    if((a instanceof Integer) && (b instanceof Integer)) {
-			st.push((Integer)a / (Integer)b);
-		    } else if((a instanceof Coord) && (b instanceof Integer)) {
-			st.push(((Coord)a).div((Integer)b));
-		    } else if((a instanceof Coord) && (b instanceof Coord)) {
-			st.push(((Coord)a).div((Coord)b));
-		    } else {
-			throw(new RuntimeException("Invalid division operands: " + a + " - " + b));
-		    }
-		} else if(Character.isWhitespace(op)) {
-		} else {
-		    throw(new RuntimeException("Unknown position operation: " + op));
-		}
-	    }
-	} catch(RuntimeException e) {
-	    throw(new RelposError(e, spec, i, st));
-	}
-	return((Coord)st.pop());
+    	int i = 0;
+    	Stack<Object> st = new Stack<Object>();
+    	try {
+    	    while(i < spec.length()) {
+    		char op = spec.charAt(i++);
+    		if(Character.isDigit(op)) {
+    		    int e;
+    		    for(e = i; (e < spec.length()) && Character.isDigit(spec.charAt(e)); e++);
+    		    st.push(Integer.parseInt(spec.substring(i - 1, e)));
+    		    i = e;
+    		} else if(op == '!') {
+    		    st.push(args[off++]);
+    		} else if(op == '$') {
+    		    st.push(self);
+    		} else if(op == '@') {
+    		    st.push(this);
+    		} else if(op == '_') {
+    		    st.push(st.peek());
+    		} else if(op == '.') {
+    		    st.pop();
+    		} else if(op == '^') {
+    		    Object a = st.pop();
+    		    Object b = st.pop();
+    		    st.push(a);
+    		    st.push(b);
+    		} else if(op == 'c') {
+    		    int y = (Integer)st.pop();
+    		    int x = (Integer)st.pop();
+    		    st.push(new Coord(x, y));
+    		} else if(op == 'o') {
+    		    Widget w = (Widget)st.pop();
+    		    st.push(w.c.add(w.sz));
+    		} else if(op == 'p') {
+    		    st.push(((Widget)st.pop()).c);
+    		} else if(op == 'P') {
+    		    Widget parent = (Widget)st.pop();
+    		    st.push(((Widget)st.pop()).parentpos(parent));
+    		} else if(op == 's') {
+    		    st.push(((Widget)st.pop()).sz);
+    		} else if(op == 'w') {
+    		    synchronized(ui) {
+    			st.push(ui.getwidget((Integer)st.pop()));
+    		    }
+    		} else if(op == 'x') {
+    		    st.push(((Coord)st.pop()).x);
+    		} else if(op == 'y') {
+    		    st.push(((Coord)st.pop()).y);
+    		} else if(op == '+') {
+    		    Object b = st.pop();
+    		    Object a = st.pop();
+    		    if((a instanceof Integer) && (b instanceof Integer)) {
+    			st.push((Integer)a + (Integer)b);
+    		    } else if((a instanceof Coord) && (b instanceof Coord)) {
+    			st.push(((Coord)a).add((Coord)b));
+    		    } else {
+    			throw(new RuntimeException("Invalid addition operands: " + a + " + " + b));
+    		    }
+    		} else if(op == '-') {
+    		    Object b = st.pop();
+    		    Object a = st.pop();
+    		    if((a instanceof Integer) && (b instanceof Integer)) {
+    			st.push((Integer)a - (Integer)b);
+    		    } else if((a instanceof Coord) && (b instanceof Coord)) {
+    			st.push(((Coord)a).sub((Coord)b));
+    		    } else {
+    			throw(new RuntimeException("Invalid subtraction operands: " + a + " - " + b));
+    		    }
+    		} else if(op == '*') {
+    		    Object b = st.pop();
+    		    Object a = st.pop();
+    		    if((a instanceof Integer) && (b instanceof Integer)) {
+    			st.push((Integer)a * (Integer)b);
+    		    } else if((a instanceof Coord) && (b instanceof Integer)) {
+    			st.push(((Coord)a).mul((Integer)b));
+    		    } else if((a instanceof Coord) && (b instanceof Coord)) {
+    			st.push(((Coord)a).mul((Coord)b));
+    		    } else {
+    			throw(new RuntimeException("Invalid multiplication operands: " + a + " - " + b));
+    		    }
+    		} else if(op == '/') {
+    		    Object b = st.pop();
+    		    Object a = st.pop();
+    		    if((a instanceof Integer) && (b instanceof Integer)) {
+    			st.push((Integer)a / (Integer)b);
+    		    } else if((a instanceof Coord) && (b instanceof Integer)) {
+    			st.push(((Coord)a).div((Integer)b));
+    		    } else if((a instanceof Coord) && (b instanceof Coord)) {
+    			st.push(((Coord)a).div((Coord)b));
+    		    } else {
+    			throw(new RuntimeException("Invalid division operands: " + a + " - " + b));
+    		    }
+    		} else if(Character.isWhitespace(op)) {
+    		} else {
+    		    throw(new RuntimeException("Unknown position operation: " + op));
+    		}
+    	    }
+    	} catch(RuntimeException e) {
+    	    throw(new RelposError(e, spec, i, st));
+    	}
+    	return((Coord)st.pop());
     }
 
     public void addchild(Widget child, Object... args) {
-	if(args[0] instanceof Coord) {
-	    add(child, (Coord)args[0]);
-	} else if(args[0] instanceof Coord2d) {
-	    add(child, ((Coord2d)args[0]).mul(new Coord2d(this.sz.sub(child.sz))).round());
-	} else if(args[0] instanceof String) {
-	    add(child, relpos((String)args[0], child, args, 1));
-	} else {
-	    throw(new UI.UIException("Unknown child widget creation specification.", null, args));
-	}
+    	if(args[0] instanceof Coord) {
+    	    add(child, (Coord)args[0]);
+    	} else if(args[0] instanceof Coord2d) {
+    	    add(child, ((Coord2d)args[0]).mul(new Coord2d(this.sz.sub(child.sz))).round());
+    	} else if(args[0] instanceof String) {
+    	    add(child, relpos((String)args[0], child, args, 1));
+    	} else {
+    	    throw(new UI.UIException("Unknown child widget creation specification.", null, args));
+    	}
     }
 
     public void link() {
-	if(parent.lchild != null)
-	    parent.lchild.next = this;
-	if(parent.child == null)
-	    parent.child = this;
-	this.prev = parent.lchild;
-	parent.lchild = this;
+    	if(parent.lchild != null)
+    	    parent.lchild.next = this;
+    	if(parent.child == null)
+    	    parent.child = this;
+    	this.prev = parent.lchild;
+    	parent.lchild = this;
     }
 
     public void linkfirst() {
-	if(parent.child != null)
-	    parent.child.prev = this;
-	if(parent.lchild == null)
-	    parent.lchild = this;
-	this.next = parent.child;
-	parent.child = this;
+    	if(parent.child != null)
+    	    parent.child.prev = this;
+    	if(parent.lchild == null)
+    	    parent.lchild = this;
+    	this.next = parent.child;
+    	parent.child = this;
     }
 
     public void unlink() {
-	if(next != null)
-	    next.prev = prev;
-	if(prev != null)
-	    prev.next = next;
-	if(parent.child == this)
-	    parent.child = next;
-	if(parent.lchild == this)
-	    parent.lchild = prev;
-	next = null;
-	prev = null;
+    	if(next != null)
+    	    next.prev = prev;
+    	if(prev != null)
+    	    prev.next = next;
+    	if(parent.child == this)
+    	    parent.child = next;
+    	if(parent.lchild == this)
+    	    parent.lchild = prev;
+    	next = null;
+    	prev = null;
     }
 
     public Coord xlate(Coord c, boolean in) {
-	return(c);
+    	return(c);
     }
 
     public Coord parentpos(Widget in) {
-	if(in == this)
-	    return(new Coord(0, 0));
-	return(parent.xlate(parent.parentpos(in).add(c), true));
+    	if(in == this)
+    	    return(new Coord(0, 0));
+    	return(parent.xlate(parent.parentpos(in).add(c), true));
     }
 
     public Coord rootpos() {
-	return(parentpos(ui.root));
+    	return(parentpos(ui.root));
     }
 
     public Coord rootxlate(Coord c) {
-	return(c.sub(rootpos()));
+    	return(c.sub(rootpos()));
     }
 
     public boolean hasparent(Widget w2) {
-	for(Widget w = this; w != null; w = w.parent) {
-	    if(w == w2)
-		return(true);
-	}
-	return(false);
+    	for(Widget w = this; w != null; w = w.parent) {
+    	    if(w == w2)
+    		return(true);
+    	}
+    	return(false);
     }
 
     public void gotfocus() {
-	if(focusctl && (focused != null)) {
-	    focused.hasfocus = true;
-	    focused.gotfocus();
-	}
+    	if(focusctl && (focused != null)) {
+    	    focused.hasfocus = true;
+    	    focused.gotfocus();
+    	}
     }
 
     public void dispose() {
     }
 
     public void rdispose() {
-	for(Widget ch = child; ch != null; ch = ch.next)
-	    ch.rdispose();
-	dispose();
+    	for(Widget ch = child; ch != null; ch = ch.next)
+    	    ch.rdispose();
+    	dispose();
     }
 
     public void remove() {
@@ -529,80 +541,80 @@ public class Widget {
     }
 
     public void setfocus(Widget w) {
-	if(focusctl) {
-	    if(w != focused) {
-		Widget last = focused;
-		focused = w;
-		if(hasfocus) {
-		    if(last != null)
-			last.hasfocus = false;
-		    w.hasfocus = true;
-		    if(last != null)
-			last.lostfocus();
-		    w.gotfocus();
-		} else if((last != null) && last.hasfocus) {
-		    /* Bug, but ah well. */
-		    last.hasfocus = false;
-		    last.lostfocus();
-		}
-		if((ui != null) && (w != null) && (wdgid() >= 0)) {
-		    int id = w.wdgid();
-		    if(id >= 0)
-			wdgmsg("focus", id);
-		}
-	    }
-	    if((parent != null) && visible && canfocus)
-		parent.setfocus(this);
-	} else {
-	    parent.setfocus(w);
-	}
+    	if(focusctl) {
+    	    if(w != focused) {
+    		Widget last = focused;
+    		focused = w;
+    		if(hasfocus) {
+    		    if(last != null)
+    			last.hasfocus = false;
+    		    w.hasfocus = true;
+    		    if(last != null)
+    			last.lostfocus();
+    		    w.gotfocus();
+    		} else if((last != null) && last.hasfocus) {
+    		    /* Bug, but ah well. */
+    		    last.hasfocus = false;
+    		    last.lostfocus();
+    		}
+    		if((ui != null) && (w != null) && (wdgid() >= 0)) {
+    		    int id = w.wdgid();
+    		    if(id >= 0)
+    			wdgmsg("focus", id);
+    		}
+    	    }
+    	    if((parent != null) && visible && canfocus)
+    		parent.setfocus(this);
+    	} else {
+    	    parent.setfocus(w);
+    	}
     }
 
     public void setcanfocus(boolean canfocus) {
-	this.autofocus = this.canfocus = canfocus;
-	if(parent != null) {
-	    if(canfocus) {
-		parent.newfocusable(this);
-	    } else {
-		parent.delfocusable(this);
-	    }
-	}
+    	this.autofocus = this.canfocus = canfocus;
+    	if(parent != null) {
+    	    if(canfocus) {
+    		parent.newfocusable(this);
+    	    } else {
+    		parent.delfocusable(this);
+    	    }
+    	}
     }
 
     public void newfocusable(Widget w) {
-	if(focusctl) {
-	    if(focused == null)
-		setfocus(w);
-	} else {
-	    if(parent != null)
-		parent.newfocusable(w);
-	}
+    	if(focusctl) {
+    	    if(focused == null)
+    		setfocus(w);
+    	} else {
+    	    if(parent != null)
+    		parent.newfocusable(w);
+    	}
     }
 
     public void delfocusable(Widget w) {
-	if(focusctl) {
-	    if((focused != null) && focused.hasparent(w)) {
-		findfocus();
-	    }
-	} else {
-	    if(parent != null)
-		parent.delfocusable(w);
-	}
+    	if(focusctl) {
+    	    if((focused != null) && focused.hasparent(w)) {
+    		findfocus();
+    	    }
+    	} else {
+    	    if(parent != null)
+    		parent.delfocusable(w);
+    	}
     }
 
     private void findfocus() {
-	/* XXX: Might need to check subwidgets recursively */
-	focused = null;
-	for(Widget w = lchild; w != null; w = w.prev) {
-	    if(w.visible && w.autofocus) {
-		focused = w;
-		if(hasfocus) {
-		    focused.hasfocus = true;
-		    w.gotfocus();
-		}
-		break;
-	    }
-	}
+    	/* XXX: Might need to check subwidgets recursively */
+    	focused = null;
+    	for(Widget w = lchild; w != null; w = w.prev) {
+    	    if(w.visible && w.autofocus) {
+    		focused = w;
+    		if(hasfocus) {
+    		    focused.hasfocus = true;
+    		    w.gotfocus();
+    		}
+    		break;
+    	    }
+    	}
     }
 
     public void setfocusctl(boolean focusctl) {
@@ -688,45 +700,45 @@ public class Widget {
     }
 
     public void wdgmsg(Widget sender, String msg, Object... args) {
-	if(parent == null)
-	    ui.wdgmsg(sender, msg, args);
-	else
-	    parent.wdgmsg(sender, msg, args);
+    	if(parent == null)
+    	    ui.wdgmsg(sender, msg, args);
+    	else
+    	    parent.wdgmsg(sender, msg, args);
     }
 
     public void tick(double dt) {
-	Widget next;
+    	Widget next;
 
-	for(Widget wdg = child; wdg != null; wdg = next) {
-	    next = wdg.next;
-	    wdg.tick(dt);
-	}
-	/* It would be very nice to do these things in harmless mix-in
-	 * classes, but alas, this is Java. */
-	anims.addAll(nanims);
-	nanims.clear();
-	for(Iterator<Anim> i = anims.iterator(); i.hasNext();) {
-	    Anim anim = i.next();
-	    if(anim.tick(dt))
-		i.remove();
-	}
+    	for(Widget wdg = child; wdg != null; wdg = next) {
+    	    next = wdg.next;
+    	    wdg.tick(dt);
+    	}
+    	/* It would be very nice to do these things in harmless mix-in
+    	 * classes, but alas, this is Java. */
+    	anims.addAll(nanims);
+    	nanims.clear();
+    	for(Iterator<Anim> i = anims.iterator(); i.hasNext();) {
+    	    Anim anim = i.next();
+    	    if(anim.tick(dt))
+    		i.remove();
+    	}
     }
 
     public void draw(GOut g, boolean strict) {
-	Widget next;
+    	Widget next;
 
-	for(Widget wdg = child; wdg != null; wdg = next) {
-	    next = wdg.next;
-	    if(!wdg.visible)
-		continue;
-	    Coord cc = xlate(wdg.c, true);
-	    GOut g2;
-	    if(strict)
-		g2 = g.reclip(cc, wdg.sz);
-	    else
-		g2 = g.reclipl(cc, wdg.sz);
-	    wdg.draw(g2);
-	}
+    	for(Widget wdg = child; wdg != null; wdg = next) {
+    	    next = wdg.next;
+    	    if(!wdg.visible)
+    		continue;
+    	    Coord cc = xlate(wdg.c, true);
+    	    GOut g2;
+    	    if(strict)
+    		g2 = g.reclip(cc, wdg.sz);
+    	    else
+    		g2 = g.reclipl(cc, wdg.sz);
+    	    wdg.draw(g2);
+    	}
     }
 
     public void draw(GOut g) {
@@ -734,45 +746,45 @@ public class Widget {
     }
 
     public boolean mousedown(Coord c, int button) {
-	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
-	    if(!wdg.visible)
-		continue;
-	    Coord cc = xlate(wdg.c, true);
-	    if(c.isect(cc, wdg.sz)) {
-		if(wdg.mousedown(c.add(cc.inv()), button)) {
-		    return(true);
-		}
-	    }
-	}
-	return(false);
+    	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
+    	    if(!wdg.visible)
+    		continue;
+    	    Coord cc = xlate(wdg.c, true);
+    	    if(c.isect(cc, wdg.sz)) {
+    		if(wdg.mousedown(c.add(cc.inv()), button)) {
+    		    return(true);
+    		}
+    	    }
+    	}
+    	return(false);
     }
 
     public boolean mouseup(Coord c, int button) {
-	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
-	    if(!wdg.visible)
-		continue;
-	    Coord cc = xlate(wdg.c, true);
-	    if(c.isect(cc, wdg.sz)) {
-		if(wdg.mouseup(c.add(cc.inv()), button)) {
-		    return(true);
-		}
-	    }
-	}
-	return(false);
+    	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
+    	    if(!wdg.visible)
+    		continue;
+    	    Coord cc = xlate(wdg.c, true);
+    	    if(c.isect(cc, wdg.sz)) {
+    		if(wdg.mouseup(c.add(cc.inv()), button)) {
+    		    return(true);
+    		}
+    	    }
+    	}
+    	return(false);
     }
 
     public boolean mousewheel(Coord c, int amount) {
-	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
-	    if(!wdg.visible)
-		continue;
-	    Coord cc = xlate(wdg.c, true);
-	    if(c.isect(cc, wdg.sz)) {
-		if(wdg.mousewheel(c.add(cc.inv()), amount)) {
-		    return(true);
-		}
-	    }
-	}
-	return(false);
+    	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
+    	    if(!wdg.visible)
+    		continue;
+    	    Coord cc = xlate(wdg.c, true);
+    	    if(c.isect(cc, wdg.sz)) {
+    		if(wdg.mousewheel(c.add(cc.inv()), amount)) {
+    		    return(true);
+    		}
+    	    }
+    	}
+    	return(false);
     }
 
     public void mousemove(Coord c) {
@@ -793,106 +805,106 @@ public class Widget {
 	put(132, KeyEvent.VK_INSERT).put(133, KeyEvent.VK_HOME).put(134, KeyEvent.VK_PAGE_UP).put(135, KeyEvent.VK_DELETE).put(136, KeyEvent.VK_END).put(137, KeyEvent.VK_PAGE_DOWN).map();
 
     public static KeyMatch gkeymatch(int gkey) {
-	if(gkey == 0)
-	    return(KeyMatch.nil);
-	int key = gkey & 0xff, modmask = (gkey & 0xf000) >> 12, modmatch = (gkey & 0x0f00) >> 8;
-	if(modmask == 0)
-	    modmask = KeyMatch.MODS;
-	Integer code = gkeys.get(key);
-	if(code != null)
-	    return(KeyMatch.forcode(code, modmask, modmatch));
-	if(gkey < 32)
-	    return(KeyMatch.forchar((char)((int)'A' + gkey - 1), KeyMatch.C));
-	return(KeyMatch.forchar((char)key, modmask, modmatch));
+    	if(gkey == 0)
+    	    return(KeyMatch.nil);
+    	int key = gkey & 0xff, modmask = (gkey & 0xf000) >> 12, modmatch = (gkey & 0x0f00) >> 8;
+    	if(modmask == 0)
+    	    modmask = KeyMatch.MODS;
+    	Integer code = gkeys.get(key);
+    	if(code != null)
+    	    return(KeyMatch.forcode(code, modmask, modmatch));
+    	if(gkey < 32)
+    	    return(KeyMatch.forchar((char)((int)'A' + gkey - 1), KeyMatch.C));
+    	return(KeyMatch.forchar((char)key, modmask, modmatch));
     }
 
     public boolean globtype(char key, KeyEvent ev) {
-	KeyMatch gkey = this.gkey;
-	if(kb_gkey != null)
-	    gkey = kb_gkey.key();
-	if((gkey != null) && gkey.match(ev)) {
-	    wdgmsg("activate", UI.modflags(ev));
-	    return(true);
-	}
-	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
-	    if(wdg.globtype(key, ev))
-		return(true);
-	}
-	return(false);
+    	KeyMatch gkey = this.gkey;
+    	if(kb_gkey != null)
+    	    gkey = kb_gkey.key();
+    	if((gkey != null) && gkey.match(ev)) {
+    	    wdgmsg("activate", UI.modflags(ev));
+    	    return(true);
+    	}
+    	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
+    	    if(wdg.globtype(key, ev))
+    		return(true);
+    	}
+    	return(false);
     }
 
     public boolean keydown(KeyEvent ev) {
-	char key = ev.getKeyChar();
-	if(canactivate) {
-	    if(key == 10) {
-		wdgmsg("activate");
-		return(true);
-	    }
-	}
-	if(cancancel) {
-	    if(key == 27) {
-		wdgmsg("cancel");
-		return(true);
-	    }
-	}
-	if(focusctl) {
-	    if(focused != null) {
-		if(focused.keydown(ev))
-		    return(true);
-		if(focustab) {
-		    if(key == '\t') {
-			Widget f = focused;
-			while(true) {
-			    if((ev.getModifiers() & InputEvent.SHIFT_MASK) == 0) {
-				Widget n = f.rnext();
-				f = ((n == null) || !n.hasparent(this))?child:n;
-			    } else {
-				Widget p = f.rprev();
-				f = ((p == null) || (p == this) || !p.hasparent(this))?lchild:p;
-			    }
-			    if(f.canfocus)
-				break;
-			}
-			setfocus(f);
-			return(true);
-		    } else {
-			return(false);
-		    }
-		} else {
-		    return(false);
-		}
-	    } else {
-		return(false);
-	    }
-	} else {
-	    for(Widget wdg = child; wdg != null; wdg = wdg.next) {
-		if(wdg.visible) {
-		    if(wdg.keydown(ev))
-			return(true);
-		}
-	    }
-	}
-	return(false);
+    	char key = ev.getKeyChar();
+    	if(canactivate) {
+    	    if(key == 10) {
+    		wdgmsg("activate");
+    		return(true);
+    	    }
+    	}
+    	if(cancancel) {
+    	    if(key == 27) {
+    		wdgmsg("cancel");
+    		return(true);
+    	    }
+    	}
+    	if(focusctl) {
+    	    if(focused != null) {
+    		if(focused.keydown(ev))
+    		    return(true);
+    		if(focustab) {
+    		    if(key == '\t') { //shift?
+    			Widget f = focused;
+    			while(true) {
+    			    if((ev.getModifiers() & InputEvent.SHIFT_MASK) == 0) {
+    				Widget n = f.rnext();
+    				f = ((n == null) || !n.hasparent(this))?child:n;
+    			    } else {
+    				Widget p = f.rprev();
+    				f = ((p == null) || (p == this) || !p.hasparent(this))?lchild:p;
+    			    }
+    			    if(f.canfocus)
+    				break;
+    			}
+    			setfocus(f);
+    			return(true);
+    		    } else {
+    			return(false);
+    		    }
+    		} else {
+    		    return(false);
+    		}
+    	    } else {
+    		return(false);
+    	    }
+    	} else {
+    	    for(Widget wdg = child; wdg != null; wdg = wdg.next) {
+    		if(wdg.visible) {
+    		    if(wdg.keydown(ev))
+    			return(true);
+    		}
+    	    }
+    	}
+    	return(false);
     }
 
     public boolean keyup(KeyEvent ev) {
-	if(focusctl) {
-	    if(focused != null) {
-		if(focused.keyup(ev))
-		    return(true);
-		return(false);
-	    } else {
-		return(false);
-	    }
-	} else {
-	    for(Widget wdg = child; wdg != null; wdg = wdg.next) {
-		if(wdg.visible) {
-		    if(wdg.keyup(ev))
-			return(true);
-		}
-	    }
-	}
-	return(false);
+    	if(focusctl) {
+    	    if(focused != null) {
+    		if(focused.keyup(ev))
+    		    return(true);
+    		return(false);
+    	    } else {
+    		return(false);
+    	    }
+    	} else {
+    	    for(Widget wdg = child; wdg != null; wdg = wdg.next) {
+    		if(wdg.visible) {
+    		    if(wdg.keyup(ev))
+    			return(true);
+    		}
+    	    }
+    	}
+    	return(false);
     }
 
     public Area area() {
@@ -908,17 +920,17 @@ public class Widget {
     }
 
     public Coord contentsz() {
-	Coord max = new Coord(0, 0);
-	for(Widget wdg = child; wdg != null; wdg = wdg.next) {
-	    if(!wdg.visible)
-		continue;
-	    Coord br = wdg.c.add(wdg.sz);
-	    if(br.x > max.x)
-		max.x = br.x;
-	    if(br.y > max.y)
-		max.y = br.y;
-	}
-	return(max);
+    	Coord max = new Coord(0, 0);
+    	for(Widget wdg = child; wdg != null; wdg = wdg.next) {
+    	    if(!wdg.visible)
+    		continue;
+    	    Coord br = wdg.c.add(wdg.sz);
+    	    if(br.x > max.x)
+    		max.x = br.x;
+    	    if(br.y > max.y)
+    		max.y = br.y;
+    	}
+    	return(max);
     }
 
     public void pack() {
@@ -930,11 +942,11 @@ public class Widget {
     }
 
     public void resize(Coord sz) {
-	this.sz = sz;
-	for(Widget ch = child; ch != null; ch = ch.next)
-	    ch.presize();
-	if(parent != null)
-	    parent.cresize(this);
+    	this.sz = sz;
+    	for(Widget ch = child; ch != null; ch = ch.next)
+    	    ch.presize();
+    	if(parent != null)
+    	    parent.cresize(this);
     }
 
     public void move(Area a) {
@@ -976,107 +988,107 @@ public class Widget {
 
     @Deprecated
     public <T extends Widget> T findchild(Class<T> cl) {
-	for(Widget wdg = child; wdg != null; wdg = wdg.next) {
-	    if(cl.isInstance(wdg))
-		return(cl.cast(wdg));
-	    T ret = wdg.findchild(cl);
-	    if(ret != null)
-		return(ret);
-	}
-	return(null);
+    	for(Widget wdg = child; wdg != null; wdg = wdg.next) {
+    	    if(cl.isInstance(wdg))
+    		return(cl.cast(wdg));
+    	    T ret = wdg.findchild(cl);
+    	    if(ret != null)
+    		return(ret);
+    	}
+    	return(null);
     }
 
     public Widget rprev() {
-	if(prev != null) {
-	    Widget lc = prev.lchild;
-	    if(lc != null) {
-		for(; lc.lchild != null; lc = lc.lchild);
-		return(lc);
-	    }
-	    return(prev);
-	}
-	return(parent);
+    	if(prev != null) {
+    	    Widget lc = prev.lchild;
+    	    if(lc != null) {
+    		for(; lc.lchild != null; lc = lc.lchild);
+    		return(lc);
+    	    }
+    	    return(prev);
+    	}
+    	return(parent);
     }
 
     public Widget rnext() {
-	if(child != null)
-	    return(child);
-	if(next != null)
-	    return(next);
-	for(Widget p = parent; p != null; p = p.parent) {
-	    if(p.next != null)
-		return(p.next);
-	}
-	return(null);
+    	if(child != null)
+    	    return(child);
+    	if(next != null)
+    	    return(next);
+    	for(Widget p = parent; p != null; p = p.parent) {
+    	    if(p.next != null)
+    		return(p.next);
+    	}
+    	return(null);
     }
 
     public <T extends Widget> Set<T> children(final Class<T> cl) {
-	return(new AbstractSet<T>() {
-		public int size() {
-		    int i = 0;
-		    for(T w : this)
-			i++;
-		    return(i);
-		}
+    	return(new AbstractSet<T>() {
+    		public int size() {
+    		    int i = 0;
+    		    for(T w : this)
+    			i++;
+    		    return(i);
+    		}
 
-		public Iterator<T> iterator() {
-		    return(new Iterator<T>() {
-			    T cur = n(Widget.this);
+    		public Iterator<T> iterator() {
+    		    return(new Iterator<T>() {
+    			    T cur = n(Widget.this);
 
-			    private T n(Widget w) {
-				for(Widget n; true; w = n) {
-				    if(w == null) {
-					return(null);
-				    } else if(w.child != null) {
-					n = w.child;
-				    } else if(w == Widget.this) {
-					return(null);
-				    } else if(w.next != null) {
-					n = w.next;
-				    } else {
-					for(n = w.parent; (n != null) && (n.next == null) && (n != Widget.this); n = n.parent);
-					if((n == null) || (n == Widget.this))
-					    return(null);
-					n = n.next;
-				    }
-				    if((n == null) || cl.isInstance(n))
-					return(cl.cast(n));
-				}
-			    }
+    			    private T n(Widget w) {
+    				for(Widget n; true; w = n) {
+    				    if(w == null) {
+    					return(null);
+    				    } else if(w.child != null) {
+    					n = w.child;
+    				    } else if(w == Widget.this) {
+    					return(null);
+    				    } else if(w.next != null) {
+    					n = w.next;
+    				    } else {
+    					for(n = w.parent; (n != null) && (n.next == null) && (n != Widget.this); n = n.parent);
+    					if((n == null) || (n == Widget.this))
+    					    return(null);
+    					n = n.next;
+    				    }
+    				    if((n == null) || cl.isInstance(n))
+    					return(cl.cast(n));
+    				}
+    			    }
 
-			    public T next() {
-				if(cur == null)
-				    throw(new NoSuchElementException());
-				T ret = cur;
-				cur = n(ret);
-				return(ret);
-			    }
+    			    public T next() {
+    				if(cur == null)
+    				    throw(new NoSuchElementException());
+    				T ret = cur;
+    				cur = n(ret);
+    				return(ret);
+    			    }
 
-			    public boolean hasNext() {
-				return(cur != null);
-			    }
-			});
-		}
+    			    public boolean hasNext() {
+    				return(cur != null);
+    			    }
+    			});
+    		}
 	    });
     }
 
     public Resource getcurs(Coord c) {
-	Resource ret;
+    	Resource ret;
 
-	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
-	    if(!wdg.visible)
-		continue;
-	    Coord cc = xlate(wdg.c, true);
-	    if(c.isect(cc, wdg.sz)) {
-		if((ret = wdg.getcurs(c.add(cc.inv()))) != null)
-		    return(ret);
-	    }
-	}
-	try {
-	    return((cursor == null)?null:cursor.get());
-	} catch(Loading l) {
-	    return(null);
-	}
+    	for(Widget wdg = lchild; wdg != null; wdg = wdg.prev) {
+    	    if(!wdg.visible)
+    		continue;
+    	    Coord cc = xlate(wdg.c, true);
+    	    if(c.isect(cc, wdg.sz)) {
+    		if((ret = wdg.getcurs(c.add(cc.inv()))) != null)
+    		    return(ret);
+    	    }
+    	}
+    	try {
+    	    return((cursor == null)?null:cursor.get());
+    	} catch(Loading l) {
+    	    return(null);
+    	}
     }
 
     @Deprecated

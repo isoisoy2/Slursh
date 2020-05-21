@@ -55,6 +55,7 @@ public class UI {
     public final ActAudio.Root audio = new ActAudio.Root();
 
     public int beltWndId = -1;
+    public Widget realmchat;
     public GameUI gui;
 
     {
@@ -87,86 +88,89 @@ public class UI {
     }
 
     private class WidgetConsole extends Console {
-	{
-	    setcmd("q", new Command() {
-		    public void run(Console cons, String[] args) {
-			HackThread.tg().interrupt();
-		    }
-		});
-	    setcmd("lo", new Command() {
-		    public void run(Console cons, String[] args) {
-			sess.close();
-		    }
-		});
-	    setcmd("gl", new Command() {
-		    <T> void merd(GSettings.Setting<T> var, String val) {
-			setgprefs(gprefs.update(null, var, var.parse(val)));
-		    }
+    	{
+    	    setcmd("q", new Command() {
+    		    public void run(Console cons, String[] args) {
+    			HackThread.tg().interrupt();
+    		    }
+    		});
+    	    setcmd("lo", new Command() {
+    		    public void run(Console cons, String[] args) {
+    			sess.close();
+    		    }
+    		});
+    	    setcmd("gl", new Command() {
+    		    <T> void merd(GSettings.Setting<T> var, String val) {
+    			setgprefs(gprefs.update(null, var, var.parse(val)));
+    		    }
 
-		    public void run(Console cons, String[] args) throws Exception {
-			if(args.length < 3)
-			    throw(new Exception("usage: gl SETTING VALUE"));
-			GSettings.Setting<?> var = gprefs.find(args[1]);
-			if(var == null)
-			    throw(new Exception("No such setting: " + var));
-			merd(var, args[2]);
-		    }
-		});
-	}
+    		    public void run(Console cons, String[] args) throws Exception {
+    			if(args.length < 3)
+    			    throw(new Exception("usage: gl SETTING VALUE"));
+    			GSettings.Setting<?> var = gprefs.find(args[1]);
+    			if(var == null)
+    			    throw(new Exception("No such setting: " + var));
+    			merd(var, args[2]);
+    		    }
+    		});
+    	}
 
-	private void findcmds(Map<String, Command> map, Widget wdg) {
-	    if(wdg instanceof Directory) {
-		Map<String, Command> cmds = ((Directory)wdg).findcmds();
-		synchronized(cmds) {
-		    map.putAll(cmds);
-		}
-	    }
-	    for(Widget ch = wdg.child; ch != null; ch = ch.next)
-		findcmds(map, ch);
-	}
+    	private void findcmds(Map<String, Command> map, Widget wdg) {
+    	    if(wdg instanceof Directory) {
+        		Map<String, Command> cmds = ((Directory)wdg).findcmds();
+        		synchronized(cmds) {
+        		    map.putAll(cmds);
+        		}
+    	    }
+    	    for(Widget ch = wdg.child; ch != null; ch = ch.next)
+    		findcmds(map, ch);
+    	}
 
-	public Map<String, Command> findcmds() {
-	    Map<String, Command> ret = super.findcmds();
-	    findcmds(ret, root);
-	    return(ret);
-	}
+    	public Map<String, Command> findcmds() {
+    	    Map<String, Command> ret = super.findcmds();
+    	    findcmds(ret, root);
+    	    return(ret);
+    	}
     }
 
     @SuppressWarnings("serial")
     public static class UIException extends RuntimeException {
-	public String mname;
-	public Object[] args;
+    	public String mname;
+    	public Object[] args;
 
-	public UIException(String message, String mname, Object... args) {
-	    super(message);
-	    this.mname = mname;
-	    this.args = args;
-	}
+    	public UIException(String message, String mname, Object... args) {
+    	    super(message);
+    	    this.mname = mname;
+    	    this.args = args;
+    	}
     }
 
     public UI(Context uictx, Coord sz, Session sess) {
-	this.uictx = uictx;
-	root = new RootWidget(this, sz);
-	widgets.put(0, root);
-	rwidgets.put(root, 0);
-	this.sess = sess;
+    	this.uictx = uictx;
+    	root = new RootWidget(this, sz);
+    	widgets.put(0, root);
+    	rwidgets.put(root, 0);
+    	this.sess = sess;
+        if(sess != null){
+          this.sess.glob.ui = this;
+        }
     }
 
     public void setreceiver(Receiver rcvr) {
-	this.rcvr = rcvr;
+	    this.rcvr = rcvr;
     }
 
     public void bind(Widget w, int id) {
-	synchronized(widgets) {
-	    widgets.put(id, w);
-	    rwidgets.put(w, id);
-	}
+    	synchronized(widgets) {
+    	    widgets.put(id, w);
+    	    rwidgets.put(w, id);
+    	}
     }
 
     public Widget getwidget(int id) {
-	synchronized(widgets) {
-	    return(widgets.get(id));
-	}
+    	synchronized(widgets) {
+    	    return(widgets.get(id));
+    	}
     }
 
     public int widgetid(Widget wdg) {
@@ -179,19 +183,19 @@ public class UI {
     }
 
     public void drawafter(AfterDraw ad) {
-	synchronized(afterdraws) {
-	    afterdraws.add(ad);
-	}
+    	synchronized(afterdraws) {
+    	    afterdraws.add(ad);
+    	}
     }
 
     public void tick() {
-	double now = Utils.rtime();
-	root.tick(now - lasttick);
-	lasttick = now;
-	if(gprefsdirty) {
-	    gprefs.save();
-	    gprefsdirty = false;
-	}
+    	double now = Utils.rtime();
+    	root.tick(now - lasttick);
+    	lasttick = now;
+    	if(gprefsdirty) {
+    	    gprefs.save();
+    	    gprefsdirty = false;
+    	}
     }
 
     public void draw(GOut g) {
@@ -204,88 +208,185 @@ public class UI {
     }
 
     public void newwidget(int id, String type, int parent, Object[] pargs, Object... cargs) throws InterruptedException {
-	Widget.Factory f = Widget.gettype2(type);
-	synchronized(this) {
-	    Widget wdg = f.create(this, cargs);
-	    wdg.attach(this);
-	    if(parent != 65535) {
-		Widget pwdg = getwidget(parent);
-		if(pwdg == null)
-		    throw(new UIException("Null parent widget " + parent + " for " + id, type, cargs));
-		pwdg.addchild(wdg, pargs);
-	    }
-	    bind(wdg, id);
-	}
+        if (Config.quickbelt && type.equals("wnd") && cargs[1].equals("Belt")) {
+            // use custom belt window
+            type = "wnd-belt";
+            beltWndId = id;
+        } /* else if (type.equals("inv") && pargs[0].toString().equals("study")) {
+            // use custom study inventory
+            type = "inv-study";
+        } */
+
+        Widget.Factory f = Widget.gettype2(type);
+    	synchronized(this) {
+            if (parent == beltWndId)
+                f = Widget.gettype2("inv-belt");
+
+    	    Widget wdg = f.create(this, cargs); //null NullPointerException
+    	    wdg.attach(this);
+    	    if(parent != 65535) {
+        		Widget pwdg = getwidget(parent);
+        		if(pwdg == null)
+        		    throw(new UIException("Null parent widget " + parent + " for " + id, type, cargs));
+        		pwdg.addchild(wdg, pargs);
+
+                if (pwdg instanceof Window) {
+                    // here be horrors... FIXME
+                    GameUI gui = null;
+                    for (Widget w : rwidgets.keySet()) {
+                        if (w instanceof GameUI) {
+                            gui = (GameUI) w;
+                            break;
+                        }
+                    }
+                    processWindowContent(parent, gui, (Window) pwdg, wdg);
+                }
+    	    } else {
+                if (wdg instanceof Window) {
+                    // here be horrors... FIXME
+                    GameUI gui = null;
+                    for (Widget w : rwidgets.keySet()) {
+                        if (w instanceof GameUI) {
+                            gui = (GameUI) w;
+                            break;
+                        }
+                    }
+                    processWindowCreation(id, gui, (Window) wdg);
+                }
+            }
+    	    bind(wdg, id);
+            if(type.contains("rchan"))
+              realmchat = wdg;
+    	}
     }
 
     public void addwidget(int id, int parent, Object[] pargs) {
-	synchronized(this) {
-	    Widget wdg = getwidget(id);
-	    if(wdg == null)
-		throw(new UIException("Null child widget " + id + " added to " + parent, null, pargs));
-	    Widget pwdg = getwidget(parent);
-	    if(pwdg == null)
-		throw(new UIException("Null parent widget " + parent + " for " + id, null, pargs));
-	    pwdg.addchild(wdg, pargs);
-	}
+    	synchronized(this) {
+    	    Widget wdg = getwidget(id);
+    	    if(wdg == null)
+    		throw(new UIException("Null child widget " + id + " added to " + parent, null, pargs));
+    	    Widget pwdg = getwidget(parent);
+    	    if(pwdg == null)
+    		throw(new UIException("Null parent widget " + parent + " for " + id, null, pargs));
+    	    pwdg.addchild(wdg, pargs);
+    	}
     }
 
+    private void processWindowContent(long wndid, GameUI gui, Window pwdg, Widget wdg) {
+        String cap = pwdg.origcap;
+        /*if (gui != null && gui.livestockwnd.pendingAnimal != null && gui.livestockwnd.pendingAnimal.wndid == wndid) {
+            if (wdg instanceof TextEntry)
+                gui.livestockwnd.applyName(wdg);
+            else if (wdg instanceof Label)
+                gui.livestockwnd.applyAttr(cap, wdg);
+            else if (wdg instanceof Avaview)
+                gui.livestockwnd.applyId(wdg);
+        } else*/ if (wdg instanceof ISBox && cap.equals("Stockpile")) {
+            TextEntry entry = new TextEntry(40, "") {
+                @Override
+                public boolean keydown(KeyEvent ev) {
+                    int c = ev.getKeyChar();
+                    if (c >= KeyEvent.VK_0 && c <= KeyEvent.VK_9 && buf.line.length() < 2 || c == '\b') {
+                        return buf.key(ev);
+                    } else if (c == '\n') {
+                        try {
+                            int count = Integer.parseInt(dtext());
+                            for (int i = 0; i < count; i++)
+                                wdg.wdgmsg("xfer");
+                            return true;
+                        } catch (NumberFormatException e) {
+                        }
+                    }
+                    return !(c >= KeyEvent.VK_F1 && c <= KeyEvent.VK_F12);
+                }
+            };
+            Button btn = new Button(65, "Take") {
+                @Override
+                public void click() {
+                    try {
+                        String cs = entry.dtext();
+                        int count = cs.isEmpty() ? 1 : Integer.parseInt(cs);
+                        for (int i = 0; i < count; i++)
+                            wdg.wdgmsg("xfer");
+                    } catch (NumberFormatException e) {
+                    }
+                }
+            };
+            pwdg.add(btn, new Coord(0, wdg.sz.y + 5));
+            pwdg.add(entry, new Coord(btn.sz.x + 5, wdg.sz.y + 5 + 2));
+        }
+    }
+
+    private void processWindowCreation(long wdgid, GameUI gui, Window wdg) {
+        String cap = wdg.origcap;
+        if (cap.equals("Charter Stone") || cap.equals("Sublime Portico")) {
+            // show secrets list only for already built chartes/porticos
+            if (wdg.wsz.y >= 80) {
+                wdg.add(new CharterList(150, 5), new Coord(0, 50));
+                wdg.presize();
+            }
+        } /*else if (gui != null && gui.livestockwnd != null && gui.livestockwnd.getAnimalPanel(cap) != null) {
+            gui.livestockwnd.initPendingAnimal(wdgid, cap);
+        }*/
+    }
+
+
     public abstract class Grab {
-	public final Widget wdg;
-	public Grab(Widget wdg) {this.wdg = wdg;}
-	public abstract void remove();
+    	public final Widget wdg;
+    	public Grab(Widget wdg) {this.wdg = wdg;}
+    	public abstract void remove();
     }
 
     public Grab grabmouse(Widget wdg) {
-	if(wdg == null) throw(new NullPointerException());
-	Grab g = new Grab(wdg) {
-		public void remove() {
-		    mousegrab.remove(this);
-		}
-	    };
-	mousegrab.addFirst(g);
-	return(g);
+    	if(wdg == null) throw(new NullPointerException());
+    	Grab g = new Grab(wdg) {
+    		public void remove() {
+    		    mousegrab.remove(this);
+    		}
+    	    };
+    	mousegrab.addFirst(g);
+    	return(g);
     }
 
     public Grab grabkeys(Widget wdg) {
-	if(wdg == null) throw(new NullPointerException());
-	Grab g = new Grab(wdg) {
-		public void remove() {
-		    keygrab.remove(this);
-		}
-	    };
-	keygrab.addFirst(g);
-	return(g);
+    	if(wdg == null) throw(new NullPointerException());
+    	Grab g = new Grab(wdg) {
+    		public void remove() {
+    		    keygrab.remove(this);
+    		}
+    	    };
+    	keygrab.addFirst(g);
+    	return(g);
     }
 
     private void removeid(Widget wdg) {
-	synchronized(widgets) {
-	    Integer id = rwidgets.get(wdg);
-	    if(id != null) {
-		widgets.remove(id);
-		rwidgets.remove(wdg);
-	    }
-	}
-	for(Widget child = wdg.child; child != null; child = child.next)
-	    removeid(child);
+    	synchronized(widgets) {
+    	    Integer id = rwidgets.get(wdg);
+    	    if(id != null) {
+    		widgets.remove(id);
+    		rwidgets.remove(wdg);
+    	    }
+    	}
+    	for(Widget child = wdg.child; child != null; child = child.next)
+    	    removeid(child);
     }
 
     public void removed(Widget wdg) {
-	for(Iterator<Grab> i = mousegrab.iterator(); i.hasNext();) {
-	    Grab g = i.next();
-	    if(g.wdg.hasparent(wdg))
-		i.remove();
-	}
-	for(Iterator<Grab> i = keygrab.iterator(); i.hasNext();) {
-	    Grab g = i.next();
-	    if(g.wdg.hasparent(wdg))
-		i.remove();
-	}
+    	for(Iterator<Grab> i = mousegrab.iterator(); i.hasNext();) {
+    	    Grab g = i.next();
+    	    if(g.wdg.hasparent(wdg))
+    		i.remove();
+    	}
+    	for(Iterator<Grab> i = keygrab.iterator(); i.hasNext();) {
+    	    Grab g = i.next();
+    	    if(g.wdg.hasparent(wdg))
+    		i.remove();
+    	}
     }
 
     public void destroy(Widget wdg) {
-	removeid(wdg);
-	wdg.reqdestroy();
+    	removeid(wdg);
+    	wdg.reqdestroy();
     }
 
     public void destroy(int id) {
@@ -297,31 +398,42 @@ public class UI {
     }
 
     public void wdgmsg(Widget sender, String msg, Object... args) {
-	int id = widgetid(sender);
-	if(id < 0) {
-	    System.err.printf("Wdgmsg sender (%s) is not in rwidgets, message is %s\n", sender.getClass().getName(), msg);
-	    return;
-	}
-	if(rcvr != null)
-	    rcvr.rcvmsg(id, msg, args);
+    	int id = widgetid(sender);
+    	if(id < 0) {
+    	    System.err.printf("Wdgmsg sender (%s) is not in rwidgets, message is %s\n", sender.getClass().getName(), msg);
+    	    return;
+    	}
+    	if(rcvr != null)
+    	    rcvr.rcvmsg(id, msg, args);
     }
 
     public void uimsg(int id, String msg, Object... args) {
-	Widget wdg = getwidget(id);
-	if(wdg != null)
-	    wdg.uimsg(msg.intern(), args);
-	else
-	    throw(new UIException("Uimsg to non-existent widget " + id, msg, args));
+    	Widget wdg = getwidget(id);
+        if(realmchat != null){
+            if(id == realmchat.wdgid()){
+                // System.out.println(msg);
+                // System.out.println(wdg);
+                if (msg.contains("msg") && wdg.toString().contains("Realm")){
+                  ((ChatUI.EntryChannel) realmchat).updurgency(1);
+                  // if(Config.realmchatalerts)
+                  // Audio.play(ChatUI.notifsfx);
+                }
+            }
+        }
+    	if(wdg != null)
+    	    wdg.uimsg(msg.intern(), args);
+    	else
+    	    throw(new UIException("Uimsg to non-existent widget " + id, msg, args));
     }
 
     private void setmods(InputEvent ev) {
-	int mod = ev.getModifiersEx();
-	Debug.kf1 = modshift = (mod & InputEvent.SHIFT_DOWN_MASK) != 0;
-	Debug.kf2 = modctrl = (mod & InputEvent.CTRL_DOWN_MASK) != 0;
-	Debug.kf3 = modmeta = (mod & (InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK)) != 0;
-	/*
-	Debug.kf4 = modsuper = (mod & InputEvent.SUPER_DOWN_MASK) != 0;
-	*/
+    	int mod = ev.getModifiersEx();
+    	Debug.kf1 = modshift = (mod & InputEvent.SHIFT_DOWN_MASK) != 0;
+    	Debug.kf2 = modctrl = (mod & InputEvent.CTRL_DOWN_MASK) != 0;
+    	Debug.kf3 = modmeta = (mod & (InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK)) != 0;
+    	/*
+    	Debug.kf4 = modsuper = (mod & InputEvent.SUPER_DOWN_MASK) != 0;
+    	*/
     }
 
     private Grab[] c(Collection<Grab> g) {return(g.toArray(new Grab[0]));}
@@ -354,18 +466,18 @@ public class UI {
     }
 
     public boolean dropthing(Widget w, Coord c, Object thing) {
-	if(w instanceof DropTarget) {
-	    if(((DropTarget)w).dropthing(c, thing))
-		return(true);
-	}
-	for(Widget wdg = w.lchild; wdg != null; wdg = wdg.prev) {
-	    Coord cc = w.xlate(wdg.c, true);
-	    if(c.isect(cc, wdg.sz)) {
-		if(dropthing(wdg, c.add(cc.inv()), thing))
-		    return(true);
-	    }
-	}
-	return(false);
+    	if(w instanceof DropTarget) {
+    	    if(((DropTarget)w).dropthing(c, thing))
+    		return(true);
+    	}
+    	for(Widget wdg = w.lchild; wdg != null; wdg = wdg.prev) {
+    	    Coord cc = w.xlate(wdg.c, true);
+    	    if(c.isect(cc, wdg.sz)) {
+    		if(dropthing(wdg, c.add(cc.inv()), thing))
+    		    return(true);
+    	    }
+    	}
+    	return(false);
     }
 
     public void mousedown(MouseEvent ev, Coord c, int button) {
@@ -409,20 +521,20 @@ public class UI {
     }
 
     public Resource getcurs(Coord c) {
-	for(Grab g : mousegrab) {
-	    Resource ret = g.wdg.getcurs(wdgxlate(c, g.wdg));
-	    if(ret != null)
-		return(ret);
-	}
-	return(root.getcurs(c));
+    	for(Grab g : mousegrab) {
+    	    Resource ret = g.wdg.getcurs(wdgxlate(c, g.wdg));
+    	    if(ret != null)
+    		return(ret);
+    	}
+    	return(root.getcurs(c));
     }
 
     public static int modflags(InputEvent ev) {
-	int mod = ev.getModifiersEx();
-	return((((mod & InputEvent.SHIFT_DOWN_MASK) != 0) ? MOD_SHIFT : 0) |
-	       (((mod & InputEvent.CTRL_DOWN_MASK) != 0)  ? MOD_CTRL : 0) |
-	       (((mod & (InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK)) != 0) ? MOD_META : 0)
-	       /* (((mod & InputEvent.SUPER_DOWN_MASK) != 0) ? MOD_SUPER : 0) */);
+    	int mod = ev.getModifiersEx();
+    	return((((mod & InputEvent.SHIFT_DOWN_MASK) != 0) ? MOD_SHIFT : 0) |
+    	       (((mod & InputEvent.CTRL_DOWN_MASK) != 0)  ? MOD_CTRL : 0) |
+    	       (((mod & (InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK)) != 0) ? MOD_META : 0)
+    	       /* (((mod & InputEvent.SUPER_DOWN_MASK) != 0) ? MOD_SUPER : 0) */);
     }
 
     public int modflags() {

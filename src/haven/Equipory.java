@@ -34,6 +34,7 @@ import static haven.Inventory.invsq;
 public class Equipory extends Widget implements DTarget {
     private static final Tex bg = Resource.loadtex("gfx/hud/equip/bg");
     private static final int rx = 34 + bg.sz().x;
+    private java.util.List <GItem> checkForDrop = new java.util.LinkedList<GItem>();
     public static final Coord ecoords[] = {
     	new Coord(0, 0),
     	new Coord(rx, 0),
@@ -120,23 +121,50 @@ public class Equipory extends Widget implements DTarget {
     	ava.color = null;
     }
 
+    @Override
+    public void tick(double dt) {
+        if (Config.quickbelt && ui.beltWndId == -1 && ((Window) parent).origcap.equals("Equipment")) {
+            for (WItem itm[] : wmap.values()) {
+                try {
+                    if (itm.length > 0 && itm[0].item.res.get().name.endsWith("belt"))
+                        itm[0].mousedown(Coord.z, 3);
+                } catch (Loading l) {
+                }
+            }
+        }
+        super.tick(dt);
+        try {
+    	    if (!checkForDrop.isEmpty()) {
+    		    GItem g = checkForDrop.get(0);
+      		  if (g.resource().name.equals("gfx/invobjs/leech")) {
+      			    g.drop = true;
+      			       //ui.gui.map.wdgmsg("drop", Coord.z);
+      		  }
+      		  checkForDrop.remove(0);
+    	    }
+    	  } catch (Resource.Loading ignore) {
+        }
+    }
+
     public static interface SlotInfo {
 	    public int slots();
     }
 
     public void addchild(Widget child, Object... args) {
-	if(child instanceof GItem) {
-	    add(child);
-	    GItem g = (GItem)child;
-	    WItem[] v = new WItem[args.length];
-	    for(int i = 0; i < args.length; i++) {
-		int ep = (Integer)args[i];
-		v[i] = add(new WItem(g), ecoords[ep].add(1, 1));
-	    }
-	    wmap.put(g, v);
-	} else {
-	    super.addchild(child, args);
-	}
+    	if(child instanceof GItem) {
+    	    add(child);
+    	    GItem g = (GItem)child;
+    	    WItem[] v = new WItem[args.length];
+    	    for(int i = 0; i < args.length; i++) {
+    		int ep = (Integer)args[i];
+    		v[i] = add(new WItem(g), ecoords[ep].add(1, 1));
+    	    }
+    	    wmap.put(g, v);
+            if(Config.leechdrop)
+            	checkForDrop.add(g);
+    	} else {
+    	    super.addchild(child, args);
+    	}
     }
 
     public void cdestroy(Widget w) {
@@ -242,7 +270,7 @@ public class Equipory extends Widget implements DTarget {
 
         return false;
     }
-    
+
     public java.util.List<WItem> getItemsPartial(String... names) {
         java.util.List<WItem> items = new ArrayList<WItem>();
         for (Widget wdg = child; wdg != null; wdg = wdg.next) {

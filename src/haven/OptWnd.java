@@ -1506,7 +1506,7 @@ public class OptWnd extends Window {
                 }
             }
         });
-        appender.add(new CheckBox("TBA Alternative equipment belt window") {
+        appender.add(new CheckBox("Alternative equipment belt window") {
             {
                 a = Config.quickbelt;
             }
