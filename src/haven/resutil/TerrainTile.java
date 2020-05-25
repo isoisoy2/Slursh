@@ -55,150 +55,173 @@ public class TerrainTile extends Tiler implements Tiler.MCons, Tiler.CTrans {
 
     private static final int sr = 12;
     public class Blend {
-	final MapMesh m;
-	final Scan vs, es;
-	final float[][] bv;
-	final boolean[][] en;
+    	final MapMesh m;
+    	final Scan vs, es;
+    	final float[][] bv;
+    	final boolean[][] en;
 
-	private Blend(MapMesh m) {
-	    this.m = m;
-	    vs = new Scan(Coord.z.sub(sr, sr), m.sz.add(sr * 2 + 1, sr * 2 + 1));
-	    float[][] buf1 = new float[var.length + 1][vs.l];
-	    float[][] lwc = new float[var.length + 1][vs.l];
-	    for(int i = 0; i < var.length + 1; i++) {
-		for(int y = vs.ul.y; y < vs.br.y; y++) {
-		    for(int x = vs.ul.x; x < vs.br.x; x++) {
-			lwc[i][vs.o(x, y)] = (float)noise.getr(0.5, 1.5, 32, x + m.ul.x, y + m.ul.y, i * 23);
-		    }
-		}
-	    }
-	    setbase(buf1);
-	    for(int i = 0; i < sr; i++) {
-		float[][] buf2 = new float[var.length + 1][vs.l];
-		for(int y = vs.ul.y; y < vs.br.y; y++) {
-		    for(int x = vs.ul.x; x < vs.br.x; x++) {
-			for(int o = 0; o < var.length + 1; o++) {
-			    float s = buf1[o][vs.o(x, y)] * 4;
-			    float w = 4;
-			    float lw = lwc[o][vs.o(x, y)];
-			    if(lw < 0)
-				lw = lw * lw * lw;
-			    else
-				lw = lw * lw;
-			    if(x > vs.ul.x) {
-				s += buf1[o][vs.o(x - 1, y)] * lw;
-				w += lw;
-			    }
-			    if(y > vs.ul.y) {
-				s += buf1[o][vs.o(x, y - 1)] * lw;
-				w += lw;
-			    }
-			    if(x < vs.br.x - 1) {
-				s += buf1[o][vs.o(x + 1, y)] * lw;
-				w += lw;
-			    }
-			    if(y < vs.br.y - 1) {
-				s += buf1[o][vs.o(x, y + 1)] * lw;
-				w += lw;
-			    }
-			    buf2[o][vs.o(x, y)] = s / w;
-			}
-		    }
-		}
-		buf1 = buf2;
-	    }
-	    bv = buf1;
-	    for(int y = vs.ul.y; y < vs.br.y; y++) {
-		for(int x = vs.ul.x; x < vs.br.x; x++) {
-		    for(int i = 0; i < var.length + 1; i++) {
-			float v = bv[i][vs.o(x, y)];
-			v = v * 1.2f - 0.1f;
-			if(v < 0)
-			    v = 0;
-			else if(v > 1)
-			    v = 1;
-			else
-			    v = 0.25f + (0.75f * v);
-			bv[i][vs.o(x, y)] = v;
-		    }
-		}
-	    }
-	    es = new Scan(Coord.z, m.sz);
-	    en = new boolean[var.length + 1][es.l];
-	    for(int y = es.ul.y; y < es.br.y; y++) {
-		for(int x = es.ul.x; x < es.br.x; x++) {
-		    boolean fall = false;
-		    for(int i = var.length; i >= 0; i--) {
-			if(fall) {
-			    en[i][es.o(x, y)] = false;
-			} else if((bv[i][vs.o(x    , y    )] < 0.001f) && (bv[i][vs.o(x + 1, y    )] < 0.001f) &&
-				  (bv[i][vs.o(x    , y + 1)] < 0.001f) && (bv[i][vs.o(x + 1, y + 1)] < 0.001f)) {
-			    en[i][es.o(x, y)] = false;
-			} else {
-			    en[i][es.o(x, y)] = true;
-			    if((bv[i][vs.o(x    , y    )] > 0.99f) && (bv[i][vs.o(x + 1, y    )] > 0.99f) &&
-			       (bv[i][vs.o(x    , y + 1)] > 0.99f) && (bv[i][vs.o(x + 1, y + 1)] > 0.99f)) {
-				fall = true;
-			    }
-			}
-		    }
-		}
-	    }
-	}
+    	private Blend(MapMesh m) {
+    	    this.m = m;
+    	    vs = new Scan(Coord.z.sub(sr, sr), m.sz.add(sr * 2 + 1, sr * 2 + 1));
+    	    float[][] buf1 = new float[var.length + 1][vs.l];
+    	    float[][] lwc = new float[var.length + 1][vs.l];
 
-	private void setbase(float[][] bv) {
-	    for(int y = vs.ul.y; y < vs.br.y - 1; y++) {
-		for(int x = vs.ul.x; x < vs.br.x - 1; x++) {
-		    fall: {
-			for(int i = var.length - 1; i >= 0; i--) {
-			    Var v = var[i];
-			    double n = 0;
-			    for(double s = 64; s >= 8; s /= 2)
-				n += noise.get(s, x + m.ul.x, y + m.ul.y, v.nz);
-			    if(((n / 2) >= v.thrl) && ((n / 2) <= v.thrh)) {
-				bv[i + 1][vs.o(x, y)] = 1;
-				bv[i + 1][vs.o(x + 1, y)] = 1;
-				bv[i + 1][vs.o(x, y + 1)] = 1;
-				bv[i + 1][vs.o(x + 1, y + 1)] = 1;
-				break fall;
-			    }
-			}
-			bv[0][vs.o(x, y)] = 1;
-			bv[0][vs.o(x + 1, y)] = 1;
-			bv[0][vs.o(x, y + 1)] = 1;
-			bv[0][vs.o(x + 1, y + 1)] = 1;
-		    }
-		}
-	    }
-	}
+            if (!Config.disableterrainsmooth){
+                for(int i = 0; i < var.length + 1; i++) {
+            		for(int y = vs.ul.y; y < vs.br.y; y++) {
+            		    for(int x = vs.ul.x; x < vs.br.x; x++) {
+            			lwc[i][vs.o(x, y)] = (float)noise.getr(0.5, 1.5, 32, x + m.ul.x, y + m.ul.y, i * 23);
+            		    }
+            		}
+        	    }
+            }
 
-	final VertFactory[] lvfac = new VertFactory[var.length + 1]; {
-	    for(int i = 0; i < var.length + 1; i++) {
-		final int l = i;
-		lvfac[i] = new VertFactory() {
-			final float fac = 25f / 4f;
+    	    setbase(buf1);
+    	    for(int i = 0; i < sr; i++) {
+    		float[][] buf2 = new float[var.length + 1][vs.l];
+    		for(int y = vs.ul.y; y < vs.br.y; y++) {
+    		    for(int x = vs.ul.x; x < vs.br.x; x++) {
+    			for(int o = 0; o < var.length + 1; o++) {
+    			    float s = buf1[o][vs.o(x, y)] * 4;
+    			    float w = 4;
+    			    float lw = lwc[o][vs.o(x, y)];
+    			    if(lw < 0)
+    				lw = lw * lw * lw;
+    			    else
+    				lw = lw * lw;
+    			    if(x > vs.ul.x) {
+    				s += buf1[o][vs.o(x - 1, y)] * lw;
+    				w += lw;
+    			    }
+    			    if(y > vs.ul.y) {
+    				s += buf1[o][vs.o(x, y - 1)] * lw;
+    				w += lw;
+    			    }
+    			    if(x < vs.br.x - 1) {
+    				s += buf1[o][vs.o(x + 1, y)] * lw;
+    				w += lw;
+    			    }
+    			    if(y < vs.br.y - 1) {
+    				s += buf1[o][vs.o(x, y + 1)] * lw;
+    				w += lw;
+    			    }
+    			    buf2[o][vs.o(x, y)] = s / w;
+    			}
+    		    }
+    		}
+    		buf1 = buf2;
+    	    }
+    	    bv = buf1;
+    	    for(int y = vs.ul.y; y < vs.br.y; y++) {
+    		for(int x = vs.ul.x; x < vs.br.x; x++) {
+    		    for(int i = 0; i < var.length + 1; i++) {
+    			float v = bv[i][vs.o(x, y)];
+    			v = v * 1.2f - 0.1f;
+    			if(v < 0)
+    			    v = 0;
+    			else if(v > 1)
+    			    v = 1;
+    			else
+    			    v = 0.25f + (0.75f * v);
+    			bv[i][vs.o(x, y)] = v;
+    		    }
+    		}
+    	    }
+    	    es = new Scan(Coord.z, m.sz);
+    	    en = new boolean[var.length + 1][es.l];
+    	    for(int y = es.ul.y; y < es.br.y; y++) {
+    		for(int x = es.ul.x; x < es.br.x; x++) {
+    		    boolean fall = false;
+    		    for(int i = var.length; i >= 0; i--) {
+    			if(fall) {
+    			    en[i][es.o(x, y)] = false;
+    			} else if((bv[i][vs.o(x    , y    )] < 0.001f) && (bv[i][vs.o(x + 1, y    )] < 0.001f) &&
+    				  (bv[i][vs.o(x    , y + 1)] < 0.001f) && (bv[i][vs.o(x + 1, y + 1)] < 0.001f)) {
+    			    en[i][es.o(x, y)] = false;
+    			} else {
+    			    en[i][es.o(x, y)] = true;
+    			    if((bv[i][vs.o(x    , y    )] > 0.99f) && (bv[i][vs.o(x + 1, y    )] > 0.99f) &&
+    			       (bv[i][vs.o(x    , y + 1)] > 0.99f) && (bv[i][vs.o(x + 1, y + 1)] > 0.99f)) {
+    				fall = true;
+    			    }
+    			}
+    		    }
+    		}
+    	    }
+    	}
 
-			float bv(Coord lc, float tcx, float tcy) {
-			    float icx = 1 - tcx, icy = 1 - tcy;
-			    return((((bv[l][vs.o(lc.x + 0, lc.y + 0)] * icx) + (bv[l][vs.o(lc.x + 1, lc.y + 0)] * tcx)) * icy) +
-				   (((bv[l][vs.o(lc.x + 0, lc.y + 1)] * icx) + (bv[l][vs.o(lc.x + 1, lc.y + 1)] * tcx)) * tcy));
-			}
+    	private void setbase(float[][] bv) {
 
-			public Surface.MeshVertex make(MeshBuf buf, MPart d, int i) {
-			    Surface.MeshVertex ret = new Surface.MeshVertex(buf, d.v[i]);
-			    Coord3f tan = Coord3f.yu.cmul(ret.nrm).norm();
-			    Coord3f bit = ret.nrm.cmul(Coord3f.xu).norm();
-			    Coord3f tc = new Coord3f((d.lc.x + d.tcx[i]) / fac, (d.lc.y + d.tcy[i]) / fac, 0);
-			    int alpha = (int)(bv(d.lc, d.tcx[i], d.tcy[i]) * 255);
-			    buf.layer(BumpMap.ltan).set(ret, tan);
-			    buf.layer(BumpMap.lbit).set(ret, bit);
-			    buf.layer(MeshBuf.tex).set(ret, tc);
-			    buf.layer(MeshBuf.col).set(ret, new Color(255, 255, 255, alpha));
-			    return(ret);
-			}
-		    };
-	    }
-	}
+            if (Config.disableterrainsmooth){
+                for (int y = vs.ul.y; y < vs.br.y - 1; y++) {
+                    for (int x = vs.ul.x; x < vs.br.x - 1; x++) {
+                        bv[0][vs.o(x, y)] = 1;
+                        bv[0][vs.o(x + 1, y)] = 1;
+                        bv[0][vs.o(x, y + 1)] = 1;
+                        bv[0][vs.o(x + 1, y + 1)] = 1;
+                        for (int i = var.length - 1; i >= 0; i--) {
+                            bv[i + 1][vs.o(x, y)] = 1;
+                            bv[i + 1][vs.o(x + 1, y)] = 1;
+                            bv[i + 1][vs.o(x, y + 1)] = 1;
+                            bv[i + 1][vs.o(x + 1, y + 1)] = 1;
+                        }
+                    }
+                }
+            } else {
+                for(int y = vs.ul.y; y < vs.br.y - 1; y++) {
+            		for(int x = vs.ul.x; x < vs.br.x - 1; x++) {
+            		    fall: {
+            			for(int i = var.length - 1; i >= 0; i--) {
+            			    Var v = var[i];
+            			    double n = 0;
+            			    for(double s = 64; s >= 8; s /= 2)
+            				n += noise.get(s, x + m.ul.x, y + m.ul.y, v.nz);
+            			    if(((n / 2) >= v.thrl) && ((n / 2) <= v.thrh)) {
+            				bv[i + 1][vs.o(x, y)] = 1;
+            				bv[i + 1][vs.o(x + 1, y)] = 1;
+            				bv[i + 1][vs.o(x, y + 1)] = 1;
+            				bv[i + 1][vs.o(x + 1, y + 1)] = 1;
+            				break fall;
+            			    }
+            			}
+            			bv[0][vs.o(x, y)] = 1;
+            			bv[0][vs.o(x + 1, y)] = 1;
+            			bv[0][vs.o(x, y + 1)] = 1;
+            			bv[0][vs.o(x + 1, y + 1)] = 1;
+            		    }
+            		}
+        	    }
+            }
+
+    	}
+
+    	final VertFactory[] lvfac = new VertFactory[var.length + 1]; {
+    	    for(int i = 0; i < var.length + 1; i++) {
+    		final int l = i;
+    		lvfac[i] = new VertFactory() {
+    			final float fac = 25f / 4f;
+
+    			float bv(Coord lc, float tcx, float tcy) {
+    			    float icx = 1 - tcx, icy = 1 - tcy;
+    			    return((((bv[l][vs.o(lc.x + 0, lc.y + 0)] * icx) + (bv[l][vs.o(lc.x + 1, lc.y + 0)] * tcx)) * icy) +
+    				   (((bv[l][vs.o(lc.x + 0, lc.y + 1)] * icx) + (bv[l][vs.o(lc.x + 1, lc.y + 1)] * tcx)) * tcy));
+    			}
+
+    			public Surface.MeshVertex make(MeshBuf buf, MPart d, int i) {
+    			    Surface.MeshVertex ret = new Surface.MeshVertex(buf, d.v[i]);
+    			    Coord3f tan = Coord3f.yu.cmul(ret.nrm).norm();
+    			    Coord3f bit = ret.nrm.cmul(Coord3f.xu).norm();
+    			    Coord3f tc = new Coord3f((d.lc.x + d.tcx[i]) / fac, (d.lc.y + d.tcy[i]) / fac, 0);
+    			    int alpha = (int)(bv(d.lc, d.tcx[i], d.tcy[i]) * 255);
+    			    buf.layer(BumpMap.ltan).set(ret, tan);
+    			    buf.layer(BumpMap.lbit).set(ret, bit);
+    			    buf.layer(MeshBuf.tex).set(ret, tc);
+    			    buf.layer(MeshBuf.col).set(ret, new Color(255, 255, 255, alpha));
+    			    return(ret);
+    			}
+    		    };
+    	    }
+    	}
     }
     public final MapMesh.DataID<Blend> blend = new MapMesh.DataID<Blend>() {
 	public Blend make(MapMesh m) {

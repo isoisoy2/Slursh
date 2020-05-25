@@ -358,7 +358,7 @@ public class OptWnd extends Window {
         		// 	    curcf = null;
         		// 	}
         		// }, new Coord(0, 150));
-                appender.add(new CheckBox("TBA Disable biome tile transitions (requires logout)") {
+                appender.add(new CheckBox("Disable biome tile transitions (requires logout)") {
                     {
                         a = Config.disabletiletrans;
                     }
@@ -368,7 +368,7 @@ public class OptWnd extends Window {
                         a = val;
                     }
                 });
-                appender.add(new CheckBox("TBA Disable terrain smoothing (requires logout)") {
+                appender.add(new CheckBox("Disable terrain smoothing (requires logout)") {
                     {
                         a = Config.disableterrainsmooth;
                     }
@@ -378,7 +378,7 @@ public class OptWnd extends Window {
                         a = val;
                     }
                 });
-                appender.add(new CheckBox("TBA Disable terrain elevation (requires logout)") {
+                appender.add(new CheckBox("Disable terrain elevation (Might need some work) (requires logout)") {
                     {
                         a = Config.disableelev;
                     }

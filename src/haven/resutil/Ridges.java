@@ -181,34 +181,41 @@ public class Ridges extends MapMesh.Hooks {
     }
 
     private Vertex[] makeedge(Coord tc, int e) {
-	if(e == 1)
-	    return(makeedge(tc.add(1, 0), 3));
-	if(e == 2)
-	    return(makeedge(tc.add(0, 1), 0));
-	float eds = edgelc(tc, e)?1:-1;
-	int lo, hi; {
-	    Coord gc = tc.add(m.ul);
-	    int z1 = m.map.getz(gc.add(tccs[e])), z2 = m.map.getz(gc.add(tccs[(e + 1) % 4]));
-	    lo = Math.min(z1, z2); hi = Math.max(z1, z2);
-	}
-	int nseg = Math.max((hi - lo + (segh / 2)) / segh, 2) - 1;
-	Vertex[] ret = new Vertex[nseg + 1];
-	Coord3f base = new Coord3f(tc.add(tccs[e]).add(tc.add(tccs[(e + 1) % 4])).mul(tilesz).mul(1, -1)).div(2); base.z = lo;
-	float segi = (float)(hi - lo) / (float)nseg;
-	Random rnd = m.grnd(m.ul.add(tc));
-	rnd.setSeed(rnd.nextInt() + e);
-	float bb = (rnd.nextFloat() - 0.5f) * 3.5f;
-	float cfac = -eds * Math.min((hi - lo) * (5.0f / 37.0f), 5.5f);
-	for(int v = 0; v <= nseg; v++) {
-	    float z = v * segi;
-	    float zp = (z / (hi - lo));
-	    float cd = (4 * zp * zp) - (4 * zp) + 0.5f;
-	    cd *= cfac;
-	    ret[v] = ms.new Vertex(base.add(dc(bb + ((rnd.nextFloat() - 0.5f) * 2.0f) + cd, e)).add(0, 0, z));
-	    if((v > 0) && (v < nseg))
-		ret[v].z += (rnd.nextFloat() - 0.5f) * segi * 0.5f;
-	}
-	return(ret);
+    	if(e == 1)
+    	    return(makeedge(tc.add(1, 0), 3));
+    	if(e == 2)
+    	    return(makeedge(tc.add(0, 1), 0));
+    	float eds = edgelc(tc, e)?1:-1;
+    	int lo, hi; {
+    	    Coord gc = tc.add(m.ul);
+    	    int z1 = m.map.getz(gc.add(tccs[e])), z2 = m.map.getz(gc.add(tccs[(e + 1) % 4]));
+            if (Config.disableelev) {
+                lo = 0;
+                hi = 10;
+            } else {
+                lo = Math.min(z1, z2);
+                hi = Math.max(z1, z2);
+            }
+
+    	}
+    	int nseg = Math.max((hi - lo + (segh / 2)) / segh, 2) - 1;
+    	Vertex[] ret = new Vertex[nseg + 1];
+    	Coord3f base = new Coord3f(tc.add(tccs[e]).add(tc.add(tccs[(e + 1) % 4])).mul(tilesz).mul(1, -1)).div(2); base.z = lo;
+    	float segi = (float)(hi - lo) / (float)nseg;
+    	Random rnd = m.grnd(m.ul.add(tc));
+    	rnd.setSeed(rnd.nextInt() + e);
+    	float bb = (rnd.nextFloat() - 0.5f) * 3.5f;
+    	float cfac = -eds * Math.min((hi - lo) * (5.0f / 37.0f), 5.5f);
+    	for(int v = 0; v <= nseg; v++) {
+    	    float z = v * segi;
+    	    float zp = (z / (hi - lo));
+    	    float cd = (4 * zp * zp) - (4 * zp) + 0.5f;
+    	    cd *= cfac;
+    	    ret[v] = ms.new Vertex(base.add(dc(bb + ((rnd.nextFloat() - 0.5f) * 2.0f) + cd, e)).add(0, 0, z));
+    	    if((v > 0) && (v < nseg))
+    		ret[v].z += (rnd.nextFloat() - 0.5f) * segi * 0.5f;
+    	}
+    	return(ret);
     }
 
     private Vertex[] ensureedge(Coord tc, int e) {
@@ -505,85 +512,86 @@ public class Ridges extends MapMesh.Hooks {
 
     private static final int[] cg1rfi = {0, 1, 2, 0, 2, 3};
     private static final int[] cg2rfi = {0, 1, 4, 4, 1, 2, 4, 2, 3};
-    private void modelcomplex(Coord tc, boolean[] breaks) {
-	Coord gc = tc.add(m.ul), pc = tc.mul(tilesz).mul(1, -1);
-	int[] tczs = tczs(tc);
-	int s;
-	for(s = 0; !breaks[s] || !breaks[(s + 3) % 4]; s++);
-	Coord3f[] col;
-	{
-	    int n = 0;
-	    float[] zs = new float[4];
-	    for(int i = 0, d = s; i < 4; i++) {
-		if(breaks[d]) {
-		    zs[n++] = tczs[d];
-		    d = (d + 1) % 4;
-		} else {
-		    zs[n++] = (tczs[d] + tczs[(d + 1) % 4]) / 2;
-		    i++;
-		    d = (d + 2) % 4;
-		}
-	    }
-	    zs = Utils.splice(zs, 0, n);
-	    Arrays.sort(zs);
-	    col = new Coord3f[n];
-	    float tcx = tc.x * tilesz.x + (tilesz.x / 2.0f), tcy = -(tc.y * tilesz.y + (tilesz.y / 2.0f));
-	    Random rnd = m.rnd(tc);
-	    for(int i = 0; i < n; i++) {
-		col[i] = new Coord3f(tcx + ((rnd.nextFloat() - 0.5f) * 5.0f),
-				     tcy + ((rnd.nextFloat() - 0.5f) * 5.0f),
-				     zs[i]);
-	    }
-	}
 
-	MPart[] gnd = new MPart[4];
-	RPart[] rdg = new RPart[4];
-	int n = 0;
-	for(int i = 0, d = s; i < 4; i++) {
-	    if(breaks[d]) {
-		ensureedge(tc, (d + 3) % 4);
-		ensureedge(tc, d);
-		Vertex[] gv = {
-		    ms.fortile(tc.add(tccs[d])),
-		    edgec[eo(tc, (d + 3) % 4)][edgelc(tc, (d + 3) % 4)?1:0],
-		    ms.new Vertex(zmatch(col, tczs[d])),
-		    edgec[eo(tc, d)][edgelc(tc, d)?0:1],
-		};
-		mkfaces(gv, cg1rfi);
-		gnd[n] = new MPart(tc, gc, gv, mktcx(gv, pc), mktcy(gv, pc), cg1rfi);
-		if(edgelc(tc, d))
-		    rdg[n] = connect(tc, edges[eo(tc, d)], colzmatch(col, tczs[d], tczs[(d + 1) % 4]));
-		else
-		    rdg[n] = connect(tc, colzmatch(col, tczs[(d + 1) % 4], tczs[d]), edges[eo(tc, d)]);
-		n++;
-		d = (d + 1) % 4;
-	    } else {
-		assert(breaks[(d + 1) % 4]);
-		ensureedge(tc, (d + 3) % 4);
-		ensureedge(tc, (d + 1) % 4);
-		float mz = (tczs[d] + tczs[(d + 1) % 4]) / 2.0f;
-		Vertex[] gv = {
-		    ms.fortile(tc.add(tccs[(d + 1) % 4])),
-		    ms.fortile(tc.add(tccs[d])),
-		    edgec[eo(tc, (d + 3) % 4)][edgelc(tc, (d + 3) % 4)?1:0],
-		    ms.new Vertex(zmatch(col, mz)),
-		    edgec[eo(tc, (d + 1) % 4)][edgelc(tc, (d + 1) % 4)?0:1],
-		};
-		mkfaces(gv, cg2rfi);
-		gnd[n] = new MPart(tc, gc, gv, mktcx(gv, pc), mktcy(gv, pc), cg2rfi);
-		if(edgelc(tc, (d + 1) % 4))
-		    rdg[n] = connect(tc, edges[eo(tc, (d + 1) % 4)], colzmatch(col, mz, tczs[(d + 2) % 4]));
-		else
-		    rdg[n] = connect(tc, colzmatch(col, tczs[(d + 2) % 4], mz), edges[eo(tc, (d + 1) % 4)]);
-		n++;
-		i++;
-		d = (d + 2) % 4;
-	    }
-	}
-	gnd = Utils.splice(gnd, 0, n);
-	rdg = Utils.splice(rdg, 0, n);
-	this.gnd[ms.ts.o(tc)] = new MPart(gnd);
-	this.ridge[ms.ts.o(tc)] = new RPart(rdg);
+    private void modelcomplex(Coord tc, boolean[] breaks) {
+    	Coord gc = tc.add(m.ul), pc = tc.mul(tilesz).mul(1, -1);
+    	int[] tczs = tczs(tc);
+    	int s;
+    	for(s = 0; !breaks[s] || !breaks[(s + 3) % 4]; s++);
+    	Coord3f[] col;
+    	{
+    	    int n = 0;
+    	    float[] zs = new float[4];
+    	    for(int i = 0, d = s; i < 4; i++) {
+    		if(breaks[d]) {
+    		    zs[n++] = tczs[d];
+    		    d = (d + 1) % 4;
+    		} else {
+    		    zs[n++] = (tczs[d] + tczs[(d + 1) % 4]) / 2;
+    		    i++;
+    		    d = (d + 2) % 4;
+    		}
+    	    }
+    	    zs = Utils.splice(zs, 0, n);
+    	    Arrays.sort(zs);
+    	    col = new Coord3f[n];
+    	    float tcx = tc.x * tilesz.x + (tilesz.x / 2.0f), tcy = -(tc.y * tilesz.y + (tilesz.y / 2.0f));
+    	    Random rnd = m.rnd(tc);
+    	    for(int i = 0; i < n; i++) {
+    		col[i] = new Coord3f(tcx + ((rnd.nextFloat() - 0.5f) * 5.0f),
+    				     tcy + ((rnd.nextFloat() - 0.5f) * 5.0f),
+    				     Config.disableelev ? 10 : zs[i]);
+    	    }
+    	}
+
+    	MPart[] gnd = new MPart[4];
+    	RPart[] rdg = new RPart[4];
+    	int n = 0;
+    	for(int i = 0, d = s; i < 4; i++) {
+    	    if(breaks[d]) {
+    		ensureedge(tc, (d + 3) % 4);
+    		ensureedge(tc, d);
+    		Vertex[] gv = {
+    		    ms.fortile(tc.add(tccs[d])),
+    		    edgec[eo(tc, (d + 3) % 4)][edgelc(tc, (d + 3) % 4)?1:0],
+    		    ms.new Vertex(zmatch(col, tczs[d])),
+    		    edgec[eo(tc, d)][edgelc(tc, d)?0:1],
+    		};
+    		mkfaces(gv, cg1rfi);
+    		gnd[n] = new MPart(tc, gc, gv, mktcx(gv, pc), mktcy(gv, pc), cg1rfi);
+    		if(edgelc(tc, d))
+    		    rdg[n] = connect(tc, edges[eo(tc, d)], colzmatch(col, tczs[d], tczs[(d + 1) % 4]));
+    		else
+    		    rdg[n] = connect(tc, colzmatch(col, tczs[(d + 1) % 4], tczs[d]), edges[eo(tc, d)]);
+    		n++;
+    		d = (d + 1) % 4;
+    	    } else {
+    		assert(breaks[(d + 1) % 4]);
+    		ensureedge(tc, (d + 3) % 4);
+    		ensureedge(tc, (d + 1) % 4);
+    		float mz = (tczs[d] + tczs[(d + 1) % 4]) / 2.0f;
+    		Vertex[] gv = {
+    		    ms.fortile(tc.add(tccs[(d + 1) % 4])),
+    		    ms.fortile(tc.add(tccs[d])),
+    		    edgec[eo(tc, (d + 3) % 4)][edgelc(tc, (d + 3) % 4)?1:0],
+    		    ms.new Vertex(zmatch(col, mz)),
+    		    edgec[eo(tc, (d + 1) % 4)][edgelc(tc, (d + 1) % 4)?0:1],
+    		};
+    		mkfaces(gv, cg2rfi);
+    		gnd[n] = new MPart(tc, gc, gv, mktcx(gv, pc), mktcy(gv, pc), cg2rfi);
+    		if(edgelc(tc, (d + 1) % 4))
+    		    rdg[n] = connect(tc, edges[eo(tc, (d + 1) % 4)], colzmatch(col, mz, tczs[(d + 2) % 4]));
+    		else
+    		    rdg[n] = connect(tc, colzmatch(col, tczs[(d + 2) % 4], mz), edges[eo(tc, (d + 1) % 4)]);
+    		n++;
+    		i++;
+    		d = (d + 2) % 4;
+    	    }
+    	}
+    	gnd = Utils.splice(gnd, 0, n);
+    	rdg = Utils.splice(rdg, 0, n);
+    	this.gnd[ms.ts.o(tc)] = new MPart(gnd);
+    	this.ridge[ms.ts.o(tc)] = new RPart(rdg);
     }
 
     public boolean model(Coord tc) {

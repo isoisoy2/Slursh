@@ -744,138 +744,141 @@ public class Gob implements RenderTree.Node, Sprite.Owner, Skeleton.ModOwner {
     */
 
     public class Placed implements RenderTree.Node, TickList.Ticking, TickList.TickNode {
-	private final Collection<RenderTree.Slot> slots = new ArrayList<>(1);
-	private Placement cur;
+    	private final Collection<RenderTree.Slot> slots = new ArrayList<>(1);
+    	private Placement cur;
 
-	private Placed() {}
+    	private Placed() {}
 
-	private class Placement implements Pipe.Op {
-	    final Pipe.Op flw, tilestate, mods;
-	    final Coord3f oc, rc;
-	    final double a;
+    	private class Placement implements Pipe.Op {
+    	    final Pipe.Op flw, tilestate, mods;
+    	    final Coord3f oc, rc;
+    	    final double a;
 
-	    Placement() {
-		try {
-		    Following flw = Gob.this.getattr(Following.class);
-		    Pipe.Op flwxf = (flw == null) ? null : flw.xf();
-		    Pipe.Op tilestate = null;
-		    if(flwxf == null) {
-			Coord3f oc = Gob.this.getc();
-			Coord3f rc = new Coord3f(oc);
-			rc.y = -rc.y;
-			this.flw = null;
-			this.oc = oc;
-			this.rc = rc;
-			this.a = Gob.this.a;
-			tilestate = Gob.this.getmapstate(oc);
-		    } else {
-			this.flw = flwxf;
-			this.oc = this.rc = null;
-			this.a = Double.NaN;
-		    }
-		    this.tilestate = tilestate;
-		    if(setupmods.isEmpty()) {
-			this.mods = null;
-		    } else {
-			Pipe.Op[] mods = new Pipe.Op[setupmods.size()];
-			int n = 0;
-			for(SetupMod mod : setupmods) {
-			    if((mods[n] = mod.placestate()) != null)
-				n++;
-			}
-			this.mods = (n > 0) ? Pipe.Op.compose(mods) : null;
-		    }
-		} catch(MCache.LoadingMap ml) {
-		    throw(new Loading(ml) {
-			    public String getMessage() {return(ml.getMessage());}
+    	    Placement() {
+        		try {
+        		    Following flw = Gob.this.getattr(Following.class);
+        		    Pipe.Op flwxf = (flw == null) ? null : flw.xf();
+        		    Pipe.Op tilestate = null;
+        		    if(flwxf == null) {
+            			Coord3f oc = Gob.this.getc();
+            			Coord3f rc = new Coord3f(oc);
+            			rc.y = -rc.y;
+            			this.flw = null;
+            			this.oc = oc;
+            			this.rc = rc;
+            			this.a = Gob.this.a;
+            			tilestate = Gob.this.getmapstate(oc);
+        		    } else {
+            			this.flw = flwxf;
+            			this.oc = this.rc = null;
+            			this.a = Double.NaN;
+        		    }
+                    if (Config.disableelev)
+                        rc.z = 0; // might have issue
+        		    this.tilestate = tilestate;
+        		    if(setupmods.isEmpty()) {
+            			this.mods = null;
+        		    } else {
+            			Pipe.Op[] mods = new Pipe.Op[setupmods.size()];
+            			int n = 0;
+            			for(SetupMod mod : setupmods) {
+            			    if((mods[n] = mod.placestate()) != null)
+            				n++;
+            			}
+            			this.mods = (n > 0) ? Pipe.Op.compose(mods) : null;
+        		    }
+        		} catch(MCache.LoadingMap ml) {
+        		    throw(new Loading(ml) {
+        			    public String getMessage() {return(ml.getMessage());}
 
-			    public void waitfor(Runnable callback, Consumer<Waitable.Waiting> reg) {
-				Waitable.or(callback, reg, ml, Gob.this::updwait);
-			    }
-			});
-		}
-	    }
+        			    public void waitfor(Runnable callback, Consumer<Waitable.Waiting> reg) {
+        				Waitable.or(callback, reg, ml, Gob.this::updwait);
+        			    }
+        			});
+        		}
+    	    }
 
-	    public boolean equals(Placement that) {
-		if(this.flw != null) {
-		    if(!Utils.eq(this.flw, that.flw))
-			return(false);
-		} else {
-		    if(!(Utils.eq(this.oc, that.oc) && (this.a == that.a)))
-			return(false);
-		}
-		if(!Utils.eq(this.tilestate, that.tilestate))
-		    return(false);
-		if(!Utils.eq(this.mods, that.mods))
-		    return(false);
-		return(true);
-	    }
+    	    public boolean equals(Placement that) {
+        		if(this.flw != null) {
+        		    if(!Utils.eq(this.flw, that.flw))
+        			return(false);
+        		} else {
+        		    if(!(Utils.eq(this.oc, that.oc) && (this.a == that.a)))
+        			return(false);
+        		}
+        		if(!Utils.eq(this.tilestate, that.tilestate))
+        		    return(false);
+        		if(!Utils.eq(this.mods, that.mods))
+        		    return(false);
+        		return(true);
+    	    }
 
-	    public boolean equals(Object o) {
-		return((o instanceof Placement) && equals((Placement)o));
-	    }
+    	    public boolean equals(Object o) {
+        		return((o instanceof Placement) && equals((Placement)o));
+    	    }
 
-	    Pipe.Op gndst = null;
-	    public void apply(Pipe buf) {
-		if(this.flw != null) {
-		    this.flw.apply(buf);
-		} else {
-		    if(gndst == null)
-			gndst = Pipe.Op.compose(new Location(Transform.makexlate(new Matrix4f(), this.rc), "gobx"),
-						new Location(Transform.makerot(new Matrix4f(), Coord3f.zu, (float)-this.a), "gob"));
-		    gndst.apply(buf);
-		}
-		if(tilestate != null)
-		    tilestate.apply(buf);
-		if(mods != null)
-		    mods.apply(buf);
-	    }
-	}
+    	    Pipe.Op gndst = null;
 
-	public Pipe.Op placement() {
-	    return(new Placement());
-	}
+    	    public void apply(Pipe buf) {
+        		if(this.flw != null) {
+        		    this.flw.apply(buf);
+        		} else {
+        		    if(gndst == null)
+        			gndst = Pipe.Op.compose(new Location(Transform.makexlate(new Matrix4f(), this.rc), "gobx"),
+        						new Location(Transform.makerot(new Matrix4f(), Coord3f.zu, (float)-this.a), "gob"));
+        		    gndst.apply(buf);
+        		}
+        		if(tilestate != null)
+        		    tilestate.apply(buf);
+        		if(mods != null)
+        		    mods.apply(buf);
+    	    }
+    	}
 
-	public void autotick(double dt) {
-	    synchronized(Gob.this) {
-		Placement np;
-		try {
-		    np = new Placement();
-		} catch(Loading l) {
-		    return;
-		}
-		if(!Utils.eq(this.cur, np))
-		    update(np);
-	    }
-	}
+    	public Pipe.Op placement() {
+    	    return(new Placement());
+    	}
 
-	private void update(Placement np) {
-	    for(RenderTree.Slot slot : slots)
-		slot.ostate(np);
-	    this.cur = np;
-	}
+    	public void autotick(double dt) {
+    	    synchronized(Gob.this) {
+    		Placement np;
+    		try {
+    		    np = new Placement();
+    		} catch(Loading l) {
+    		    return;
+    		}
+    		if(!Utils.eq(this.cur, np))
+    		    update(np);
+    	    }
+    	}
 
-	public void added(RenderTree.Slot slot) {
-	    slot.ostate(curplace());
-	    slot.add(Gob.this);
-	    slots.add(slot);
-	}
+    	private void update(Placement np) {
+    	    for(RenderTree.Slot slot : slots)
+    		slot.ostate(np);
+    	    this.cur = np;
+    	}
 
-	public void removed(RenderTree.Slot slot) {
-	    slots.remove(slot);
-	}
+    	public void added(RenderTree.Slot slot) {
+    	    slot.ostate(curplace());
+    	    slot.add(Gob.this);
+    	    slots.add(slot);
+    	}
 
-	public Pipe.Op curplace() {
-	    if(cur == null)
-		cur = new Placement();
-	    return(cur);
-	}
+    	public void removed(RenderTree.Slot slot) {
+    	    slots.remove(slot);
+    	}
 
-	public Coord3f getc() {
-	    return((this.cur != null) ? this.cur.oc : null);
-	}
+    	public Pipe.Op curplace() {
+    	    if(cur == null)
+    		cur = new Placement();
+    	    return(cur);
+    	}
 
-	public TickList.Ticking ticker() {return(this);}
+    	public Coord3f getc() {
+    	    return((this.cur != null) ? this.cur.oc : null);
+    	}
+
+    	public TickList.Ticking ticker() {return(this);}
     }
     public final Placed placed = new Placed();
 }
