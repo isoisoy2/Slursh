@@ -119,7 +119,7 @@ public class FlowerMenu extends Widget {
     }
 
     public class Opening extends NormAnim {
-    	Opening() {super(0.25);}
+    	Opening() {super(0);} //controls animation
 
     	public void ntick(double s) {
     	    // double ival = 0.8;
@@ -198,7 +198,7 @@ public class FlowerMenu extends Widget {
 
     public class Cancel extends NormAnim {
     	Cancel() {
-            super(0.25);
+            super(0); //animation
         }
 
     	public void ntick(double s) {
