@@ -75,7 +75,19 @@ public class FlowerMenu extends Widget {
     	}
 
     	public void move(double a, double r) {
-    	    move(Coord.sc(a, r));
+    	    //move(Coord.sc(a, r));
+            this.c = Coord.sc(a, r).sub(sz.div(2));
+            // adjust horizontal position for potentially parallel petals to avoid overlap
+            if (r == rad) {
+                for (Petal p : opts) {
+                    if (this.c.x + sz.x >= p.c.x &&
+                            (num == 7 && p.num == 1 || num == 6 && p.num == 2 || num == 5 && p.num == 3)) {
+                        p.c.x = opts[0].c.x + opts[0].sz.x / 2 + 5;
+                        this.c.x = p.c.x - sz.x - 5;
+                        break;
+                    }
+                }
+            }
     	}
 
     	public void draw(GOut g) {
@@ -110,15 +122,28 @@ public class FlowerMenu extends Widget {
     	Opening() {super(0.25);}
 
     	public void ntick(double s) {
-    	    double ival = 0.8;
-    	    double off = (opts.length == 1) ? 0.0 : ((1.0 - ival) / (opts.length - 1));
-    	    for(int i = 0; i < opts.length; i++) {
-    		Petal p = opts[i];
-    		double a = Utils.clip((s - (off * i)) * (1.0 / ival), 0, 1);
-    		double b = nxf(a);
-    		p.move(p.ta + ((1 - b) * PI), p.tr * b);
-    		p.a = a;
-    	    }
+    	    // double ival = 0.8;
+    	    // double off = (opts.length == 1) ? 0.0 : ((1.0 - ival) / (opts.length - 1));
+    	    // for(int i = 0; i < opts.length; i++) {
+        	// 	Petal p = opts[i];
+        	// 	double a = Utils.clip((s - (off * i)) * (1.0 / ival), 0, 1);
+        	// 	double b = nxf(a);
+        	// 	p.move(p.ta + ((1 - b) * PI), p.tr * b);
+        	// 	p.a = a;
+    	    // }
+            for (Petal p : opts) {
+                p.move(p.ta + ((1 - s) * PI), p.rad * s);
+                p.a = s;
+                if (s == 1.0) {
+                    CheckListboxItem itm = Config.flowermenus.get(p.name);
+                    if (itm != null && itm.selected && !ui.modmeta && (!ignoreAutoSetting || p.name.equals("Peer into")) ||
+                            p.name.equals(nextAutoSel) && System.currentTimeMillis() - nextAutoSelTimeout < 2000) {
+                        nextAutoSel = null;
+                        choose(p);
+                        break;
+                    }
+                }
+            }
     	}
     }
 
@@ -131,82 +156,113 @@ public class FlowerMenu extends Widget {
     	}
 
     	public void ntick(double s) {
-    	    double ival = 0.8;
-    	    double off = ((1.0 - ival) / (opts.length - 1));
-    	    for(int i = 0; i < opts.length; i++) {
-    		Petal p = opts[i];
-    		if(p == chosen) {
-    		    if(s > 0.6) {
-    			p.a = 1 - ((s - 0.6) / 0.4);
-    		    } else if(s < 0.3) {
-    			double a = nxf(s / 0.3);
-    			p.move(p.ta, p.tr * (1 - a));
-    		    }
-    		} else {
-    		    if(s > 0.3) {
-    			p.a = 0;
-    		    } else {
-    			double a = s / 0.3;
-    			a = Utils.clip((a - (off * i)) * (1.0 / ival), 0, 1);
-    			p.a = 1 - a;
-    		    }
-    		}
-    	    }
+    	    // double ival = 0.8;
+    	    // double off = ((1.0 - ival) / (opts.length - 1));
+    	    // for(int i = 0; i < opts.length; i++) {
+        	// 	Petal p = opts[i];
+        	// 	if(p == chosen) {
+        	// 	    if(s > 0.6) {
+        	// 		p.a = 1 - ((s - 0.6) / 0.4);
+        	// 	    } else if(s < 0.3) {
+        	// 		double a = nxf(s / 0.3);
+        	// 		p.move(p.ta, p.tr * (1 - a));
+        	// 	    }
+        	// 	} else {
+        	// 	    if(s > 0.3) {
+            // 			p.a = 0;
+        	// 	    } else {
+            // 			double a = s / 0.3;
+            // 			a = Utils.clip((a - (off * i)) * (1.0 / ival), 0, 1);
+            // 			p.a = 1 - a;
+        	// 	    }
+        	// 	}
+    	    // }
+            for (Petal p : opts) {
+                if (p == chosen) {
+                    if (s > 0.6) {
+                        p.a = 1 - ((s - 0.6) / 0.4);
+                    } else if (s < 0.3) {
+                        p.move(p.ta, p.rad * (1 - (s / 0.3)));
+                    }
+                } else {
+                    if (s > 0.3)
+                        p.a = 0;
+                    else
+                        p.a = 1 - (s / 0.3);
+                }
+            }
     	    if(s == 1.0)
-    		ui.destroy(FlowerMenu.this);
+    		    ui.destroy(FlowerMenu.this);
     	}
     }
 
     public class Cancel extends NormAnim {
-    	Cancel() {super(0.25);}
+    	Cancel() {
+            super(0.25);
+        }
 
     	public void ntick(double s) {
-    	    double ival = 0.8;
-    	    double off = (opts.length == 1) ? 0.0 : ((1.0 - ival) / (opts.length - 1));
-    	    for(int i = 0; i < opts.length; i++) {
-    		Petal p = opts[i];
-    		double a = Utils.clip((s - (off * i)) * (1.0 / ival), 0, 1);
-    		double b = 1.0 - nxf(1.0 - a);
-    		p.move(p.ta + (b * PI), p.tr * (1 - b));
-    		p.a = 1 - a;
-    	    }
+    	    // double ival = 0.8;
+    	    // double off = (opts.length == 1) ? 0.0 : ((1.0 - ival) / (opts.length - 1));
+    	    // for(int i = 0; i < opts.length; i++) {
+        	// 	Petal p = opts[i];
+        	// 	double a = Utils.clip((s - (off * i)) * (1.0 / ival), 0, 1);
+        	// 	double b = 1.0 - nxf(1.0 - a);
+        	// 	p.move(p.ta + (b * PI), p.tr * (1 - b));
+        	// 	p.a = 1 - a;
+    	    // }
+            for (Petal p : opts) {
+                p.move(p.ta + ((s) * PI), p.rad * (1 - s));
+                p.a = 1 - s;
+            }
     	    if(s == 1.0)
-    		ui.destroy(FlowerMenu.this);
+    		    ui.destroy(FlowerMenu.this);
     	}
     }
 
     private void organize(Petal[] opts) {
-    	Area bounds = parent.area().xl(c.inv());
-    	int l = 1, p = 0, i = 0, mp = 0, ml = 1, t = 0, tt = -1;
-    	boolean muri = false;
-    	while(i < opts.length) {
-    	    place: {
-    		double ta = (PI / 2) - (p * (2 * PI / (l * ppl)));
-    		double tr = 75 + (50 * (l - 1));
-    		if(!muri && !bounds.contains(opts[i].ta(ta, tr))) {
-    		    if(tt < 0) {
-    			tt = ppl * l;
-    			t = 1;
-    			mp = p;
-    			ml = l;
-    		    } else if(++t >= tt) {
-    			muri = true;
-    			p = mp;
-    			l = ml;
-    			continue;
-    		    }
-    		    break place;
-    		}
-    		tt = -1;
-    		opts[i].ta = ta;
-    		opts[i].tr = tr;
-    		i++;
-    	    }
-    	    if(++p >= (ppl * l)) {
-    		l++;
-    		p = 0;
-    	    }
-    	}
+    	// Area bounds = parent.area().xl(c.inv());
+    	// int l = 1, p = 0, i = 0, mp = 0, ml = 1, t = 0, tt = -1;
+    	// boolean muri = false;
+    	// while(i < opts.length) {
+    	//     place: {
+        // 		double ta = (PI / 2) - (p * (2 * PI / (l * ppl)));
+        // 		double tr = 75 + (50 * (l - 1));
+        // 		if(!muri && !bounds.contains(opts[i].ta(ta, tr))) {
+        // 		    if(tt < 0) {
+        // 			tt = ppl * l;
+        // 			t = 1;
+        // 			mp = p;
+        // 			ml = l;
+        // 		    } else if(++t >= tt) {
+        // 			muri = true;
+        // 			p = mp;
+        // 			l = ml;
+        // 			continue;
+        // 		    }
+        // 		    break place;
+        // 		}
+        // 		tt = -1;
+        // 		opts[i].ta = ta;
+        // 		opts[i].tr = tr;
+        // 		i++;
+    	//     }
+    	//     if(++p >= (ppl * l)) {
+        // 		l++;
+        // 		p = 0;
+    	//     }
+    	// }
+        for (int i = 0 ; i < opts.length; i++) {
+            double ta = PI/2 - i * PI/4;
+
+            // slightly adjust 45 degrees angles
+            if (ta == PI/4 || ta == -3*PI/4)
+                ta -= 0.25;
+            if (ta == -PI/4 || ta == -5*PI/4)
+                ta += 0.25;
+
+            opts[i].ta = ta;
+        }
     }
 
     public FlowerMenu(String... options) {
@@ -273,11 +329,14 @@ public class FlowerMenu extends Widget {
     public void choose(Petal option) {
     	if(option == null) {
     	    wdgmsg("cl", -1);
+            lastSel = null;
     	} else {
     	    wdgmsg("cl", option.num, ui.modflags());
+            lastSel = option.name;
+            MapView.pllastcc = null;
     	}
     }
-    
+
     public static void setNextSelection(String name) {
         nextAutoSel = name;
         nextAutoSelTimeout = System.currentTimeMillis();

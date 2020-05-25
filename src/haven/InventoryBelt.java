@@ -127,7 +127,7 @@ public class InventoryBelt extends Widget implements DTarget {
         if (stam == null || stam.a > threshold)
             return false;
 
-        List<WItem> containers = getItemsPartial("Waterskin", "Waterflask", "Kuksa");
+        List<WItem> containers = getItemsPartial("Waterskin", "Waterflask", "Kuksa", "Cup");
         for (WItem wi : containers) {
             ItemInfo.Contents cont = wi.item.getcontents();
             if (cont != null) {

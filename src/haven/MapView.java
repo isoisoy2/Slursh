@@ -60,6 +60,7 @@ public class MapView extends PView implements DTarget, Console.Directory {
     public String tooltip;
     private long lastmmhittest = System.currentTimeMillis();
     private Coord lasthittestc = Coord.z;
+    public static Coord2d pllastcc;
 
     public interface Delayed {
 	    public void run(GOut g);
