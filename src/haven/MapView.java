@@ -681,44 +681,44 @@ public class MapView extends PView implements DTarget, Console.Directory {
 
     public final Terrain terrain;
     public class Terrain extends MapRaster {
-	final Grid main = new Grid<MapMesh>() {
-		MapMesh getcut(Coord cc) {
-		    return(map.getcut(cc));
-		}
-	    };
-	final Grid flavobjs = new Grid<RenderTree.Node>(false) {
-		RenderTree.Node getcut(Coord cc) {
-		    return(map.getfo(cc));
-		}
-	    };
+    	final Grid main = new Grid<MapMesh>() {
+    		MapMesh getcut(Coord cc) {
+    		    return(map.getcut(cc));
+    		}
+    	};
+    	final Grid flavobjs = new Grid<RenderTree.Node>(false) {
+    		RenderTree.Node getcut(Coord cc) {
+    		    return(map.getfo(cc));
+    		}
+    	};
 
-	private Terrain() {
-	}
+    	private Terrain() {
+    	}
 
-	void tick() {
-	    super.tick();
-	    if(area != null) {
-		main.tick();
-		flavobjs.tick();
-	    }
-	}
+    	void tick() {
+    	    super.tick();
+    	    if(area != null) {
+    		main.tick();
+    		flavobjs.tick();
+    	    }
+    	}
 
-	public void added(RenderTree.Slot slot) {
-	    slot.add(main);
-	    slot.add(flavobjs);
-	    super.added(slot);
-	}
+    	public void added(RenderTree.Slot slot) {
+    	    slot.add(main);
+    	    slot.add(flavobjs);
+    	    super.added(slot);
+    	}
 
-	public Loading loading() {
-	    Loading ret = super.loading();
-	    if(ret != null)
-		return(ret);
-	    if((ret = main.lastload) != null)
-		return(ret);
-	    if((ret = flavobjs.lastload) != null)
-		return(ret);
-	    return(null);
-	}
+    	public Loading loading() {
+    	    Loading ret = super.loading();
+    	    if(ret != null)
+    		return(ret);
+    	    if((ret = main.lastload) != null)
+    		return(ret);
+    	    if((ret = flavobjs.lastload) != null)
+    		return(ret);
+    	    return(null);
+    	}
     }
 
     public class Overlay extends MapRaster {
